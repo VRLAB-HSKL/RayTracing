@@ -12,7 +12,7 @@ VisualRayTrace/**/ProjectSettings/*
 VisualRayTrace/**/Logs/*
 
 # Assets wie MiddleVR, Steam, VRTK oder GitHub
-# Aktuell gehen wir davon aus, dass wir dies rekonstruieren können.
+# Aktuell gehen wir davon aus, dass wir dies rekonstruieren kÃ¶nnen.
 # Wenn wir diese Verzeichnisse jedes mal in Git schreiben wird das repo
 # redundante Informationen enthalten, was vermieden werden soll.
 VisualRayTrace/**/Assets/MiddleVR/*
@@ -35,7 +35,7 @@ VisualRayTrace/**/Assets/MiddleVR.meta
 VisualRayTrace/**/Assets/GoogleVR.meta
 VisualRayTrace/**/Assets/SteamVR.meta
 VisualRayTrace/**/Assets/HTC.UnityPlugin.meta
-# Wave3D für Focus Plus ignorieren
+# Wave3D fÃ¼r Focus Plus ignorieren
 VisualRayTrace/**/Assets/WaveVR/**/*
 
 # Prerequisites

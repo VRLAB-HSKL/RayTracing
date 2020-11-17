@@ -251,18 +251,22 @@ public class RayTracerUnity : MonoBehaviour
     private void InitPlane()
     {
         //ToDo: Calculate viewport width and height dynamically
-        planeWidth = 0.56f;
-        planeHeight = 0.28f;
+        MeshRenderer viewportRender = viewPortPlane.GetComponent<MeshRenderer>();
+        planeWidth = viewportRender.bounds.size.x; //0.56f;
+        planeHeight = viewportRender.bounds.size.y; //0.28f;
+
+        Debug.Log("planeWidth: " + planeWidth);
+        Debug.Log("planeHeight: " + planeHeight);
 
         // Initialize information object
         _viewPortInfo = new ViewPortPlaneInformation(viewPortPlane, transform, planeWidth, planeHeight);
 
         // Direction vector from the ray origin point to the center of the viewport plane
-        _viewPortInfo.DirectionVector = new Vector3(
-                transform.right.x,
-                transform.right.y - planeHeight * 0.5f, //+ x * verticalIterationStep, //((verticalIterationStep * 2) / TexWidth) );
-                transform.right.z + planeWidth * 0.5f // - y * horizontalIterationStep //((horizontalIterationStep * 2) / TexHeight));
-                );
+        //_viewPortInfo.DirectionVector = new Vector3(
+        //        transform.right.x,
+        //        transform.right.y - planeHeight * 0.5f, //+ x * verticalIterationStep, //((verticalIterationStep * 2) / TexWidth) );
+        //        transform.right.z + planeWidth * 0.5f // - y * horizontalIterationStep //((horizontalIterationStep * 2) / TexHeight));
+        //        );
  
     }
 
@@ -960,9 +964,13 @@ public class RayTracerUnity : MonoBehaviour
             //);
             DirectionVector = new Vector3(
                 viewPortPlane.transform.position.x - rayOrigin.position.x,
-                (viewPortPlane.transform.position.y - rayOrigin.position.y) - height * 0.5f,
-                (viewPortPlane.transform.position.z - rayOrigin.position.z) + width * 0.5f
+                (viewPortPlane.transform.position.y - rayOrigin.position.y) - height, // * 0.5f,
+                (viewPortPlane.transform.position.z - rayOrigin.position.z) + width // * 0.5f
                 );
+
+            Debug.Log("ViewPortPlane: " + viewPortPlane.transform.position.ToString());
+            Debug.Log("RayOrigin: " + rayOrigin.position.ToString());
+            Debug.Log("DirectionVector: " + DirectionVector.ToString());
         }
 
         /// <summary>
