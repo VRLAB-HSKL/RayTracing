@@ -34,12 +34,12 @@ public class RayTracerUnity : MonoBehaviour
     /// <summary>
     /// Ingame height of the plane the ray is shot through to set the corresponding pixel on plane
     /// </summary>
-    private float planeHeight = 0.28f; 
+    private float planeHeight; 
 
     /// <summary>
     /// Ingame width of the plane the ray is shot throug h to set the corresponding pixel on plane
     /// </summary>
-    private float planeWidth = 0.56f;
+    private float planeWidth;
 
     /// <summary>
     /// The ingame plane that is used to represent the viewport in the scene.
@@ -250,6 +250,10 @@ public class RayTracerUnity : MonoBehaviour
     /// </summary>
     private void InitPlane()
     {
+        //ToDo: Calculate viewport width and height dynamically
+        planeWidth = 0.56f;
+        planeHeight = 0.28f;
+
         // Initialize information object
         _viewPortInfo = new ViewPortPlaneInformation(viewPortPlane, transform, planeWidth, planeHeight);
 
@@ -949,11 +953,16 @@ public class RayTracerUnity : MonoBehaviour
             PlaneRenderer = viewPortPlane.GetComponent<MeshRenderer>();
 
             // Initialize default direction vector from rayorigin to the center of the viewport plane
+            //DirectionVector = new Vector3(
+            //        rayOrigin.right.x,
+            //        rayOrigin.right.y - height * 0.5f,
+            //        rayOrigin.right.z + width * 0.5f 
+            //);
             DirectionVector = new Vector3(
-                    rayOrigin.right.x,
-                    rayOrigin.right.y - height * 0.5f,
-                    rayOrigin.right.z + width * 0.5f 
-            );
+                viewPortPlane.transform.position.x - rayOrigin.position.x,
+                (viewPortPlane.transform.position.y - rayOrigin.position.y) - height * 0.5f,
+                (viewPortPlane.transform.position.z - rayOrigin.position.z) + width * 0.5f
+                );
         }
 
         /// <summary>
