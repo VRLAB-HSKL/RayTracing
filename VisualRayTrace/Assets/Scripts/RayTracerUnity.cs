@@ -252,9 +252,9 @@ public class RayTracerUnity : MonoBehaviour
     {
         //ToDo: Calculate viewport width and height dynamically
         MeshRenderer viewportRender = viewPortPlane.GetComponent<MeshRenderer>();
-        planeWidth = viewportRender.bounds.size.x; //0.56f;
+        planeWidth = viewportRender.bounds.size.z; //0.56f;
         planeHeight = viewportRender.bounds.size.y; //0.28f;
-
+        Debug.Log("Bounds.Size: " + viewportRender.bounds.size);
         Debug.Log("planeWidth: " + planeWidth);
         Debug.Log("planeHeight: " + planeHeight);
 
@@ -406,8 +406,7 @@ public class RayTracerUnity : MonoBehaviour
         // Deallocate job collections
         raycastHits.Dispose();
         raycastCommands.Dispose();
-        yield return null;
-             
+        yield return null;             
         
         Vector3 colorSummation = Vector3.zero;
         int validHitCounter = 0;
@@ -449,6 +448,8 @@ public class RayTracerUnity : MonoBehaviour
         Vector3 initDir = _viewPortInfo.DirectionVector;
         initDir.y += xCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
         initDir.z -= yCord * _viewPortInfo.HorizontalIterationStep;
+
+        Debug.Log("InitDir:" + initDir.ToString());
 
         Vector3 endpoint;
         if(Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
@@ -653,18 +654,12 @@ public class RayTracerUnity : MonoBehaviour
         // Remove ' (Instance)' postfix
         matName = matName.Split(' ')[0];
 
-        switch (matName)
+        switch(matName)
         {
-            case "Metal":
-                return MaterialType.Metal;
-
-            case "Dielectric":
-                return MaterialType.Dielectric;
-
-            default:
-                return MaterialType.SolidColor;
-        }
-
+            case "Metal": return MaterialType.Metal;
+            case "Dielectric": return MaterialType.Dielectric;
+            default: return MaterialType.SolidColor;
+        };
     }
 
     private List<Vector3> rt_rec_points = new List<Vector3>();
@@ -962,10 +957,11 @@ public class RayTracerUnity : MonoBehaviour
             //        rayOrigin.right.y - height * 0.5f,
             //        rayOrigin.right.z + width * 0.5f 
             //);
+            // Calculate direction vector to lower left corner of viewport
             DirectionVector = new Vector3(
                 viewPortPlane.transform.position.x - rayOrigin.position.x,
-                (viewPortPlane.transform.position.y - rayOrigin.position.y) - height, // * 0.5f,
-                (viewPortPlane.transform.position.z - rayOrigin.position.z) + width // * 0.5f
+                (viewPortPlane.transform.position.y - rayOrigin.position.y) - height * 0.5f,
+                (viewPortPlane.transform.position.z - rayOrigin.position.z) + width * 0.5f
                 );
 
             Debug.Log("ViewPortPlane: " + viewPortPlane.transform.position.ToString());
@@ -985,6 +981,9 @@ public class RayTracerUnity : MonoBehaviour
         {
             VerticalIterationStep = planeHeight / textureDimension;
             HorizontalIterationStep = planeWidth / textureDimension;
+
+            Debug.Log("VerticalIterationStep: " + VerticalIterationStep);
+            Debug.Log("HorizontalIterationStep: " + HorizontalIterationStep);
         }
     }
 
