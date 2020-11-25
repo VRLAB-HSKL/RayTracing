@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Unity raycaster implementation based on the "Raytracing in a weekend" introductory course by Peter Shirley.
@@ -179,12 +181,18 @@ public class RayTracerUnity : MonoBehaviour
     /// </summary>
     public int AA_SampleSize = 100;
 
+    public enum ViewPortStartPoint { UpperLeft, UpperRight, LowerLeft, LowerRight }
+
+    public ViewPortStartPoint ViewPortStart;
+
+    private StartPointSettings _startPointSettings;
+
     #endregion RayTracer
-    
+
 
     #endregion Variables
 
-        
+
     /// <summary>
     /// Start method called once on scene instantiation
     /// </summary>
@@ -207,7 +215,10 @@ public class RayTracerUnity : MonoBehaviour
             planeWidth, planeHeight, _textureInfo.TextureDimension);
 
         // Set origin of rays (object this script was assgined to)
-        rayOrigin = transform.position;        
+        rayOrigin = transform.position;
+
+        _startPointSettings = new StartPointSettings(ViewPortStart, _textureInfo.TextureDimension);
+        CurrentPixel = new int[2] {_startPointSettings.InitXValue, _startPointSettings.InitYValue };
     }
 
     /// <summary>
@@ -236,6 +247,8 @@ public class RayTracerUnity : MonoBehaviour
                             
             visualRayLine.enabled = true;
 
+            Debug.Log("InitXas");
+
             // Increment texture coordinate for next iteration
             IncrementTexturePixelCoordinates();
             
@@ -254,9 +267,9 @@ public class RayTracerUnity : MonoBehaviour
         MeshRenderer viewportRender = viewPortPlane.GetComponent<MeshRenderer>();
         planeWidth = viewportRender.bounds.size.z; //0.56f;
         planeHeight = viewportRender.bounds.size.y; //0.28f;
-        Debug.Log("Bounds.Size: " + viewportRender.bounds.size);
-        Debug.Log("planeWidth: " + planeWidth);
-        Debug.Log("planeHeight: " + planeHeight);
+        //Debug.Log("Bounds.Size: " + viewportRender.bounds.size);
+        //Debug.Log("planeWidth: " + planeWidth);
+        //Debug.Log("planeHeight: " + planeHeight);
 
         // Initialize information object
         _viewPortInfo = new ViewPortPlaneInformation(viewPortPlane, transform, planeWidth, planeHeight);
@@ -292,7 +305,10 @@ public class RayTracerUnity : MonoBehaviour
             rnd.material.mainTexture = _textureInfo.StreamTexture2D;
         }
 
+        //CurrentPixel = new int[2] {0, _textureInfo.TextureDimension };
     }
+
+    
 
 
     /// <summary>
@@ -301,12 +317,17 @@ public class RayTracerUnity : MonoBehaviour
     /// Note: Texture is rotated on game object by 90 degrees
     /// </summary>
     private void IncrementTexturePixelCoordinates()
-    {        
+    {
         // On last pixel, reset coordinates and set raytracer to inactive
-        if (CurrentPixel[1] == _textureInfo.TextureDimension)
+
+        Debug.Log("CurrPixelGreater[" + _startPointSettings.GreaterCordIdx + "] = " + CurrentPixel[_startPointSettings.GreaterCordIdx]);
+        Debug.Log("XResetValue = " + _startPointSettings.ResetXValue);
+        Debug.Log("YResetValue = " + _startPointSettings.ResetYValue);
+
+        if (CurrentPixel[_startPointSettings.GreaterCordIdx] == (_startPointSettings.GreaterCordIdx == 0 ? _startPointSettings.ResetXValue : _startPointSettings.ResetYValue))
         {
-            CurrentPixel[0] = 0;
-            CurrentPixel[1] = 0;
+            CurrentPixel[_startPointSettings.GreaterCordIdx] = _startPointSettings.InitXValue;
+            CurrentPixel[_startPointSettings.LesserCordIdx] = _startPointSettings.InitYValue;
 
             isRaytracing = false;
             return;
@@ -314,15 +335,15 @@ public class RayTracerUnity : MonoBehaviour
 
         // On reaching the highest pixel on the vertical axis, move to the next pixel column
         // and begin at the bottom
-        if (CurrentPixel[0] == _textureInfo.TextureDimension)
+        if (CurrentPixel[_startPointSettings.LesserCordIdx] == (_startPointSettings.LesserCordIdx == 0 ? _startPointSettings.ResetXValue : _startPointSettings.ResetYValue))
         {
-            ++CurrentPixel[1];
-            CurrentPixel[0] = 0;
+            CurrentPixel[_startPointSettings.GreaterCordIdx] += _startPointSettings.IncrementGreaterValue;
+            CurrentPixel[_startPointSettings.LesserCordIdx] = 0;
         }
         // If top hasn't been reached, move one pixel above the last pixel
         else
         {
-            ++CurrentPixel[0];
+            CurrentPixel[_startPointSettings.LesserCordIdx] += _startPointSettings.IncrementLesserValue;
         }
     }
 
@@ -444,12 +465,14 @@ public class RayTracerUnity : MonoBehaviour
         // Begin visual line at the origin
         visualRayLine.SetPosition(0, rayOrigin);
 
+
+
         // Use first ray as visual representation
         Vector3 initDir = _viewPortInfo.DirectionVector;
         initDir.y += xCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
         initDir.z -= yCord * _viewPortInfo.HorizontalIterationStep;
 
-        Debug.Log("InitDir:" + initDir.ToString());
+        //Debug.Log("InitDir:" + initDir.ToString());
 
         Vector3 endpoint;
         if(Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
@@ -470,17 +493,21 @@ public class RayTracerUnity : MonoBehaviour
             {
                 visualRayLine.SetPosition(counter++, point);
             }
-        }        
+        }
 
         transform.parent.rotation =
             Quaternion.Euler(
                 new Vector3(
-                    0f,
+                    0.0f,
                     _eyeRotation.HorizontalEyeRotation(yCord),
                     _eyeRotation.VerticalEyeRotation(xCord)
                     )
          );
-         yield return null;
+
+        //Vector3 rotationDirection = Vector3.RotateTowards(transform.parent.position, initDir, Time.deltaTime, 0.0f);
+        //transform.parent.rotation = Quaternion.LookRotation(rotationDirection);
+
+        yield return null;
 
     }
 
@@ -951,6 +978,18 @@ public class RayTracerUnity : MonoBehaviour
             // Set rendere of associated plane
             PlaneRenderer = viewPortPlane.GetComponent<MeshRenderer>();
 
+            //float maxRotation = 90f;
+
+            //float rotationStep = 1f / maxRotation; 
+            //float planeYrotation = viewPortPlane.transform.rotation.y;
+            //float zPart = (planeYrotation % maxRotation) * rotationStep;
+            //float xPart = (maxRotation - zPart) * rotationStep;
+
+
+            float xDirection = (viewPortPlane.transform.position.x - rayOrigin.position.x);
+            float yDirection = (viewPortPlane.transform.position.y - rayOrigin.position.y) - height * 0.5f;
+            float zDirection = (viewPortPlane.transform.position.z - rayOrigin.position.z) + width * 0.5f;
+
             // Initialize default direction vector from rayorigin to the center of the viewport plane
             //DirectionVector = new Vector3(
             //        rayOrigin.right.x,
@@ -959,14 +998,14 @@ public class RayTracerUnity : MonoBehaviour
             //);
             // Calculate direction vector to lower left corner of viewport
             DirectionVector = new Vector3(
-                viewPortPlane.transform.position.x - rayOrigin.position.x,
-                (viewPortPlane.transform.position.y - rayOrigin.position.y) - height * 0.5f,
-                (viewPortPlane.transform.position.z - rayOrigin.position.z) + width * 0.5f
-                );
+                xDirection, // * xPart,
+                yDirection,
+                zDirection // * zPart
+            );
 
-            Debug.Log("ViewPortPlane: " + viewPortPlane.transform.position.ToString());
-            Debug.Log("RayOrigin: " + rayOrigin.position.ToString());
-            Debug.Log("DirectionVector: " + DirectionVector.ToString());
+            //Debug.Log("ViewPortPlane: " + viewPortPlane.transform.position.ToString());
+            //Debug.Log("RayOrigin: " + rayOrigin.position.ToString());
+            //Debug.Log("DirectionVector: " + DirectionVector.ToString());
         }
 
         /// <summary>
@@ -982,8 +1021,8 @@ public class RayTracerUnity : MonoBehaviour
             VerticalIterationStep = planeHeight / textureDimension;
             HorizontalIterationStep = planeWidth / textureDimension;
 
-            Debug.Log("VerticalIterationStep: " + VerticalIterationStep);
-            Debug.Log("HorizontalIterationStep: " + HorizontalIterationStep);
+            //Debug.Log("VerticalIterationStep: " + VerticalIterationStep);
+            //Debug.Log("HorizontalIterationStep: " + HorizontalIterationStep);
         }
     }
 
@@ -1229,4 +1268,51 @@ public class RayTracerUnity : MonoBehaviour
 
     }
 
+    // ToDo: Doc this
+    public class StartPointSettings
+    {
+        public int ResetXValue = -1;
+        public int ResetYValue = -1;
+        public int InitXValue = -1;
+        public int InitYValue = -1;
+        public int IncrementGreaterValue = 0;
+        public int IncrementLesserValue = 0;
+        public int LesserCordIdx = -1;
+        public int GreaterCordIdx = -1;
+
+        public StartPointSettings(ViewPortStartPoint sp, int textureDimension)
+        {
+            switch (sp)
+            {
+                case ViewPortStartPoint.UpperLeft:
+                    InitXValue = 0;
+                    InitYValue = textureDimension;
+                    ResetXValue = textureDimension;
+                    ResetYValue = 0;                    
+                    IncrementGreaterValue = -1;
+                    IncrementLesserValue = 1;
+                    GreaterCordIdx = 0;
+                    LesserCordIdx = 1;
+                    break;
+
+                case ViewPortStartPoint.UpperRight:
+                    break;
+
+                case ViewPortStartPoint.LowerLeft:
+                    InitXValue = 0;
+                    InitYValue = 0;
+                    ResetXValue = textureDimension;
+                    ResetYValue = textureDimension;                    
+                    IncrementGreaterValue = 1;
+                    IncrementLesserValue = 1;
+                    GreaterCordIdx = 0;
+                    LesserCordIdx = 1;
+                    break;
+
+                case ViewPortStartPoint.LowerRight:
+                    break;
+            }
+
+        }
+    }
 }
