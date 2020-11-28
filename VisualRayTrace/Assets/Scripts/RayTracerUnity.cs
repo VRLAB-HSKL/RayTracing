@@ -8,6 +8,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 /// <summary>
@@ -219,6 +220,8 @@ public class RayTracerUnity : MonoBehaviour
 
         _startPointSettings = new StartPointSettings(ViewPortStart, _textureInfo.TextureDimension);
         CurrentPixel = new int[2] {_startPointSettings.InitXValue, _startPointSettings.InitYValue };
+
+        
     }
 
     /// <summary>
@@ -247,7 +250,7 @@ public class RayTracerUnity : MonoBehaviour
                             
             visualRayLine.enabled = true;
 
-            Debug.Log("InitXas");
+            //Debug.Log("InitXas");
 
             // Increment texture coordinate for next iteration
             IncrementTexturePixelCoordinates();
@@ -320,9 +323,9 @@ public class RayTracerUnity : MonoBehaviour
     {
         // On last pixel, reset coordinates and set raytracer to inactive
 
-        Debug.Log("CurrPixelGreater[" + _startPointSettings.GreaterCordIdx + "] = " + CurrentPixel[_startPointSettings.GreaterCordIdx]);
-        Debug.Log("XResetValue = " + _startPointSettings.ResetXValue);
-        Debug.Log("YResetValue = " + _startPointSettings.ResetYValue);
+        //Debug.Log("CurrPixelGreater[" + _startPointSettings.GreaterCordIdx + "] = " + CurrentPixel[_startPointSettings.GreaterCordIdx]);
+        //Debug.Log("XResetValue = " + _startPointSettings.ResetXValue);
+        //Debug.Log("YResetValue = " + _startPointSettings.ResetYValue);
 
         if (CurrentPixel[_startPointSettings.GreaterCordIdx] == (_startPointSettings.GreaterCordIdx == 0 ? _startPointSettings.ResetXValue : _startPointSettings.ResetYValue))
         {
@@ -395,25 +398,67 @@ public class RayTracerUnity : MonoBehaviour
         RenderTexture.active = null;
     }
 
+    /// <summary>
+    /// Calculates the direction vector originating in the <see cref="rayOrigin"/> and pointing
+    /// to the current texture pixel being ray traced
+    /// </summary>
+    /// <param name="hCord">Horizontal texture coordinate</param>
+    /// <param name="vCord">Vertical texture coordinate</param>
+    /// <returns>Ray direction vector</returns>
+    private Vector3 CalculateRayDirectionVector(int hCord, int vCord)
+    {        
+        // Get plane axis vectors
+        Vector3 xAxisVec = _viewPortInfo.PlaneXAxis;
+        Vector3 yAxisVec = _viewPortInfo.PlaneYAxis;
 
-    private IEnumerator DoRayTraceAA(int xCord, int yCord)
+        //Debug.Log("XDirVec: " + xAxisVec);
+        //Debug.Log("YDirVec: " + yAxisVec);
+
+        // ToDo: Cache fraction values for most texture dimensions to prevent expensive float division
+        // Calculate scale factor for plane direction vectors 
+        float hScale = (float)vCord / (float)_textureInfo.TextureDimension;
+        float vScale = (float)hCord / (float)_textureInfo.TextureDimension;
+
+        //Debug.Log("TextureDimension: " + _textureInfo.TextureDimension);
+        //Debug.Log("hScale: " + hScale);
+        //Debug.Log("vScale: " + vScale);
+
+        // Save scaled direction vectors
+        Vector3 horizontalOffset = (xAxisVec * hScale);
+        Vector3 verticalOffset = (yAxisVec * vScale);
+
+        //Debug.Log("HOffset: " + horizontalOffset);
+        //Debug.Log("VOffset: " + verticalOffset);
+
+        // Calculate direcion vector
+        Vector3 rayDir = (_viewPortInfo.PlaneBorderPoints[0] - rayOrigin) + horizontalOffset + verticalOffset;
+        
+        //Debug.Log("RayDir: " + rayDir02);
+ 
+        return rayDir;                
+    }
+
+    private IEnumerator DoRayTraceAA(int hCord, int vCord)
     {        
         // Create job collections
         NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(AA_SampleSize, Allocator.TempJob);
         NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(AA_SampleSize, Allocator.TempJob);
 
-        List<Vector3> directionVectors = new List<Vector3>();
+        Vector3 rayDir = CalculateRayDirectionVector(hCord, vCord);
+
+        //Debug.Log("(" + hCord + "," + vCord + "): " + rayDir);
+
+        var hRandomVal = UnityEngine.Random.Range(0f, _viewPortInfo.HorizontalIterationStep - 1e-5f);
+        var vRandomVal = UnityEngine.Random.Range(0f, _viewPortInfo.VerticalIterationStep - 1e-5f);
+
         // Calculate direction vectors
+        List<Vector3> directionVectors = new List<Vector3>();        
         for (int i = 0; i < raycastCommands.Length; ++i)
-        {
-            var hRandomVal = UnityEngine.Random.Range(0f, _viewPortInfo.HorizontalIterationStep - 1e-5f);
-            var vRandomVal = UnityEngine.Random.Range(0f, _viewPortInfo.VerticalIterationStep - 1e-5f);
-
-            Vector3 rayDir = _viewPortInfo.DirectionVector;
-            rayDir.y += xCord * _viewPortInfo.VerticalIterationStep + vRandomVal;   //rayDir.y += x * verticalIterationStep;
-            rayDir.z -= yCord * _viewPortInfo.HorizontalIterationStep + hRandomVal; //rayDir.z -= y * horizontalIterationStep;
-
-            directionVectors.Add(rayDir);
+        {            
+            Vector3 rndRayDir = 
+                new Vector3(rayDir.x + vRandomVal, rayDir.y + vRandomVal, rayDir.z + hRandomVal);           
+           
+            directionVectors.Add(rndRayDir);
 
             raycastCommands[i] = new RaycastCommand(rayOrigin, rayDir, RayTrace_Range, layerMask);
         }
@@ -447,6 +492,7 @@ public class RayTracerUnity : MonoBehaviour
             yield return null;
         }
 
+        // ToDo: Check if this is needed / correct
         // Gamma correction
         Vector3 finalColVector = colorSummation / AA_SampleSize; // validHitCounter;
         finalColVector.x = Mathf.Sqrt(finalColVector.x);
@@ -454,23 +500,25 @@ public class RayTracerUnity : MonoBehaviour
         finalColVector.z = Mathf.Sqrt(finalColVector.z);
         Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
 
-        // Set pixels 
-        SetTexturePixel(xCord, yCord, finalColor);
+
+        // Set pixels on texture
+        SetTexturePixel(hCord, vCord, finalColor);
 
         // Apply changes to texture
         UpdateRenderTexture();
 
+        // Set line renderer point count based on settings value
         visualRayLine.positionCount = VisualizeCompleteRTPath ? 2 + rt_rec_points.Count() : 2;
 
         // Begin visual line at the origin
         visualRayLine.SetPosition(0, rayOrigin);
 
-
-
         // Use first ray as visual representation
-        Vector3 initDir = _viewPortInfo.DirectionVector;
-        initDir.y += xCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
-        initDir.z -= yCord * _viewPortInfo.HorizontalIterationStep;
+        Vector3 initDir = new Vector3(rayDir.x, rayDir.y, rayDir.z); 
+        
+        //_viewPortInfo.DirectionVector;
+        //initDir.y += hCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
+        //initDir.z -= vCord * _viewPortInfo.HorizontalIterationStep;
 
         //Debug.Log("InitDir:" + initDir.ToString());
 
@@ -486,6 +534,7 @@ public class RayTracerUnity : MonoBehaviour
 
         visualRayLine.SetPosition(1, endpoint);
 
+        // On full path visualization, add all points to line renderer
         if(VisualizeCompleteRTPath)
         {
             byte counter = 2;
@@ -495,12 +544,14 @@ public class RayTracerUnity : MonoBehaviour
             }
         }
 
+        // ToDo: Refactor this
+        // Rotate eye to face current ray target 
         transform.parent.rotation =
             Quaternion.Euler(
                 new Vector3(
                     0.0f,
-                    _eyeRotation.HorizontalEyeRotation(yCord),
-                    _eyeRotation.VerticalEyeRotation(xCord)
+                    _eyeRotation.HorizontalEyeRotation(vCord),
+                    _eyeRotation.VerticalEyeRotation(hCord)
                     )
          );
 
@@ -950,6 +1001,11 @@ public class RayTracerUnity : MonoBehaviour
         /// </summary>
         public Renderer PlaneRenderer { get; set; }
 
+        public Vector3[] PlaneBorderPoints { get; set; } 
+
+        public Vector3 PlaneXAxis { get; set; }
+        public Vector3 PlaneYAxis { get; set; }
+
         /// <summary>
         /// Direction vector from ray origin to ViewPort
         /// </summary>
@@ -977,6 +1033,8 @@ public class RayTracerUnity : MonoBehaviour
         {
             // Set rendere of associated plane
             PlaneRenderer = viewPortPlane.GetComponent<MeshRenderer>();
+            
+            
 
             //float maxRotation = 90f;
 
@@ -1006,6 +1064,28 @@ public class RayTracerUnity : MonoBehaviour
             //Debug.Log("ViewPortPlane: " + viewPortPlane.transform.position.ToString());
             //Debug.Log("RayOrigin: " + rayOrigin.position.ToString());
             //Debug.Log("DirectionVector: " + DirectionVector.ToString());
+
+            Vector3[] planeFilter = viewPortPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
+            PlaneBorderPoints = new Vector3[4];
+
+            //Debug.Log("PlanePointsRaw: " + planeFilter.Length);
+
+
+            // Lower left
+            PlaneBorderPoints[0] = viewPortPlane.transform.TransformPoint(planeFilter[0]);
+            // Lower right
+            PlaneBorderPoints[1] = viewPortPlane.transform.TransformPoint(planeFilter[1]);
+            // Upper left
+            PlaneBorderPoints[2] = viewPortPlane.transform.TransformPoint(planeFilter[2]);
+            // Upper right
+            PlaneBorderPoints[3] = viewPortPlane.transform.TransformPoint(planeFilter[3]);
+            //for(int i = 0; i < PlaneBorderPoints.Length; ++i)
+            //{
+            //    Debug.Log("PlaneBorderPoints[" + i + "]: " + PlaneBorderPoints[i].ToString());
+            //}
+
+            PlaneXAxis = (PlaneBorderPoints[1] - PlaneBorderPoints[0]);
+            PlaneYAxis = (PlaneBorderPoints[2] - PlaneBorderPoints[0]);
         }
 
         /// <summary>

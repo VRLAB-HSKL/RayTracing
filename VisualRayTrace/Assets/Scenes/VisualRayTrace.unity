@@ -7759,6 +7759,7 @@ MonoBehaviour:
   RayTrace_Range: 20
   AnitAliasing: 1
   AA_SampleSize: 100
+  ViewPortStart: 2
 --- !u!1 &947274245
 GameObject:
   m_ObjectHideFlags: 0
