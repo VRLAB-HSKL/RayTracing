@@ -1,5 +1,6 @@
 ﻿
 using HTC.UnityPlugin.Vive;
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,15 +25,115 @@ public class RayTracerUnity : MonoBehaviour
 {
     #region Variables
 
-    #region ViewPlane
+    #region RayTracer
+
+    /// <summary>
+    /// Boolean signaling if raytracer is currently actively calculation. 
+    /// Since this raytracer is either raytracing or lying dormant, a simple boolean is enough (no FSM).
+    /// </summary>
+    private bool isRaytracing = false;
+
+    
+    public bool IsRaytracing()
+    {
+        return isRaytracing;
+    }
+
+    /// <summary>
+    /// Bitfield mask to control which objects can be hit by a ray.
+    /// Currently, all objects that should be ignored by the raytracer were moved to a
+    /// custom layer (IgnoreRayCast). This layer corresponds to the value 9, so we set
+    /// all bits in the Int32 to 1, except for the ninth bit. This means all layers except for layer 9
+    /// can be hit by rays.
+    /// </summary>
+    private static readonly int layerMask = ~(1 << 9);
+
+
+    /// <summary>
+    /// Enum to define all possible iteration modes the raytracer can be in.
+    /// 
+    /// Automatic: Raytracer automatically moves on to the next pixel coordinate
+    /// 
+    /// Single: Raytracer waits for user signal before moving on to the next pixel coordinate
+    /// 
+    /// </summary>
+    public enum RT_IterationMode { Automatic = 0, Single = 1 };
+
+    /// <summary>
+    /// Current iteration mode of the raytracer
+    /// </summary>
+    [Header("Ray Tracer")]
+    public RT_IterationMode IterationMode = RT_IterationMode.Automatic;
+
+    /// <summary>
+    /// Setter for the iteration mode
+    /// </summary>
+    /// <param name="mode">New iteration mode</param>
+    public void SetIterationMode(RT_IterationMode mode)
+    {
+        IterationMode = mode;
+    }
+
+    public bool VisualizePath = false;
+
+    public void SetCompleteRTPath(bool showPath)
+    {
+        VisualizePath = showPath;
+    }
+
+    /// <summary>
+    /// Determines how far rays are shot into the scene.
+    /// Objects that are farther away from the ray origin point than this range will not be hit,
+    /// even if they are on the path of the ray
+    /// </summary>
+    [Range(20f, 100f)]
+    public float RayTrace_Range = 20f;
+
+    /// <summary>
+    /// Point in the scene that rays are shot from.
+    /// Currently this point is represented by a floating eye.
+    /// </summary>
+    private Vector3 rayOrigin;
+
+
+    /// <summary>
+    /// Toggles wether anti aliasing is used during raytracing. If set to true,
+    /// color calulation for a single pixel is performed multiple times and the 
+    /// results are averaged into a color. This prevents jagged edges on object borders
+    /// by sampling the colors outside of an object to blend the borders together more smoothly.
+    /// </summary>
+    [Header("Anti-Aliasing")]
+    public bool AnitAliasing = true;
+
+    /// <summary>
+    /// The amount of samples being taken during anti aliasing for a single pixel
+    /// </summary>
+    [Range(10, 200)]
+    public int SampleSize = 50;
+
+    public enum AASamplingStrategy { Regular, Random, Jittered }
+
+    public AASamplingStrategy SamplingMethod = AASamplingStrategy.Random;
+
+    private IAntiAliasingStrategy _aaStrategy;
+
+
+
+    #endregion RayTracer
+
+    #region ViewPlane    
 
     /// <summary>
     /// ViewPort information containing information that is calculated on start up <see cref="ViewPortPlaneInformation"/>
     /// /// </summary>
     private ViewPortPlaneInformation _viewPortInfo;
 
+    public enum ViewPortStartPoint { UpperLeft, UpperRight, LowerLeft, LowerRight }
 
-    // ToDo: Temporary, calculate dynamically later
+    [Header("ViewPort")]
+    public ViewPortStartPoint ViewPortStart;
+
+    private StartPointSettings _startPointSettings;
 
     /// <summary>
     /// Ingame height of the plane the ray is shot through to set the corresponding pixel on plane
@@ -47,7 +148,7 @@ public class RayTracerUnity : MonoBehaviour
     /// <summary>
     /// The ingame plane that is used to represent the viewport in the scene.
     /// Rays are shot through the viewport to set the pixels in the viewport with the calculated colors.
-    /// </summary>
+    /// </summary>    
     public GameObject viewPortPlane;
 
     /// <summary>
@@ -101,94 +202,7 @@ public class RayTracerUnity : MonoBehaviour
 
     #endregion Texture
 
-    #region RayTracer
-
-    /// <summary>
-    /// Boolean signaling if raytracer is currently actively calculation. 
-    /// Since this raytracer is either raytracing or lying dormant, a simple boolean is enough (no FSM).
-    /// </summary>
-    private bool isRaytracing = false;
-
-    public bool IsRaytracing()
-    {
-        return isRaytracing;
-    }
-
-    /// <summary>
-    /// Bitfield mask to control which objects can be hit by a ray.
-    /// Currently, all objects that should be ignored by the raytracer were moved to a
-    /// custom layer (IgnoreRayCast). This layer corresponds to the value 9, so we set
-    /// all bits in the Int32 to 1, except for the ninth bit. This means all layers except for layer 9
-    /// can be hit by rays.
-    /// </summary>
-    private static readonly int layerMask = ~(1 << 9);
-
-
-    /// <summary>
-    /// Enum to define all possible iteration modes the raytracer can be in.
-    /// 
-    /// Automatic: Raytracer automatically moves on to the next pixel coordinate
-    /// 
-    /// Single: Raytracer waits for user signal before moving on to the next pixel coordinate
-    /// 
-    /// </summary>
-    public enum RT_IterationMode { Automatic = 0, Single = 1 };
-
-    /// <summary>
-    /// Current iteration mode of the raytracer
-    /// </summary>
-    public RT_IterationMode IterationMode = RT_IterationMode.Automatic;
-
-    /// <summary>
-    /// Setter for the iteration mode
-    /// </summary>
-    /// <param name="mode">New iteration mode</param>
-    public void SetIterationMode(RT_IterationMode mode)
-    {
-        IterationMode = mode;
-    }
-
-    public bool VisualizeCompleteRTPath = false;
-
-    public void SetCompleteRTPath(bool showPath)
-    {
-        VisualizeCompleteRTPath = showPath;
-    }
-
-    /// <summary>
-    /// Determines how far rays are shot into the scene.
-    /// Objects that are farther away from the ray origin point than this range will not be hit,
-    /// even if they are on the path of the ray
-    /// </summary>
-    public float RayTrace_Range = 20f;
-
-    /// <summary>
-    /// Point in the scene that rays are shot from.
-    /// Currently this point is represented by a floating eye.
-    /// </summary>
-    private Vector3 rayOrigin;
-
-
-    /// <summary>
-    /// Toggles wether anti aliasing is used during raytracing. If set to true,
-    /// color calulation for a single pixel is performed multiple times and the 
-    /// results are averaged into a color. This prevents jagged edges on object borders
-    /// by sampling the colors outside of an object to blend the borders together more smoothly.
-    /// </summary>
-    public bool AnitAliasing = true;
-
-    /// <summary>
-    /// The amount of samples being taken during anti aliasing for a single pixel
-    /// </summary>
-    public int AA_SampleSize = 100;
-
-    public enum ViewPortStartPoint { UpperLeft, UpperRight, LowerLeft, LowerRight }
-
-    public ViewPortStartPoint ViewPortStart;
-
-    private StartPointSettings _startPointSettings;
-
-    #endregion RayTracer
+    
 
 
     #endregion Variables
@@ -221,7 +235,18 @@ public class RayTracerUnity : MonoBehaviour
         _startPointSettings = new StartPointSettings(ViewPortStart, _textureInfo.TextureDimension);
         CurrentPixel = new int[2] {_startPointSettings.InitXValue, _startPointSettings.InitYValue };
 
-        
+        switch(SamplingMethod)
+        {
+            case AASamplingStrategy.Regular:
+                _aaStrategy = new RegularSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
+                break;
+            case AASamplingStrategy.Random:
+                _aaStrategy = new RandomSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
+                break;
+            case AASamplingStrategy.Jittered:
+                _aaStrategy = new JitteredSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
+                break;
+        }
     }
 
     /// <summary>
@@ -440,31 +465,30 @@ public class RayTracerUnity : MonoBehaviour
 
     private IEnumerator DoRayTraceAA(int hCord, int vCord)
     {        
-        // Create job collections
-        NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(AA_SampleSize, Allocator.TempJob);
-        NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(AA_SampleSize, Allocator.TempJob);
 
         Vector3 rayDir = CalculateRayDirectionVector(hCord, vCord);
 
         //Debug.Log("(" + hCord + "," + vCord + "): " + rayDir);
 
-        var hRandomVal = UnityEngine.Random.Range(0f, _viewPortInfo.HorizontalIterationStep - 1e-5f);
-        var vRandomVal = UnityEngine.Random.Range(0f, _viewPortInfo.VerticalIterationStep - 1e-5f);
+
 
         // Calculate direction vectors
-        List<Vector3> directionVectors = new List<Vector3>();        
+        Vector3[] directionVectors = _aaStrategy.CreateAARays(rayDir);
+        int directionRayCount = directionVectors.Length;
+
+        Debug.Log("DirectionRayCount: " + directionRayCount);
+
+        // Create job collections
+        NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRayCount, Allocator.TempJob);
+        NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRayCount, Allocator.TempJob);
+
         for (int i = 0; i < raycastCommands.Length; ++i)
         {            
-            Vector3 rndRayDir = 
-                new Vector3(rayDir.x + vRandomVal, rayDir.y + vRandomVal, rayDir.z + hRandomVal);           
-           
-            directionVectors.Add(rndRayDir);
-
-            raycastCommands[i] = new RaycastCommand(rayOrigin, rayDir, RayTrace_Range, layerMask);
+            raycastCommands[i] = new RaycastCommand(rayOrigin, directionVectors[i], RayTrace_Range, layerMask);
         }
 
         // Add raycasts to job queue and wait for them to finish
-        JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, AA_SampleSize, default(JobHandle));
+        JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, directionRayCount, default(JobHandle));
         raycastHandle.Complete();
 
         List<RaycastHit> hitList = raycastHits.ToList();
@@ -492,14 +516,20 @@ public class RayTracerUnity : MonoBehaviour
             yield return null;
         }
 
+        Debug.Log("RawColorSummation: " + colorSummation.ToString());
+
         // ToDo: Check if this is needed / correct
         // Gamma correction
-        Vector3 finalColVector = colorSummation / AA_SampleSize; // validHitCounter;
+        Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
+
+        Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
+        
         finalColVector.x = Mathf.Sqrt(finalColVector.x);
         finalColVector.y = Mathf.Sqrt(finalColVector.y);
         finalColVector.z = Mathf.Sqrt(finalColVector.z);
         Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
 
+        Debug.Log("FinalColor: " + finalColor.ToString());
 
         // Set pixels on texture
         SetTexturePixel(hCord, vCord, finalColor);
@@ -508,7 +538,7 @@ public class RayTracerUnity : MonoBehaviour
         UpdateRenderTexture();
 
         // Set line renderer point count based on settings value
-        visualRayLine.positionCount = VisualizeCompleteRTPath ? 2 + rt_rec_points.Count() : 2;
+        visualRayLine.positionCount = VisualizePath ? 2 + rt_rec_points.Count() : 2;
 
         // Begin visual line at the origin
         visualRayLine.SetPosition(0, rayOrigin);
@@ -535,7 +565,7 @@ public class RayTracerUnity : MonoBehaviour
         visualRayLine.SetPosition(1, endpoint);
 
         // On full path visualization, add all points to line renderer
-        if(VisualizeCompleteRTPath)
+        if(VisualizePath)
         {
             byte counter = 2;
             foreach (Vector3 point in rt_rec_points)
@@ -1395,4 +1425,138 @@ public class RayTracerUnity : MonoBehaviour
 
         }
     }
+
+    // ToDo: Move more stuff to base class / interface
+    #region AntiAliasing
+
+    public interface IAntiAliasingStrategy
+    {
+        Vector3[] CreateAARays(Vector3 initRay);
+    }
+
+    public class RegularSampling : IAntiAliasingStrategy
+    {
+        private readonly int _SampleSize;
+        private readonly int _rootSampleSize;
+
+        private readonly int _halfRootSampleSize;
+
+        private readonly float _hStep;
+        private readonly float _vStep;
+
+        
+
+        public RegularSampling(int sampleSize, float hStep, float vStep)
+        {
+            _SampleSize = sampleSize > 0 ? sampleSize : 1;
+            _rootSampleSize = (int)Math.Ceiling(Mathf.Sqrt((float)_SampleSize));
+            _halfRootSampleSize = (int)(0.5 * _rootSampleSize);
+
+            _hStep = hStep / (float)_rootSampleSize;
+            _vStep = vStep / (float)_rootSampleSize;
+
+            //Debug.Log("RegularSampling - SampleSize: " + _SampleSize);
+            //Debug.Log("RegularSampling - RootSampleSize: " + _rootSampleSize);
+            //Debug.Log("RegularSampling - HalfRootSampleSize: " + _halfRootSampleSize);
+            //Debug.Log("RegularSampling - HStep: " + _hStep);
+            //Debug.Log("RegluarSampling - VStep: " + _vStep);
+        }
+
+        public Vector3[] CreateAARays(Vector3 initRay)
+        {
+            List<Vector3> rayList = new List<Vector3>();
+            for(int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+            {
+                for(int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
+                {
+                    Vector3 tmpRay = 
+                        new Vector3(initRay.x + (x * _hStep), initRay.y + (y * _vStep), initRay.z);
+                    rayList.Add(tmpRay);
+                }                    
+            }
+            return rayList.ToArray();
+        }
+    }
+
+    public class RandomSampling : IAntiAliasingStrategy
+    {
+        private readonly int _SampleSize;
+
+        private readonly float _HStep;
+        private readonly float _VStep;
+
+        public RandomSampling(int sampleSize, float hStep, float vStep)
+        {
+            _SampleSize = sampleSize > 0 ? sampleSize : 10;
+
+            _HStep = hStep;
+            _VStep = vStep;
+        }
+
+        public Vector3[] CreateAARays(Vector3 initRay)
+        {
+            Vector3[] rayList = new Vector3[_SampleSize];
+            for (int i = 0; i < _SampleSize; ++i)
+            {
+                float xRandomVal = UnityEngine.Random.Range(0f, _HStep - 1e-5f);
+                float yRandomVal = UnityEngine.Random.Range(0f, _VStep - 1e-5f);
+                //float zRandomVal = UnityEngine.Random.Range(0f, 1e-5f);
+
+                rayList[i] = 
+                    new Vector3(initRay.x + xRandomVal, initRay.y + yRandomVal, initRay.z);                
+            }
+            return rayList;
+        }
+    }
+
+    public class JitteredSampling : IAntiAliasingStrategy
+    {
+        private int _SampleSize;
+        private readonly int _rootSampleSize;
+        private readonly int _halfRootSampleSize;
+
+        private readonly float _hStep;
+        private readonly float _vStep;
+
+        private readonly float _hHalfStep;
+        private readonly float _vHalfStep;
+
+        public JitteredSampling(int sampleSize, float hStep, float vStep)
+        {
+            _SampleSize = sampleSize > 0 ? sampleSize : 10;
+            _rootSampleSize = (int)Math.Ceiling(Mathf.Sqrt((float)_SampleSize));
+            _halfRootSampleSize = (int)(0.5 * _rootSampleSize);
+
+            _hStep = hStep / (float)_rootSampleSize;
+            _vStep = vStep / (float)_rootSampleSize;
+
+            _hHalfStep = (_hStep * 0.5f) - 1e-5f;
+            _vHalfStep = (_vStep * 0.5f) - 1e-5f;
+        }
+
+        public Vector3[] CreateAARays(Vector3 initRay)
+        {
+            List<Vector3> rayList = new List<Vector3>();
+            float xVal = 0.0f, yVal = 0.0f;
+            for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+            {
+                for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
+                {
+                    float xRandomVal = UnityEngine.Random.Range(-_hHalfStep, _hHalfStep);
+                    float yRandomVal = UnityEngine.Random.Range(-_vHalfStep, _vHalfStep);
+
+                    xVal = initRay.x + (x * _hStep) + xRandomVal;
+                    yVal = initRay.y + (y * _vStep) + yRandomVal;
+
+                    Vector3 tmpRay =
+                        new Vector3(xVal, yVal, initRay.z);
+                    rayList.Add(tmpRay);
+                }
+            }
+            return rayList.ToArray();
+        }
+    }
+
+    #endregion AntiAliasing
+
 }
