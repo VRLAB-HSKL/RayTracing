@@ -115,7 +115,7 @@ public class RayTracerUnity : MonoBehaviour
 
     public AASamplingStrategy SamplingMethod = AASamplingStrategy.Random;
 
-    private IAntiAliasingStrategy _aaStrategy;
+    private AntiAliasingStrategy _aaStrategy;
 
 
 
@@ -270,18 +270,22 @@ public class RayTracerUnity : MonoBehaviour
         // If raytracer is raytracing, i.e. has texure coordinates left, move to next iteration
         if (isRaytracing)
         {   
-            // Start current raytracing iteration using next texture coordinate
-            StartCoroutine(DoRayTraceAA(CurrentPixel[0], CurrentPixel[1]));                   
-                            
-            visualRayLine.enabled = true;
+            for(int i = 0; i < 1; ++i)
+            {
+                // Start current raytracing iteration using next texture coordinate
+                StartCoroutine(DoRayTraceAA(CurrentPixel[0], CurrentPixel[1]));
 
-            //Debug.Log("InitXas");
+                visualRayLine.enabled = true;
 
-            // Increment texture coordinate for next iteration
-            IncrementTexturePixelCoordinates();
+                //Debug.Log("InitXas");
+
+                // Increment texture coordinate for next iteration
+                IncrementTexturePixelCoordinates();
+
+                // Stay on current iteration if raytracer is in single iteration mode
+                if (IterationMode == RT_IterationMode.Single) isRaytracing = false;
+            }
             
-            // Stay on current iteration if raytracer is in single iteration mode
-            if (IterationMode == RT_IterationMode.Single) isRaytracing = false;
         }
     }
 
@@ -1429,24 +1433,18 @@ public class RayTracerUnity : MonoBehaviour
     // ToDo: Move more stuff to base class / interface
     #region AntiAliasing
 
-    public interface IAntiAliasingStrategy
+    public abstract class AntiAliasingStrategy
     {
-        Vector3[] CreateAARays(Vector3 initRay);
-    }
+        protected int _SampleSize;
+        protected int _rootSampleSize;
+        protected int _halfRootSampleSize;
 
-    public class RegularSampling : IAntiAliasingStrategy
-    {
-        private readonly int _SampleSize;
-        private readonly int _rootSampleSize;
-
-        private readonly int _halfRootSampleSize;
-
-        private readonly float _hStep;
-        private readonly float _vStep;
+        protected float _hStep;
+        protected float _vStep;
 
         
 
-        public RegularSampling(int sampleSize, float hStep, float vStep)
+        protected AntiAliasingStrategy(int sampleSize, float hStep, float vStep)
         {
             _SampleSize = sampleSize > 0 ? sampleSize : 1;
             _rootSampleSize = (int)Math.Ceiling(Mathf.Sqrt((float)_SampleSize));
@@ -1455,6 +1453,8 @@ public class RayTracerUnity : MonoBehaviour
             _hStep = hStep / (float)_rootSampleSize;
             _vStep = vStep / (float)_rootSampleSize;
 
+            
+
             //Debug.Log("RegularSampling - SampleSize: " + _SampleSize);
             //Debug.Log("RegularSampling - RootSampleSize: " + _rootSampleSize);
             //Debug.Log("RegularSampling - HalfRootSampleSize: " + _halfRootSampleSize);
@@ -1462,7 +1462,18 @@ public class RayTracerUnity : MonoBehaviour
             //Debug.Log("RegluarSampling - VStep: " + _vStep);
         }
 
-        public Vector3[] CreateAARays(Vector3 initRay)
+        public abstract Vector3[] CreateAARays(Vector3 initRay);
+    }
+
+    public class RegularSampling : AntiAliasingStrategy
+    {        
+        public RegularSampling(int sampleSize, float hStep, float vStep) 
+            : base(sampleSize, hStep, vStep)
+        {          
+
+        }
+
+        public override Vector3[] CreateAARays(Vector3 initRay)
         {
             List<Vector3> rayList = new List<Vector3>();
             for(int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
@@ -1478,28 +1489,21 @@ public class RayTracerUnity : MonoBehaviour
         }
     }
 
-    public class RandomSampling : IAntiAliasingStrategy
-    {
-        private readonly int _SampleSize;
-
-        private readonly float _HStep;
-        private readonly float _VStep;
-
+    public class RandomSampling : AntiAliasingStrategy
+    {        
         public RandomSampling(int sampleSize, float hStep, float vStep)
+            : base(sampleSize, hStep, vStep)
         {
-            _SampleSize = sampleSize > 0 ? sampleSize : 10;
 
-            _HStep = hStep;
-            _VStep = vStep;
         }
 
-        public Vector3[] CreateAARays(Vector3 initRay)
+        public override Vector3[] CreateAARays(Vector3 initRay)
         {
             Vector3[] rayList = new Vector3[_SampleSize];
             for (int i = 0; i < _SampleSize; ++i)
             {
-                float xRandomVal = UnityEngine.Random.Range(0f, _HStep - 1e-5f);
-                float yRandomVal = UnityEngine.Random.Range(0f, _VStep - 1e-5f);
+                float xRandomVal = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+                float yRandomVal = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
                 //float zRandomVal = UnityEngine.Random.Range(0f, 1e-5f);
 
                 rayList[i] = 
@@ -1509,32 +1513,19 @@ public class RayTracerUnity : MonoBehaviour
         }
     }
 
-    public class JitteredSampling : IAntiAliasingStrategy
+    public class JitteredSampling : AntiAliasingStrategy
     {
-        private int _SampleSize;
-        private readonly int _rootSampleSize;
-        private readonly int _halfRootSampleSize;
-
-        private readonly float _hStep;
-        private readonly float _vStep;
-
-        private readonly float _hHalfStep;
-        private readonly float _vHalfStep;
+        private float _hHalfStep;
+        private float _vHalfStep;
 
         public JitteredSampling(int sampleSize, float hStep, float vStep)
+            : base(sampleSize, hStep, vStep)
         {
-            _SampleSize = sampleSize > 0 ? sampleSize : 10;
-            _rootSampleSize = (int)Math.Ceiling(Mathf.Sqrt((float)_SampleSize));
-            _halfRootSampleSize = (int)(0.5 * _rootSampleSize);
-
-            _hStep = hStep / (float)_rootSampleSize;
-            _vStep = vStep / (float)_rootSampleSize;
-
             _hHalfStep = (_hStep * 0.5f) - 1e-5f;
             _vHalfStep = (_vStep * 0.5f) - 1e-5f;
         }
 
-        public Vector3[] CreateAARays(Vector3 initRay)
+        public override Vector3[] CreateAARays(Vector3 initRay)
         {
             List<Vector3> rayList = new List<Vector3>();
             float xVal = 0.0f, yVal = 0.0f;
