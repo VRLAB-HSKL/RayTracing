@@ -1,6 +1,7 @@
 ﻿
 using HTC.UnityPlugin.Vive;
 using JetBrains.Annotations;
+using NUnit.Framework.Internal.Execution;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ public class RayTracerUnity : MonoBehaviour
     /// </summary>
     private bool isRaytracing = false;
 
-    
+
     public bool IsRaytracing()
     {
         return isRaytracing;
@@ -111,7 +112,7 @@ public class RayTracerUnity : MonoBehaviour
     [Range(10, 200)]
     public int SampleSize = 50;
 
-    public enum AASamplingStrategy { Regular, Random, Jittered }
+    public enum AASamplingStrategy { Regular, Random, Jittered, NRooks, MultiJittered, Hammersley }
 
     public AASamplingStrategy SamplingMethod = AASamplingStrategy.Random;
 
@@ -138,7 +139,7 @@ public class RayTracerUnity : MonoBehaviour
     /// <summary>
     /// Ingame height of the plane the ray is shot through to set the corresponding pixel on plane
     /// </summary>
-    private float planeHeight; 
+    private float planeHeight;
 
     /// <summary>
     /// Ingame width of the plane the ray is shot throug h to set the corresponding pixel on plane
@@ -202,7 +203,7 @@ public class RayTracerUnity : MonoBehaviour
 
     #endregion Texture
 
-    
+
 
 
     #endregion Variables
@@ -233,9 +234,9 @@ public class RayTracerUnity : MonoBehaviour
         rayOrigin = transform.position;
 
         _startPointSettings = new StartPointSettings(ViewPortStart, _textureInfo.TextureDimension);
-        CurrentPixel = new int[2] {_startPointSettings.InitXValue, _startPointSettings.InitYValue };
+        CurrentPixel = new int[2] { _startPointSettings.InitXValue, _startPointSettings.InitYValue };
 
-        switch(SamplingMethod)
+        switch (SamplingMethod)
         {
             case AASamplingStrategy.Regular:
                 _aaStrategy = new RegularSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
@@ -255,22 +256,22 @@ public class RayTracerUnity : MonoBehaviour
     void Update()
     {
         // Check for user input
-        if(ViveInput.GetPressDown(HandRole.RightHand, ControllerButton.Menu)) // && !isRaytracing)
+        if (ViveInput.GetPressDown(HandRole.RightHand, ControllerButton.Menu)) // && !isRaytracing)
         {
             // If the raytracer is inactive initialize texture
-            if(!isRaytracing && CurrentPixel[0] == 0 && CurrentPixel[1] == 0)
+            if (!isRaytracing && CurrentPixel[0] == 0 && CurrentPixel[1] == 0)
             {
                 InitTexture();
             }
-                
+
             // Toggle raytracing activity
             isRaytracing = !isRaytracing;
         }
 
         // If raytracer is raytracing, i.e. has texure coordinates left, move to next iteration
         if (isRaytracing)
-        {   
-            for(int i = 0; i < 1; ++i)
+        {
+            for (int i = 0; i < 1; ++i)
             {
                 // Start current raytracing iteration using next texture coordinate
                 StartCoroutine(DoRayTraceAA(CurrentPixel[0], CurrentPixel[1]));
@@ -285,11 +286,11 @@ public class RayTracerUnity : MonoBehaviour
                 // Stay on current iteration if raytracer is in single iteration mode
                 if (IterationMode == RT_IterationMode.Single) isRaytracing = false;
             }
-            
+
         }
     }
 
-    
+
     /// <summary>
     /// Initialize viewport plane information
     /// </summary>
@@ -312,10 +313,10 @@ public class RayTracerUnity : MonoBehaviour
         //        transform.right.y - planeHeight * 0.5f, //+ x * verticalIterationStep, //((verticalIterationStep * 2) / TexWidth) );
         //        transform.right.z + planeWidth * 0.5f // - y * horizontalIterationStep //((horizontalIterationStep * 2) / TexHeight));
         //        );
- 
+
     }
 
-   
+
     /// <summary>
     /// Initialize texture 
     /// </summary>
@@ -340,7 +341,7 @@ public class RayTracerUnity : MonoBehaviour
         //CurrentPixel = new int[2] {0, _textureInfo.TextureDimension };
     }
 
-    
+
 
 
     /// <summary>
@@ -394,9 +395,9 @@ public class RayTracerUnity : MonoBehaviour
         // Update color array with new value,
         int index = x * _textureInfo.TextureDimension + y;
         _textureInfo.SetPixelColor(index, color);
-        
+
     }
-    
+
 
     /// <summary>
     /// Completely cancels the current raytracer calculation and resets the texture
@@ -415,7 +416,7 @@ public class RayTracerUnity : MonoBehaviour
     {
         // Set active rendering texture
         RenderTexture.active = _textureInfo.Texture;
-        
+
         _textureInfo.StreamTexture2D.ReadPixels(new Rect(0, 0, _textureInfo.TextureDimension, _textureInfo.TextureDimension), 0, 0);
 
         // Update colors array in texture by setting all pixel colors at once (faster than single SetPixel() call)
@@ -435,7 +436,7 @@ public class RayTracerUnity : MonoBehaviour
     /// <param name="vCord">Vertical texture coordinate</param>
     /// <returns>Ray direction vector</returns>
     private Vector3 CalculateRayDirectionVector(int hCord, int vCord)
-    {        
+    {
         // Get plane axis vectors
         Vector3 xAxisVec = _viewPortInfo.PlaneXAxis;
         Vector3 yAxisVec = _viewPortInfo.PlaneYAxis;
@@ -461,14 +462,14 @@ public class RayTracerUnity : MonoBehaviour
 
         // Calculate direcion vector
         Vector3 rayDir = (_viewPortInfo.PlaneBorderPoints[0] - rayOrigin) + horizontalOffset + verticalOffset;
-        
+
         //Debug.Log("RayDir: " + rayDir02);
- 
-        return rayDir;                
+
+        return rayDir;
     }
 
     private IEnumerator DoRayTraceAA(int hCord, int vCord)
-    {        
+    {
 
         Vector3 rayDir = CalculateRayDirectionVector(hCord, vCord);
 
@@ -487,7 +488,7 @@ public class RayTracerUnity : MonoBehaviour
         NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRayCount, Allocator.TempJob);
 
         for (int i = 0; i < raycastCommands.Length; ++i)
-        {            
+        {
             raycastCommands[i] = new RaycastCommand(rayOrigin, directionVectors[i], RayTrace_Range, layerMask);
         }
 
@@ -500,11 +501,11 @@ public class RayTracerUnity : MonoBehaviour
         // Deallocate job collections
         raycastHits.Dispose();
         raycastCommands.Dispose();
-        yield return null;             
-        
+        yield return null;
+
         Vector3 colorSummation = Vector3.zero;
         int validHitCounter = 0;
-        for(int i = 0; i < hitList.Count(); ++i)
+        for (int i = 0; i < hitList.Count(); ++i)
         {
             if (hitList[i].distance > 1e-3)
             {
@@ -513,9 +514,9 @@ public class RayTracerUnity : MonoBehaviour
                 colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
             }
             else
-            {   
+            {
                 Color c = CreateNonHitColor(directionVectors[i]);
-                colorSummation += new Vector3(c.r, c.g, c.b);                
+                colorSummation += new Vector3(c.r, c.g, c.b);
             }
             yield return null;
         }
@@ -527,7 +528,7 @@ public class RayTracerUnity : MonoBehaviour
         Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
 
         Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
-        
+
         finalColVector.x = Mathf.Sqrt(finalColVector.x);
         finalColVector.y = Mathf.Sqrt(finalColVector.y);
         finalColVector.z = Mathf.Sqrt(finalColVector.z);
@@ -548,8 +549,8 @@ public class RayTracerUnity : MonoBehaviour
         visualRayLine.SetPosition(0, rayOrigin);
 
         // Use first ray as visual representation
-        Vector3 initDir = new Vector3(rayDir.x, rayDir.y, rayDir.z); 
-        
+        Vector3 initDir = new Vector3(rayDir.x, rayDir.y, rayDir.z);
+
         //_viewPortInfo.DirectionVector;
         //initDir.y += hCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
         //initDir.z -= vCord * _viewPortInfo.HorizontalIterationStep;
@@ -557,7 +558,7 @@ public class RayTracerUnity : MonoBehaviour
         //Debug.Log("InitDir:" + initDir.ToString());
 
         Vector3 endpoint;
-        if(Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
+        if (Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
         {
             endpoint = hit.point;
         }
@@ -569,7 +570,7 @@ public class RayTracerUnity : MonoBehaviour
         visualRayLine.SetPosition(1, endpoint);
 
         // On full path visualization, add all points to line renderer
-        if(VisualizePath)
+        if (VisualizePath)
         {
             byte counter = 2;
             foreach (Vector3 point in rt_rec_points)
@@ -596,7 +597,7 @@ public class RayTracerUnity : MonoBehaviour
 
     }
 
-  
+
 
     // Partial Source: https://forum.unity.com/threads/trying-to-get-color-of-a-pixel-on-texture-with-raycasting.608431/
     /// <summary>
@@ -608,7 +609,7 @@ public class RayTracerUnity : MonoBehaviour
     private Color DetermineHitColor(RaycastHit hit, Vector3 direction)
     {
         // Check if the ray hit anything
-        if(!(hit.collider is null))
+        if (!(hit.collider is null))
         {
             // Material of the object that was hit
             Material mat = hit.transform.gameObject.GetComponent<MeshRenderer>().material;
@@ -624,7 +625,7 @@ public class RayTracerUnity : MonoBehaviour
                 Vector2 pixelUVCoords = hit.textureCoord;
                 pixelUVCoords.x *= texture.width;
                 pixelUVCoords.y *= texture.height;
-                return texture.GetPixel(Mathf.FloorToInt(pixelUVCoords.x), Mathf.FloorToInt(pixelUVCoords.y));                
+                return texture.GetPixel(Mathf.FloorToInt(pixelUVCoords.x), Mathf.FloorToInt(pixelUVCoords.y));
             }
             else
             {
@@ -635,14 +636,14 @@ public class RayTracerUnity : MonoBehaviour
                         return HandleMaterial(hit, direction, MaterialType.Metal, mat.color);
 
                     case MaterialType.Dielectric:
-                        return HandleMaterial(hit, direction, MaterialType.Dielectric, mat.color);                        
+                        return HandleMaterial(hit, direction, MaterialType.Dielectric, mat.color);
 
                     default:
                     case MaterialType.SolidColor:
                         return HandleMaterial(hit, direction, MaterialType.SolidColor, mat.color);
                 }
             }
-                            
+
         }
         else
         {
@@ -655,7 +656,7 @@ public class RayTracerUnity : MonoBehaviour
     /// <summary>
     /// Enum type containing all material types that the raytracer can differentiate between
     /// </summary>
-    public enum MaterialType { SolidColor = 1, Metal = 2, Dielectric = 3};
+    public enum MaterialType { SolidColor = 1, Metal = 2, Dielectric = 3 };
     private List<Vector3> rt_points = new List<Vector3>();
 
     /// <summary>
@@ -692,7 +693,7 @@ public class RayTracerUnity : MonoBehaviour
             // Determine values based on hit material type
             switch (matType)
             {
-                
+
                 case MaterialType.SolidColor:
                     rayHit = ScatterDiffuse(mainRay, hit, out attenuation, out scatterRay, matColorVec);
                     break;
@@ -713,7 +714,7 @@ public class RayTracerUnity : MonoBehaviour
                 // Enter recursive ray tracing
                 rt_rec_points.Clear();
                 Vector3 tmpColorVec = RayTrace_Recursive(scatterRay, 0);
-                
+
                 // Attenuate color vector
                 tmpColorVec.x *= attenuation.x;
                 tmpColorVec.y *= attenuation.y;
@@ -766,7 +767,7 @@ public class RayTracerUnity : MonoBehaviour
         // Remove ' (Instance)' postfix
         matName = matName.Split(' ')[0];
 
-        switch(matName)
+        switch (matName)
         {
             case "Metal": return MaterialType.Metal;
             case "Dielectric": return MaterialType.Dielectric;
@@ -786,7 +787,7 @@ public class RayTracerUnity : MonoBehaviour
     private Vector3 RayTrace_Recursive(Ray ray, int depth)
     {
         // If ray hit another object and distance is above the threshold
-        if(Physics.Raycast(ray, out RaycastHit hit) && hit.distance > 1e-3 )
+        if (Physics.Raycast(ray, out RaycastHit hit) && hit.distance > 1e-3)
         {
             rt_rec_points.Add(hit.point);
 
@@ -806,7 +807,7 @@ public class RayTracerUnity : MonoBehaviour
             // Stop recursion above max depth
             if (depth < 50)
             {
-                switch(DetermineMaterialType(mat))
+                switch (DetermineMaterialType(mat))
                 {
                     case MaterialType.Metal:
                         rayHit = ScatterMetal(ray, hit, out attenuation, out scatter, matColVec);
@@ -822,10 +823,10 @@ public class RayTracerUnity : MonoBehaviour
                         break;
                 }
 
-                if(rayHit)
+                if (rayHit)
                 {
                     // Next recursion level
-                    
+
                     var tmpVec = RayTrace_Recursive(scatter, depth + 1);
 
                     // Apply attenuation
@@ -852,7 +853,7 @@ public class RayTracerUnity : MonoBehaviour
                 //return (1f - t) * new Vector3(1f, 1f, 1f) + t * new Vector3(.5f, .7f, 1f);
             }
 
-            
+
         }
         else
         {
@@ -949,7 +950,7 @@ public class RayTracerUnity : MonoBehaviour
         float cosine;
 
 
-        if(Vector3.Dot(r.direction, hit.normal) > 0)
+        if (Vector3.Dot(r.direction, hit.normal) > 0)
         {
             outwardNormal = -hit.normal;
             ni_over_nt = refIdx;
@@ -962,7 +963,7 @@ public class RayTracerUnity : MonoBehaviour
             cosine = -Vector3.Dot(r.direction, hit.normal) / r.direction.magnitude;
         }
 
-        if(Refract(r.direction, outwardNormal, ni_over_nt, out refracted))
+        if (Refract(r.direction, outwardNormal, ni_over_nt, out refracted))
         {
             reflect_prob = Schlick(cosine, refIdx);
         }
@@ -972,7 +973,7 @@ public class RayTracerUnity : MonoBehaviour
             reflect_prob = 1f;
         }
 
-        if(UnityEngine.Random.Range(0f, 1f - 1e-5f) < reflect_prob)
+        if (UnityEngine.Random.Range(0f, 1f - 1e-5f) < reflect_prob)
         {
             scatterRay = new Ray(hit.point, reflected);
         }
@@ -1000,7 +1001,7 @@ public class RayTracerUnity : MonoBehaviour
         Vector3 uv = Vector3.Normalize(v);
         float dt = Vector3.Dot(uv, n);
         float discriminant = 1f - ni_over_nt * ni_over_nt * (1f - dt * dt);
-        if(discriminant > 0)
+        if (discriminant > 0)
         {
             refracted = ni_over_nt * (uv - n * dt) - n * Mathf.Sqrt(discriminant);
             return true;
@@ -1023,7 +1024,7 @@ public class RayTracerUnity : MonoBehaviour
         r0 *= r0;
         return r0 + (1f - r0) * Mathf.Pow((1f - cosine), 5f);
     }
-    
+
 
     /// <summary>
     /// Wrapper class to encapsulate ViewPort information and calculation functions
@@ -1035,7 +1036,7 @@ public class RayTracerUnity : MonoBehaviour
         /// </summary>
         public Renderer PlaneRenderer { get; set; }
 
-        public Vector3[] PlaneBorderPoints { get; set; } 
+        public Vector3[] PlaneBorderPoints { get; set; }
 
         public Vector3 PlaneXAxis { get; set; }
         public Vector3 PlaneYAxis { get; set; }
@@ -1067,8 +1068,8 @@ public class RayTracerUnity : MonoBehaviour
         {
             // Set rendere of associated plane
             PlaneRenderer = viewPortPlane.GetComponent<MeshRenderer>();
-            
-            
+
+
 
             //float maxRotation = 90f;
 
@@ -1171,7 +1172,7 @@ public class RayTracerUnity : MonoBehaviour
         /// Raw array containing pixel color information. On change, the complete
         /// array is transmitted as the new texture image data.
         /// </summary>
-        public Color[] PixelColorData { get; }       
+        public Color[] PixelColorData { get; }
 
         /// <summary>
         /// Static number of pixels for each texture scaling unit
@@ -1200,9 +1201,9 @@ public class RayTracerUnity : MonoBehaviour
                 PixelColorData[i] = initColor;
             }
 
-            StreamTexture2D = new Texture2D(TextureDimension, TextureDimension);            
+            StreamTexture2D = new Texture2D(TextureDimension, TextureDimension);
         }
-        
+
         /// <summary>
         /// Setter for color array value
         /// </summary>
@@ -1258,7 +1259,7 @@ public class RayTracerUnity : MonoBehaviour
         {
             get
             {
-                if(_hMaxRotation is null)
+                if (_hMaxRotation is null)
                 {
                     float halfWidth = (_planeWidth / 2);
                     Vector3 leftPlanePoint = _eyePosition;
@@ -1286,7 +1287,7 @@ public class RayTracerUnity : MonoBehaviour
         {
             get
             {
-                if(_vMaxRotation is null)
+                if (_vMaxRotation is null)
                 {
                     float halfHeight = (_planeHeight / 2);
                     var bottomPlanePoint = _eyePosition;
@@ -1312,7 +1313,7 @@ public class RayTracerUnity : MonoBehaviour
         {
             get
             {
-                if(_hRotationStep is null)
+                if (_hRotationStep is null)
                 {
                     _hRotationStep = HorizontalMaxRotation / (float)_textureDimension;
                 }
@@ -1357,8 +1358,8 @@ public class RayTracerUnity : MonoBehaviour
             _planeWidth = planeWidth;
             _planeHeight = planeHeight;
             _textureDimension = textureDimension;
-        }      
-        
+        }
+
         /// <summary>
         /// Query the horizontal eye rotation based on the given color array coordinate
         /// </summary>
@@ -1402,7 +1403,7 @@ public class RayTracerUnity : MonoBehaviour
                     InitXValue = 0;
                     InitYValue = textureDimension;
                     ResetXValue = textureDimension;
-                    ResetYValue = 0;                    
+                    ResetYValue = 0;
                     IncrementGreaterValue = -1;
                     IncrementLesserValue = 1;
                     GreaterCordIdx = 0;
@@ -1416,7 +1417,7 @@ public class RayTracerUnity : MonoBehaviour
                     InitXValue = 0;
                     InitYValue = 0;
                     ResetXValue = textureDimension;
-                    ResetYValue = textureDimension;                    
+                    ResetYValue = textureDimension;
                     IncrementGreaterValue = 1;
                     IncrementLesserValue = 1;
                     GreaterCordIdx = 0;
@@ -1442,7 +1443,7 @@ public class RayTracerUnity : MonoBehaviour
         protected float _hStep;
         protected float _vStep;
 
-        
+
 
         protected AntiAliasingStrategy(int sampleSize, float hStep, float vStep)
         {
@@ -1453,7 +1454,7 @@ public class RayTracerUnity : MonoBehaviour
             _hStep = hStep / (float)_rootSampleSize;
             _vStep = vStep / (float)_rootSampleSize;
 
-            
+
 
             //Debug.Log("RegularSampling - SampleSize: " + _SampleSize);
             //Debug.Log("RegularSampling - RootSampleSize: " + _rootSampleSize);
@@ -1466,31 +1467,31 @@ public class RayTracerUnity : MonoBehaviour
     }
 
     public class RegularSampling : AntiAliasingStrategy
-    {        
-        public RegularSampling(int sampleSize, float hStep, float vStep) 
+    {
+        public RegularSampling(int sampleSize, float hStep, float vStep)
             : base(sampleSize, hStep, vStep)
-        {          
+        {
 
         }
 
         public override Vector3[] CreateAARays(Vector3 initRay)
         {
             List<Vector3> rayList = new List<Vector3>();
-            for(int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+            for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
             {
-                for(int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
+                for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
                 {
-                    Vector3 tmpRay = 
+                    Vector3 tmpRay =
                         new Vector3(initRay.x + (x * _hStep), initRay.y + (y * _vStep), initRay.z);
                     rayList.Add(tmpRay);
-                }                    
+                }
             }
             return rayList.ToArray();
         }
     }
 
     public class RandomSampling : AntiAliasingStrategy
-    {        
+    {
         public RandomSampling(int sampleSize, float hStep, float vStep)
             : base(sampleSize, hStep, vStep)
         {
@@ -1506,8 +1507,8 @@ public class RayTracerUnity : MonoBehaviour
                 float yRandomVal = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
                 //float zRandomVal = UnityEngine.Random.Range(0f, 1e-5f);
 
-                rayList[i] = 
-                    new Vector3(initRay.x + xRandomVal, initRay.y + yRandomVal, initRay.z);                
+                rayList[i] =
+                    new Vector3(initRay.x + xRandomVal, initRay.y + yRandomVal, initRay.z);
             }
             return rayList;
         }
@@ -1549,5 +1550,341 @@ public class RayTracerUnity : MonoBehaviour
     }
 
     #endregion AntiAliasing
+
+    #region Sampler
+
+    public abstract class AbstractSampler
+    {
+        protected int _numSamples;
+        protected int _numSets;
+        protected List<Vector2> _samples;
+        protected List<int> _shuffeledIndices;
+        protected int _count; //ulong _count;
+        protected int _jump;
+
+        protected float _hStep;
+        protected float _vStep;
+
+        protected AbstractSampler(int numSamples, float hStep, float vStep)
+        {
+            _numSamples = numSamples;
+
+            _hStep = hStep;
+            _vStep = vStep;
+
+            SetupShuffledIndices();
+        }
+
+        public abstract void GenerateSamples();
+
+        public void SetupShuffledIndices()
+        {
+            _shuffeledIndices = new List<int>(_numSamples * _numSets);
+            List<int> indices = new List<int>();
+
+            for (int j = 0; j < _numSamples; j++)
+                indices.Add(j);
+
+            for (int p = 0; p < _numSets; p++)
+            {
+                indices = Shuffle(indices); 
+
+                for (int j = 0; j < _numSamples; j++)
+                    _shuffeledIndices.Add(indices[j]);
+            }
+        }
+
+        public void ShuffleSamples()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Vector2 SampleUnitSquare()
+        {
+            if (_count % _numSamples == 0)
+                _jump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
+
+            return _samples[_jump + _shuffeledIndices[_jump + _count++ % _numSamples]];
+        }
+
+        // Fisher-Yates Shuffle
+        private List<int> Shuffle(List<int> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = UnityEngine.Random.Range(0, n + 1);
+                int value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+
+            return list;
+        }
+    }
+
+    public class RandomSampler : AbstractSampler
+    {
+        public RandomSampler(int numSamples, float hStep, float vStep)
+            : base(numSamples, hStep, vStep)
+        { }
+
+        public override void GenerateSamples()
+        {
+            for (int p = 0; p < _numSets; ++p)
+            {
+                for(int i = 0; i < _numSamples; ++i)
+                {
+                    float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+                    float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
+                    Vector2 sp = new Vector2(hRnd, vRnd);
+                    _samples.Add(sp);
+                }
+                //for (int j = 0; j < n; ++j)
+                //{
+                //    for (int k = 0; k < n; ++k)
+                //    {
+                //        float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+                //        float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
+                //        Vector2 sp = new Vector2((k + hRnd) / (float)n, (j + vRnd) / (float)n);
+                //        _samples.Add(sp);
+                //    }
+                //}
+            }
+        }
+    }
+
+    public class RegularSampler : AbstractSampler
+    {
+        public RegularSampler(int numSamples, float hStep, float vStep)
+            : base(numSamples, hStep, vStep)
+        { }
+
+        public override void GenerateSamples()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class JitteredSampler : AbstractSampler
+    {
+        public JitteredSampler(int numSamples, float hStep, float vStep)
+            : base(numSamples, hStep, vStep)
+        { }
+
+        public override void GenerateSamples()
+        {
+            int n = (int)Math.Sqrt(_numSamples);
+
+            for(int p = 0; p < _numSets; ++p)
+            {
+                for(int j = 0; j < n; ++j)
+                {
+                    for(int k = 0; k < n; ++k)
+                    {
+                        float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+                        float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
+                        Vector2 sp = new Vector2((k + hRnd) / (float)n, (j + vRnd) / (float)n);
+                        _samples.Add(sp);
+                    }
+                }
+            }
+        }
+    }
+
+
+    public class NRookSampler : AbstractSampler
+    {
+        public NRookSampler(int numSamples, float hStep, float vStep)
+            : base(numSamples, hStep, vStep)
+        { }
+
+        public override void GenerateSamples()
+        {
+            // Generate samples among main diagonal
+            for (int p = 0; p < _numSets; ++p)
+            {
+                for (int j = 0; j < _numSamples; ++j)
+                {
+                    float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+                    float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
+                    float x = (j + hRnd) / (float)_numSamples;
+                    float y = (j + vRnd) / (float)_numSamples;
+
+                    _samples.Add(new Vector2(x, y));
+                }
+            }
+
+            ShuffleXCoordinates();
+            ShuffleYCoordinates();
+        }
+
+        private void ShuffleXCoordinates()
+        {
+            for(int p = 0; p < _numSets; ++p)
+            {
+                for(int i = 0; i < _numSamples; ++i)
+                {
+                    // Calculate current index in samples collection
+                    int currentIndex = i + p * _numSamples + 1;
+
+                    // Determine random index in current set
+                    int target = UnityEngine.Random.Range(0, int.MaxValue) % _numSamples + p *_numSamples;
+                    
+                    // Cache old x value of current index
+                    float temp = _samples[currentIndex].x;
+                    
+                    // Write x value of target index in current index
+                    _samples[currentIndex].Set(_samples[target].x, _samples[currentIndex].y);
+                    
+                    // Write cached x value into target index
+                    _samples[target].Set(temp, _samples[target].y);
+                    
+                }
+            }
+        }
+        
+        private void ShuffleYCoordinates()
+        {
+            for (int p = 0; p < _numSets; ++p)
+            {
+                for (int i = 0; i < _numSamples; ++i)
+                {
+                    // Calculate current index in samples collection
+                    int currentIndex = i + p * _numSamples + 1;
+
+                    // Determine random index in current set
+                    int target = UnityEngine.Random.Range(0, int.MaxValue) % _numSamples + p * _numSamples;
+                                        
+                    // Cache old x value of current index
+                    float temp = _samples[currentIndex].y;
+
+                    // Write x value of target index in current index
+                    _samples[currentIndex].Set(_samples[currentIndex].x, _samples[target].y);
+
+                    // Write cached x value into target index
+                    _samples[target].Set(_samples[target].x, temp);
+                }
+            }
+        }
+
+        
+    }
+
+    public class MultiJitteredSampler : AbstractSampler
+    {
+        public MultiJitteredSampler(int numSamples, float hStep, float vStep)
+            : base(numSamples, hStep, vStep)
+        { }
+
+        /// <summary>
+        /// Source: Ray tracing from the ground up - DL Code
+        /// </summary>
+        public override void GenerateSamples()
+        {
+            // num_samples needs to be a perfect square
+
+            int n = (int)Math.Sqrt((float)_numSamples);
+            float subcell_width = _hStep / ((float)_numSamples);
+            float subcell_height = _vStep / ((float)_numSamples);
+
+            // fill the samples array with dummy points to allow us to use the [ ] notation when we set the 
+            // initial patterns
+
+            Vector2 fill_point = new Vector2(0.0f,0.0f);
+            for (int j = 0; j < _numSamples * _numSets; j++)
+                _samples.Add(fill_point);
+
+            // distribute points in the initial patterns
+            for (int p = 0; p < _numSets; p++)
+                for (int i = 0; i < n; i++)
+                    for (int j = 0; j < n; j++)
+                    {
+                        int currentIndex = i * n + j + p * _numSamples;
+                        float x = (i * n + j) * subcell_width + UnityEngine.Random.Range(0, subcell_width);
+                        float y = (j * n + i) * subcell_height + UnityEngine.Random.Range(0, subcell_height);
+                        _samples[currentIndex].Set(x, y);                        
+                    }
+
+            // shuffle x coordinates
+            for (int p = 0; p < _numSets; p++)
+                for (int i = 0; i < n; i++)
+                    for (int j = 0; j < n; j++)
+                    {
+                        int k = UnityEngine.Random.Range(j, n - 1);
+
+                        int index01 = i * n + j + p * _numSamples;
+                        int index02 = i * n + k + p * _numSamples;
+
+                        float t = _samples[index01].x;
+                        _samples[index01].Set(_samples[index02].x, _samples[index01].y);
+                        _samples[index02].Set(t, _samples[index02].y);
+
+                    }
+
+            // shuffle y coordinates
+
+            for (int p = 0; p < _numSets; p++)
+                for (int i = 0; i < n; i++)
+                    for (int j = 0; j < n; j++)
+                    {
+                        int k = UnityEngine.Random.Range(j, n - 1);
+
+                        int index01 = j * n + i + p * _numSamples;
+                        int index02 = k * n + i + p * _numSamples;
+
+                        float t = _samples[index01].y;
+                        _samples[index01].Set(_samples[index01].x, _samples[index02].y);
+                        _samples[index02].Set(_samples[index02].x, t);
+                    }
+        }
+    }
+
+    public class HammersleySampler : AbstractSampler
+    {
+        public HammersleySampler(int numSamples, float hStep, float vStep)
+            : base(numSamples, hStep, vStep)
+        { }
+
+        public override void GenerateSamples()
+        {
+            for (int p = 0; p < _numSets; p++)
+                for (int j = 0; j < _numSamples; j++)
+                {
+                    Vector2 pv = new Vector2((float) j / (float)_numSamples, Phi(j));
+                    _samples.Add(pv);
+            }
+        }    
+
+        private float Phi(int j)
+        {
+            float x = 0.0f;
+            float f = 0.5f;
+
+            while (j != 0){
+                x += f * (float)(Factorial(j) & 1);
+                j /= 2;
+                f *= 0.5f;
+            }
+
+            return x;
+        }
+
+        private int Factorial(int n)
+        {
+            int result = 1;
+            while(n != 1)
+            {
+                result *= n;
+                --n;
+            }
+
+            return result;
+        }
+    }
+
+
+    #endregion Sampler
 
 }
