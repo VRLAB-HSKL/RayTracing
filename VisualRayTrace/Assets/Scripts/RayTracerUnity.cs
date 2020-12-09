@@ -1,6 +1,7 @@
 ﻿
 using HTC.UnityPlugin.Vive;
 using JetBrains.Annotations;
+using NUnit.Framework.Constraints;
 using NUnit.Framework.Internal.Execution;
 using System;
 using System.Collections;
@@ -9,6 +10,7 @@ using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -236,18 +238,28 @@ public class RayTracerUnity : MonoBehaviour
         _startPointSettings = new StartPointSettings(ViewPortStart, _textureInfo.TextureDimension);
         CurrentPixel = new int[2] { _startPointSettings.InitXValue, _startPointSettings.InitYValue };
 
-        switch (SamplingMethod)
-        {
-            case AASamplingStrategy.Regular:
-                _aaStrategy = new RegularSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
-                break;
-            case AASamplingStrategy.Random:
-                _aaStrategy = new RandomSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
-                break;
-            case AASamplingStrategy.Jittered:
-                _aaStrategy = new JitteredSampling(SampleSize, _viewPortInfo.HorizontalIterationStep, _viewPortInfo.VerticalIterationStep);
-                break;
-        }
+        // ToDo: Add this to inspector settings
+        int numSampleSets = 10; // _textureInfo.TextureDimension;
+        float hStep = _viewPortInfo.HorizontalIterationStep;
+        float vStep = _viewPortInfo.VerticalIterationStep;
+
+        _aaStrategy = new AntiAliasingStrategy(SamplingMethod, SampleSize, numSampleSets, hStep, vStep);
+
+        //switch (SamplingMethod)
+        //{
+        //    case AASamplingStrategy.Regular:
+        //        _aaStrategy = new RegularSampling(SampleSize, numSampleSets, hStep, vStep);
+        //        break;
+        //    case AASamplingStrategy.Random:
+        //        _aaStrategy = new RandomSampling(SampleSize, numSampleSets, hStep, vStep);
+        //        break;
+        //    case AASamplingStrategy.Jittered:
+        //        _aaStrategy = new JitteredSampling(SampleSize, numSampleSets, hStep, vStep);
+        //        break;
+
+        //    case AASamplingStrategy.MultiJittered:
+        //        _aaStrategy = new MultiJitteredSampler(SampleSize, numSampleSets, hStep, vStep);
+        //}
     }
 
     /// <summary>
@@ -481,7 +493,7 @@ public class RayTracerUnity : MonoBehaviour
         Vector3[] directionVectors = _aaStrategy.CreateAARays(rayDir);
         int directionRayCount = directionVectors.Length;
 
-        Debug.Log("DirectionRayCount: " + directionRayCount);
+        //Debug.Log("DirectionRayCount: " + directionRayCount);
 
         // Create job collections
         NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRayCount, Allocator.TempJob);
@@ -521,20 +533,20 @@ public class RayTracerUnity : MonoBehaviour
             yield return null;
         }
 
-        Debug.Log("RawColorSummation: " + colorSummation.ToString());
+        //Debug.Log("RawColorSummation: " + colorSummation.ToString());
 
         // ToDo: Check if this is needed / correct
         // Gamma correction
         Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
 
-        Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
+        //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
 
         finalColVector.x = Mathf.Sqrt(finalColVector.x);
         finalColVector.y = Mathf.Sqrt(finalColVector.y);
         finalColVector.z = Mathf.Sqrt(finalColVector.z);
         Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
 
-        Debug.Log("FinalColor: " + finalColor.ToString());
+        //Debug.Log("FinalColor: " + finalColor.ToString());
 
         // Set pixels on texture
         SetTexturePixel(hCord, vCord, finalColor);
@@ -1434,8 +1446,10 @@ public class RayTracerUnity : MonoBehaviour
     // ToDo: Move more stuff to base class / interface
     #region AntiAliasing
 
-    public abstract class AntiAliasingStrategy
+    public class AntiAliasingStrategy
     {
+        protected AbstractSampler _sampler;
+
         protected int _SampleSize;
         protected int _rootSampleSize;
         protected int _halfRootSampleSize;
@@ -1445,7 +1459,7 @@ public class RayTracerUnity : MonoBehaviour
 
 
 
-        protected AntiAliasingStrategy(int sampleSize, float hStep, float vStep)
+        public AntiAliasingStrategy(AASamplingStrategy sampleStrat, int sampleSize, int numSteps, float hStep, float vStep)
         {
             _SampleSize = sampleSize > 0 ? sampleSize : 1;
             _rootSampleSize = (int)Math.Ceiling(Mathf.Sqrt((float)_SampleSize));
@@ -1454,6 +1468,32 @@ public class RayTracerUnity : MonoBehaviour
             _hStep = hStep / (float)_rootSampleSize;
             _vStep = vStep / (float)_rootSampleSize;
 
+            switch(sampleStrat)
+            {
+                case AASamplingStrategy.Regular:
+                    _sampler = new RegularSampler(sampleSize, numSteps, hStep, vStep);
+                    break;
+
+                case AASamplingStrategy.Random:
+                    _sampler = new RandomSampler(sampleSize, numSteps, hStep, vStep);
+                    break;
+
+                case AASamplingStrategy.Jittered:
+                    _sampler = new JitteredSampler(sampleSize, numSteps, hStep, vStep);
+                    break;
+
+                case AASamplingStrategy.NRooks:
+                    _sampler = new NRooksSampler(sampleSize, numSteps, hStep, vStep);
+                    break;
+
+                case AASamplingStrategy.MultiJittered:
+                    _sampler = new MultiJitteredSampler(sampleSize, numSteps, hStep, vStep);
+                    break;
+
+                case AASamplingStrategy.Hammersley:
+                    _sampler = new HammersleySampler(sampleSize, numSteps, hStep, vStep);
+                    break;
+            }
 
 
             //Debug.Log("RegularSampling - SampleSize: " + _SampleSize);
@@ -1463,91 +1503,117 @@ public class RayTracerUnity : MonoBehaviour
             //Debug.Log("RegluarSampling - VStep: " + _vStep);
         }
 
-        public abstract Vector3[] CreateAARays(Vector3 initRay);
-    }
-
-    public class RegularSampling : AntiAliasingStrategy
-    {
-        public RegularSampling(int sampleSize, float hStep, float vStep)
-            : base(sampleSize, hStep, vStep)
-        {
-
-        }
-
-        public override Vector3[] CreateAARays(Vector3 initRay)
+        //public abstract Vector3[] CreateAARays(Vector3 initRay);
+        
+        public Vector3[] CreateAARays(Vector3 initRay)
         {
             List<Vector3> rayList = new List<Vector3>();
-            for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+
+            for(int i = 0; i < _SampleSize; ++i)
             {
-                for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
-                {
-                    Vector3 tmpRay =
-                        new Vector3(initRay.x + (x * _hStep), initRay.y + (y * _vStep), initRay.z);
-                    rayList.Add(tmpRay);
-                }
+                Vector2 offsets = _sampler.SampleUnitSquare();
+                Vector3 tmpRay = new Vector3(initRay.x + offsets.x, initRay.y + offsets.y, initRay.z);
+                rayList.Add(tmpRay);
             }
+
+            //for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+            //{
+            //    for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
+            //    {
+            //        Vector3 tmpRay =
+            //            new Vector3(initRay.x + (x * _hStep), initRay.y + (y * _vStep), initRay.z);
+            //        rayList.Add(tmpRay);
+            //    }
+            //}
+
             return rayList.ToArray();
         }
     }
 
-    public class RandomSampling : AntiAliasingStrategy
+    public class RegularSampling // : AntiAliasingStrategy
     {
-        public RandomSampling(int sampleSize, float hStep, float vStep)
-            : base(sampleSize, hStep, vStep)
-        {
+        //public RegularSampling(int sampleSize, int numSteps, float hStep, float vStep)
+        //    : base(AASamplingStrategy.Regular, sampleSize, numSteps, hStep, vStep)
+        //{
+           
+        //}
 
-        }
-
-        public override Vector3[] CreateAARays(Vector3 initRay)
-        {
-            Vector3[] rayList = new Vector3[_SampleSize];
-            for (int i = 0; i < _SampleSize; ++i)
-            {
-                float xRandomVal = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
-                float yRandomVal = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
-                //float zRandomVal = UnityEngine.Random.Range(0f, 1e-5f);
-
-                rayList[i] =
-                    new Vector3(initRay.x + xRandomVal, initRay.y + yRandomVal, initRay.z);
-            }
-            return rayList;
-        }
+        //public override Vector3[] CreateAARays(Vector3 initRay)
+        //{
+        //    List<Vector3> rayList = new List<Vector3>();
+        //    for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+        //    {
+        //        for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
+        //        {
+        //            Vector3 tmpRay =
+        //                new Vector3(initRay.x + (x * _hStep), initRay.y + (y * _vStep), initRay.z);
+        //            rayList.Add(tmpRay);
+        //        }
+        //    }
+        //    return rayList.ToArray();
+        //}
     }
 
-    public class JitteredSampling : AntiAliasingStrategy
+    public class RandomSampling //: //AntiAliasingStrategy
     {
-        private float _hHalfStep;
-        private float _vHalfStep;
+        //public RandomSampling(int sampleSize, int numSteps, float hStep, float vStep)
+        //    : base(sampleSize, numSteps, hStep, vStep)
+        //{
+        //    //_sampler = new RandomSampler(sampleSize, numSteps, hStep, vStep);
+        //}
 
-        public JitteredSampling(int sampleSize, float hStep, float vStep)
-            : base(sampleSize, hStep, vStep)
-        {
-            _hHalfStep = (_hStep * 0.5f) - 1e-5f;
-            _vHalfStep = (_vStep * 0.5f) - 1e-5f;
-        }
+        //public override Vector3[] CreateAARays(Vector3 initRay)
+        //{
+        //    Vector3[] rayList = new Vector3[_SampleSize];
+        //    for (int i = 0; i < _SampleSize; ++i)
+        //    {
+        //        float xRandomVal = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+        //        float yRandomVal = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
+        //        //float zRandomVal = UnityEngine.Random.Range(0f, 1e-5f);
 
-        public override Vector3[] CreateAARays(Vector3 initRay)
-        {
-            List<Vector3> rayList = new List<Vector3>();
-            float xVal = 0.0f, yVal = 0.0f;
-            for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
-            {
-                for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
-                {
-                    float xRandomVal = UnityEngine.Random.Range(-_hHalfStep, _hHalfStep);
-                    float yRandomVal = UnityEngine.Random.Range(-_vHalfStep, _vHalfStep);
-
-                    xVal = initRay.x + (x * _hStep) + xRandomVal;
-                    yVal = initRay.y + (y * _vStep) + yRandomVal;
-
-                    Vector3 tmpRay =
-                        new Vector3(xVal, yVal, initRay.z);
-                    rayList.Add(tmpRay);
-                }
-            }
-            return rayList.ToArray();
-        }
+        //        rayList[i] =
+        //            new Vector3(initRay.x + xRandomVal, initRay.y + yRandomVal, initRay.z);
+        //    }
+        //    return rayList;
+        //}
     }
+
+    //public class JitteredSampling : AntiAliasingStrategy
+    //{
+    //    private float _hHalfStep;
+    //    private float _vHalfStep;
+
+    //    public JitteredSampling(int sampleSize, int numSteps, float hStep, float vStep)
+    //    //    : base(sampleSize, numSteps, hStep, vStep)
+    //    {
+    //        _hHalfStep = (_hStep * 0.5f) - 1e-5f;
+    //        _vHalfStep = (_vStep * 0.5f) - 1e-5f;
+
+    //        _sampler = new JitteredSampler(sampleSize, numSteps, hStep, vStep);
+    //    }
+
+    //    //public override Vector3[] CreateAARays(Vector3 initRay)
+    //    //{
+    //    //    List<Vector3> rayList = new List<Vector3>();
+    //    //    float xVal = 0.0f, yVal = 0.0f;
+    //    //    for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
+    //    //    {
+    //    //        for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
+    //    //        {
+    //    //            float xRandomVal = UnityEngine.Random.Range(-_hHalfStep, _hHalfStep);
+    //    //            float yRandomVal = UnityEngine.Random.Range(-_vHalfStep, _vHalfStep);
+
+    //    //            xVal = initRay.x + (x * _hStep) + xRandomVal;
+    //    //            yVal = initRay.y + (y * _vStep) + yRandomVal;
+
+    //    //            Vector3 tmpRay =
+    //    //                new Vector3(xVal, yVal, initRay.z);
+    //    //            rayList.Add(tmpRay);
+    //    //        }
+    //    //    }
+    //    //    return rayList.ToArray();
+    //    //}
+    //}
 
     #endregion AntiAliasing
 
@@ -1565,9 +1631,14 @@ public class RayTracerUnity : MonoBehaviour
         protected float _hStep;
         protected float _vStep;
 
-        protected AbstractSampler(int numSamples, float hStep, float vStep)
+        protected AbstractSampler(int numSamples, int numSets, float hStep, float vStep)
         {
             _numSamples = numSamples;
+            _numSets = numSets;
+            _samples = new List<Vector2>(numSamples * numSets);
+            _count = 0;
+            _jump = 0;
+
 
             _hStep = hStep;
             _vStep = vStep;
@@ -1601,10 +1672,44 @@ public class RayTracerUnity : MonoBehaviour
 
         public Vector2 SampleUnitSquare()
         {
-            if (_count % _numSamples == 0)
-                _jump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
+            Vector2 retVec = new Vector2();
 
-            return _samples[_jump + _shuffeledIndices[_jump + _count++ % _numSamples]];
+            // Use local, copied values of class members to prevent OutOfRange exceptions
+            // due to Unity multi-threading/parallelizing everything...
+            var localCount = _count;
+            var localJump = _jump;
+
+            if (localCount % _numSamples == 0)
+                localJump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
+
+            try
+            {
+                // Original book implementation (C++)
+                //return _samples[_jump + _shuffeledIndices[_jump + _count++ % _numSamples]];
+                
+                // Class member stil has to be incremented
+                _count++;
+
+                retVec = _samples[localJump + _shuffeledIndices[localJump + localCount % _numSamples]];
+            }
+            catch(ArgumentOutOfRangeException aex)
+            {
+                Debug.Log("AEX - ActualValue: " + aex.ActualValue);
+
+                var idx01 = localJump + (localCount) % _numSamples;
+                Debug.Log("SampleUnitSquare - Jump: " + localJump);
+                Debug.Log("SampleUnitSquare - Count: " + localCount);
+                Debug.Log("SampleUnitSquare - ShuffIndices[Idx]: " + idx01);
+                Debug.Log("SampleUnitSquare - SuffIndicesRetValue: " + _shuffeledIndices[idx01]);
+                Debug.Log("SampleUnitSquare - ShuffeledIndicesCollSize: " + _shuffeledIndices.Count);
+
+                var idx02 = localJump + idx01;
+                Debug.Log("SampleUnitSquare - SamplesColl[Idx]: " + idx02);
+                Debug.Log("SampleUnitSquare - SamplesCollSize: " + _samples.Count);
+            
+            }
+
+            return retVec;
         }
 
         // Fisher-Yates Shuffle
@@ -1626,12 +1731,16 @@ public class RayTracerUnity : MonoBehaviour
 
     public class RandomSampler : AbstractSampler
     {
-        public RandomSampler(int numSamples, float hStep, float vStep)
-            : base(numSamples, hStep, vStep)
-        { }
+        public RandomSampler(int numSamples, int numSteps, float hStep, float vStep)
+            : base(numSamples, numSteps, hStep, vStep)
+        { 
+            GenerateSamples(); 
+        }
 
         public override void GenerateSamples()
         {
+            
+
             for (int p = 0; p < _numSets; ++p)
             {
                 for(int i = 0; i < _numSamples; ++i)
@@ -1657,21 +1766,39 @@ public class RayTracerUnity : MonoBehaviour
 
     public class RegularSampler : AbstractSampler
     {
-        public RegularSampler(int numSamples, float hStep, float vStep)
-            : base(numSamples, hStep, vStep)
-        { }
+        public RegularSampler(int numSamples, int numSteps, float hStep, float vStep)
+            : base(numSamples, numSteps, hStep, vStep)
+        {
+            GenerateSamples();
+        }
 
         public override void GenerateSamples()
         {
-            throw new NotImplementedException();
+            int n = (int)Math.Sqrt((float)_numSamples);
+
+            for (int j = 0; j < _numSets; j++)
+            {
+                for (int p = 0; p < n; p++)
+                {
+                    for (int q = 0; q < n; q++)
+                    {
+                        //_samples.Add(new Vector2((q + 0.5f) / (float)n, (p + 0.5f) / (float)n));
+                        _samples.Add(new Vector2((q * _hStep) / (float)n, (p * _vStep) / (float)n));
+                    }
+                }
+            }
         }
+
+
     }
 
     public class JitteredSampler : AbstractSampler
     {
-        public JitteredSampler(int numSamples, float hStep, float vStep)
-            : base(numSamples, hStep, vStep)
-        { }
+        public JitteredSampler(int numSamples, int numSteps, float hStep, float vStep)
+            : base(numSamples, numSteps, hStep, vStep)
+        {
+            GenerateSamples();
+        }
 
         public override void GenerateSamples()
         {
@@ -1685,7 +1812,8 @@ public class RayTracerUnity : MonoBehaviour
                     {
                         float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
                         float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
-                        Vector2 sp = new Vector2((k + hRnd) / (float)n, (j + vRnd) / (float)n);
+                        //Vector2 sp = new Vector2((k *  + hRnd) / (float)n, (j + vRnd) / (float)n);
+                        Vector2 sp = new Vector2((k * _hStep + hRnd) / (float)n, (j * _vStep + vRnd) / (float)n);
                         _samples.Add(sp);
                     }
                 }
@@ -1694,11 +1822,13 @@ public class RayTracerUnity : MonoBehaviour
     }
 
 
-    public class NRookSampler : AbstractSampler
+    public class NRooksSampler : AbstractSampler
     {
-        public NRookSampler(int numSamples, float hStep, float vStep)
-            : base(numSamples, hStep, vStep)
-        { }
+        public NRooksSampler(int numSamples, int numSteps, float hStep, float vStep)
+            : base(numSamples, numSteps, hStep, vStep)
+        {
+            GenerateSamples();
+        }
 
         public override void GenerateSamples()
         {
@@ -1709,8 +1839,10 @@ public class RayTracerUnity : MonoBehaviour
                 {
                     float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
                     float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);
-                    float x = (j + hRnd) / (float)_numSamples;
-                    float y = (j + vRnd) / (float)_numSamples;
+                    //float x = (j + hRnd) / (float)_numSamples;
+                    //float y = (j + vRnd) / (float)_numSamples;
+                    float x = (j * _hStep + hRnd) / (float)_numSamples;
+                    float y = (j * _vStep + vRnd) / (float)_numSamples;
 
                     _samples.Add(new Vector2(x, y));
                 }
@@ -1774,9 +1906,11 @@ public class RayTracerUnity : MonoBehaviour
 
     public class MultiJitteredSampler : AbstractSampler
     {
-        public MultiJitteredSampler(int numSamples, float hStep, float vStep)
-            : base(numSamples, hStep, vStep)
-        { }
+        public MultiJitteredSampler(int numSamples, int numSteps, float hStep, float vStep)
+            : base(numSamples, numSteps, hStep, vStep)
+        {
+            GenerateSamples();
+        }
 
         /// <summary>
         /// Source: Ray tracing from the ground up - DL Code
@@ -1843,9 +1977,11 @@ public class RayTracerUnity : MonoBehaviour
 
     public class HammersleySampler : AbstractSampler
     {
-        public HammersleySampler(int numSamples, float hStep, float vStep)
-            : base(numSamples, hStep, vStep)
-        { }
+        public HammersleySampler(int numSamples, int numSteps, float hStep, float vStep)
+            : base(numSamples, numSteps, hStep, vStep)
+        {
+            GenerateSamples();
+        }
 
         public override void GenerateSamples()
         {
