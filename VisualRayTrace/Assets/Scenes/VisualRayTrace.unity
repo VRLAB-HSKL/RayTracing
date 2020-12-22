@@ -7752,7 +7752,8 @@ MonoBehaviour:
   RayTrace_Range: 30
   AnitAliasing: 1
   SampleSize: 50
-  SamplingMethod: 3
+  SamplingMethod: 5
+  SampleSetCount: 83
   ViewPortStart: 2
   viewPortPlane: {fileID: 150253124}
   secondScreens:
