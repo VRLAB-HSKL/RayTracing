@@ -527,16 +527,20 @@ public class RayTracerUnity : MonoBehaviour
 
         //Debug.Log("RawColorSummation: " + colorSummation.ToString());
 
-        // ToDo: Check if this is needed / correct
-        // Gamma correction
+
+        // Average anti-aliasing results
         Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
+
+        
 
         //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
 
-        finalColVector.x = Mathf.Sqrt(finalColVector.x);
-        finalColVector.y = Mathf.Sqrt(finalColVector.y);
-        finalColVector.z = Mathf.Sqrt(finalColVector.z);
-        Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
+        //finalColVector.x = Mathf.Sqrt(finalColVector.x);
+        //finalColVector.y = Mathf.Sqrt(finalColVector.y);
+        //finalColVector.z = Mathf.Sqrt(finalColVector.z);
+        //Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
+
+        Color finalColor = DisplayPixel(finalColVector);
 
         //Debug.Log("FinalColor: " + finalColor.ToString());
 
@@ -1027,5 +1031,38 @@ public class RayTracerUnity : MonoBehaviour
         float r0 = (1f - ref_idx) / (1f + ref_idx);
         r0 *= r0;
         return r0 + (1f - r0) * Mathf.Pow((1f - cosine), 5f);
+    }
+
+
+    public static Color DisplayPixel(Vector3 rgb)
+    {
+        // Tone mapping
+
+        // Gamma correction
+
+        // ToDo: Add this to settings / determine based on current device ?
+        float gamma = 2.2f;
+        float powVal = 1.0f / gamma;
+
+        //rgb.x = Mathf.Sqrt(rgb.x);
+        //rgb.y = Mathf.Sqrt(rgb.y);
+        //rgb.z = Mathf.Sqrt(rgb.z);
+        //Color finalColor = new Color(rgb.x, rgb.y, rgb.z);
+
+        if(gamma != 1f)
+        {
+            rgb.x = Mathf.Pow(rgb.x, powVal);
+            rgb.y = Mathf.Pow(rgb.y, powVal);
+            rgb.z = Mathf.Pow(rgb.z, powVal);
+        }
+
+        // Integer mapping
+
+        return new Color(rgb.x, rgb.y, rgb.z);
+    }
+
+    public abstract class Tracer
+    {
+        public abstract Color TraceRay(Vector3 ray);
     }
 }
