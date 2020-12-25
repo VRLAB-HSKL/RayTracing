@@ -116,10 +116,18 @@ public class RayTracerUnity : MonoBehaviour
     [Range(10, 200)]
     public int SampleSize = 25;
 
-    
     public AASamplingStrategy SamplingMethod = AASamplingStrategy.Random;
 
     private AntiAliasingStrategy _aaStrategy;
+
+    public void SetSamplingMethod(AASamplingStrategy strat)
+    {
+        SamplingMethod = strat;
+
+        float hStep = _viewPortInfo.HorizontalIterationStep;
+        float vStep = _viewPortInfo.VerticalIterationStep;
+        _aaStrategy = new AntiAliasingStrategy(SamplingMethod, SampleSize, SampleSetCount, hStep, vStep);
+    }
 
     /// <summary>
     /// The amount of sample sets generated
