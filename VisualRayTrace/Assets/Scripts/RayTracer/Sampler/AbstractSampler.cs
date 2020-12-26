@@ -11,6 +11,8 @@ public abstract class AbstractSampler
     protected int _count; //ulong _count;
     protected int _jump;
 
+    protected List<Vector2> _diskSamples;
+
     protected float _hStep;
     protected float _vStep;
 
@@ -94,6 +96,71 @@ public abstract class AbstractSampler
 
         return retVec;
     }
+
+    public void MapSamplesToUnitDisk()
+    {
+        int size = _samples.Count;
+
+        float r = 0f, phi = 0f; // Polar coordinates
+        Vector2 sp; // Sample point on unit disk
+
+        _diskSamples = new List<Vector2>(size);
+
+        for(int j = 0; j < size; ++j)
+        {
+            // Map sample point to [-1, 1] [-1, 1]
+            sp.x = 2.0f * _samples[j].x - 1f;
+            sp.y = 2.0f * _samples[j].y - 1f;
+
+            // Sectors 1 and 2
+            if(sp.x > -sp.y)
+            {
+                // Sector 1
+                if(sp.x > sp.y)
+                {
+                    r = sp.x;
+                    phi = sp.y / sp.x;
+                }
+                // Sector 2
+                else
+                {
+                    r = sp.y;
+                    phi = 2f - sp.x / sp.y;
+                }
+            }
+            // Secots 3 and 4
+            else
+            {
+                // Sector 3
+                if(sp.x < sp.y)
+                {
+                    r = -sp.x;
+                    phi = 4f + sp.y / sp.x;
+                }
+                // Sector 4
+                else
+                {
+                    r = -sp.y;
+
+                    // Avoid division by zero at origin
+                    if(sp.y != 0f)
+                    {
+                        phi = 6f - sp.x / sp.y;
+                    }
+                    else
+                    {
+                        phi = 0f;
+                    }
+                }
+            }
+
+            phi *= Mathf.PI / 4f;
+
+            _diskSamples[j] = new Vector2(r * Mathf.Cos(phi), r * Mathf.Sin(phi));
+        }
+    }
+
+
 
     // Fisher-Yates Shuffle
     private List<int> Shuffle(List<int> list)
