@@ -12,6 +12,7 @@ public abstract class AbstractSampler
     protected int _jump;
 
     protected List<Vector2> _diskSamples;
+    protected List<Vector3> _hemisphereSamples;
 
     protected float _hStep;
     protected float _vStep;
@@ -55,47 +56,6 @@ public abstract class AbstractSampler
         throw new NotImplementedException();
     }
 
-    public Vector2 SampleUnitSquare()
-    {
-        Vector2 retVec = new Vector2();
-
-        // Use local value copy of class members to prevent OutOfRange exceptions
-        // due to Unity multi-threading/parallelizing everything and calculating false values...
-        var localCount = _count;
-        var localJump = _jump;
-
-        if (localCount % _numSamples == 0)
-            localJump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
-
-        try
-        {
-            // Class member stil has to be incremented if we use local copy
-            ++_count;
-
-
-            // Original book implementation (C++)
-            //return _samples[_jump + _shuffeledIndices[_jump + _count++ % _numSamples]];
-
-            retVec = _samples[localJump + _shuffeledIndices[localJump + localCount % _numSamples]];
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            string prefix = "SampleUnitSquare - ";
-
-            int idx01 = localJump + (localCount) % _numSamples;
-            Debug.Log(prefix + "Jump: " + localJump);
-            Debug.Log(prefix + "Count: " + localCount);
-            Debug.Log(prefix + "ShuffIndices[Idx]: " + idx01);
-            Debug.Log(prefix + "SuffIndicesRetValue: " + _shuffeledIndices[idx01]);
-            Debug.Log(prefix + "ShuffeledIndicesCollSize: " + _shuffeledIndices.Count);
-
-            int idx02 = localJump + idx01;
-            Debug.Log(prefix + "SamplesColl[Idx]: " + idx02);
-            Debug.Log(prefix + "SamplesCollSize: " + _samples.Count);
-        }
-
-        return retVec;
-    }
 
     public void MapSamplesToUnitDisk()
     {
@@ -160,7 +120,144 @@ public abstract class AbstractSampler
         }
     }
 
+    public void MapSamplesToHemisphere(float e)
+    {
+        int size = _samples.Count;
+        _hemisphereSamples = new List<Vector3>(_numSamples * _numSets);
 
+        for(int j = 0; j < size; ++j)
+        {
+            float cos_phi = Mathf.Cos(2f * Mathf.PI * _samples[j].x);
+            float sin_phi = Mathf.Sin(2f * Mathf.PI * _samples[j].x);
+            float cos_theta = Mathf.Pow(1f - _samples[j].y, 1f / (e + 1f));
+            float sin_theta = Mathf.Sqrt(1f - cos_theta * cos_theta);
+            float pu = sin_theta * cos_phi;
+            float pv = sin_theta * sin_phi;
+            float pw = cos_theta;
+
+            _hemisphereSamples.Add(new Vector3(pu, pv, pw));
+        }
+    }
+
+
+    public Vector2 SampleUnitSquare()
+    {
+        Vector2 retVec = new Vector2();
+
+        // Use local value copy of class members to prevent OutOfRange exceptions
+        // due to Unity multi-threading/parallelizing everything and calculating false values...
+        var localCount = _count;
+        var localJump = _jump;
+
+        if (localCount % _numSamples == 0)
+            localJump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
+
+        try
+        {
+            // Class member stil has to be incremented if we use local copy
+            ++_count;
+
+            // Original book implementation (C++)
+            //return _samples[_jump + _shuffeledIndices[_jump + _count++ % _numSamples]];
+
+            retVec = _samples[localJump + _shuffeledIndices[localJump + localCount % _numSamples]];
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            string prefix = "SampleUnitSquare - ";
+
+            int idx01 = localJump + (localCount) % _numSamples;
+            Debug.Log(prefix + "Jump: " + localJump);
+            Debug.Log(prefix + "Count: " + localCount);
+            Debug.Log(prefix + "ShuffIndices[Idx]: " + idx01);
+            Debug.Log(prefix + "SuffIndicesRetValue: " + _shuffeledIndices[idx01]);
+            Debug.Log(prefix + "ShuffeledIndicesCollSize: " + _shuffeledIndices.Count);
+
+            int idx02 = localJump + idx01;
+            Debug.Log(prefix + "SamplesColl[Idx]: " + idx02);
+            Debug.Log(prefix + "SamplesCollSize: " + _samples.Count);
+        }
+
+        return retVec;
+    }
+
+    public Vector2 SampleUnitDisk()
+    {
+        Vector2 retVec = new Vector2();
+
+        // Use local value copy of class members to prevent OutOfRange exceptions
+        // due to Unity multi-threading/parallelizing everything and calculating false values...
+        var localCount = _count;
+        var localJump = _jump;
+
+        if (localCount % _numSamples == 0)
+            localJump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
+
+        try
+        {
+            // Class member stil has to be incremented if we use local copy
+            ++_count;
+
+
+            retVec = _diskSamples[localJump + _shuffeledIndices[localJump + localCount % _numSamples]];
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            string prefix = "SampleUnitDisk - ";
+
+            int idx01 = localJump + (localCount) % _numSamples;
+            Debug.Log(prefix + "Jump: " + localJump);
+            Debug.Log(prefix + "Count: " + localCount);
+            Debug.Log(prefix + "ShuffIndices[Idx]: " + idx01);
+            Debug.Log(prefix + "SuffIndicesRetValue: " + _shuffeledIndices[idx01]);
+            Debug.Log(prefix + "ShuffeledIndicesCollSize: " + _shuffeledIndices.Count);
+
+            int idx02 = localJump + idx01;
+            Debug.Log(prefix + "SamplesColl[Idx]: " + idx02);
+            Debug.Log(prefix + "SamplesCollSize: " + _samples.Count);
+        }
+
+        return retVec;
+    }
+
+    public Vector3 SampleHemisphere()
+    {
+        Vector3 retVec = new Vector3();
+
+        // Use local value copy of class members to prevent OutOfRange exceptions
+        // due to Unity multi-threading/parallelizing everything and calculating false values...
+        var localCount = _count;
+        var localJump = _jump;
+
+        if (localCount % _numSamples == 0)
+            localJump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
+
+        try
+        {
+            // Class member stil has to be incremented if we use local copy
+            ++_count;
+
+            retVec = _hemisphereSamples[localJump + _shuffeledIndices[localJump + localCount % _numSamples]];
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            string prefix = "SampleHemisphere - ";
+
+            int idx01 = localJump + (localCount) % _numSamples;
+            Debug.Log(prefix + "Jump: " + localJump);
+            Debug.Log(prefix + "Count: " + localCount);
+            Debug.Log(prefix + "ShuffIndices[Idx]: " + idx01);
+            Debug.Log(prefix + "SuffIndicesRetValue: " + _shuffeledIndices[idx01]);
+            Debug.Log(prefix + "ShuffeledIndicesCollSize: " + _shuffeledIndices.Count);
+
+            int idx02 = localJump + idx01;
+            Debug.Log(prefix + "SamplesColl[Idx]: " + idx02);
+            Debug.Log(prefix + "SamplesCollSize: " + _samples.Count);
+        }
+
+        return retVec;
+    }
+    
 
     // Fisher-Yates Shuffle
     private List<int> Shuffle(List<int> list)
