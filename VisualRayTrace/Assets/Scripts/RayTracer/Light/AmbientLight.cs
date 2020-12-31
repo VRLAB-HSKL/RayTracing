@@ -14,6 +14,12 @@ public class AmbientLight : AbstractLight
 
     }
 
+    public AmbientLight(float ls, Color color) : base()
+    {
+        _ls = ls;
+        _color = color;
+    }
+
     public override Vector3 GetDirection(RaycastHit hit)
     {
         return Vector3.zero;

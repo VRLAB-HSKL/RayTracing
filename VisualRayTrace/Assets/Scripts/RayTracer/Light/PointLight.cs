@@ -8,6 +8,18 @@ public class PointLight : AbstractLight
     private Color _color;
     private Vector3 _location;
 
+    public PointLight() : base()
+    {
+
+    }
+
+    public PointLight(float ls, Color color, Vector3 location) : base()
+    {
+        _ls = ls;
+        _color = color;
+        _location = location;
+    }
+
     public override Vector3 GetDirection(RaycastHit hit)
     {
         Vector3 tmp = (_location - hit.point);

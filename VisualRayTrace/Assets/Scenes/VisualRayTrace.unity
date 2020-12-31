@@ -7761,7 +7761,7 @@ MonoBehaviour:
   - {fileID: 1002821937}
   - {fileID: 2143267609}
   - {fileID: 250395953}
-  TextureScaleFactor: 2
+  TextureScaleFactor: 5
 --- !u!1 &947274245
 GameObject:
   m_ObjectHideFlags: 0
