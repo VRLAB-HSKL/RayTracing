@@ -5,6 +5,11 @@ using UnityEngine;
 public static class RayTraceUtility
 {
     /// <summary>
+    /// Enum type containing all material types that the raytracer can differentiate between
+    /// </summary>
+    public enum MaterialType { SolidColor = 1, Metal = 2, Dielectric = 3 };
+
+    /// <summary>
     /// Scatter function for diffuse / solid color materials.
     /// Based on "Raytracing in a weekend" C++ function
     /// </summary>
@@ -160,6 +165,44 @@ public static class RayTraceUtility
         float r0 = (1f - ref_idx) / (1f + ref_idx);
         r0 *= r0;
         return r0 + (1f - r0) * Mathf.Pow((1f - cosine), 5f);
+    }
+
+
+    /// <summary>
+    /// Create a color for the case that a ray does not hit an object.
+    /// This function creates a color between white and RGB(0.5, 0.7, 1.0)
+    /// based on the direction vector.
+    /// Based on "Raytracing in a weekend" C++ function
+    /// </summary>
+    /// <param name="direction"></param>
+    /// <returns></returns>
+    public static Color CreateNonHitColor(Vector3 direction)
+    {
+        Vector3 unit_direction = Vector3.Normalize(direction);
+        float t = 0.5f * (unit_direction.y + 1f);
+        var colVec = (1f - t) * new Vector3(1f, 1f, 1f) + t * new Vector3(.5f, .7f, 1f);
+        return new Color(colVec.x, colVec.y, colVec.z);
+    }
+
+    /// <summary>
+    /// Static function to translate an ingame material into a <see cref="MaterialType"/> enum value
+    /// based on ingame material identifier.
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    private static MaterialType DetermineMaterialType(Material mat)
+    {
+        string matName = mat.name;
+
+        // Remove ' (Instance)' postfix
+        matName = matName.Split(' ')[0];
+
+        switch (matName)
+        {
+            case "Metal": return MaterialType.Metal;
+            case "Dielectric": return MaterialType.Dielectric;
+            default: return MaterialType.SolidColor;
+        };
     }
 
 

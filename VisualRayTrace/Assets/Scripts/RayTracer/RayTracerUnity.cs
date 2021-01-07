@@ -525,7 +525,7 @@ public class RayTracerUnity : MonoBehaviour
             }
             else
             {
-                Color c = CreateNonHitColor(directionVectors[i]);
+                Color c = RayTraceUtility.CreateNonHitColor(directionVectors[i]);
                 colorSummation += new Vector3(c.r, c.g, c.b);
             }
             yield return null;
@@ -644,17 +644,17 @@ public class RayTracerUnity : MonoBehaviour
             else
             {
                 // On raw material hit, check for type
-                switch (DetermineMaterialType(mat))
+                switch (RayTraceUtility.DetermineMaterialType(mat))
                 {
-                    case MaterialType.Metal:
-                        return HandleMaterial(hit, direction, MaterialType.Metal, mat.color);
+                    case RayTraceUtility.MaterialType.Metal:
+                        return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Metal, mat.color);
 
-                    case MaterialType.Dielectric:
-                        return HandleMaterial(hit, direction, MaterialType.Dielectric, mat.color);
+                    case RayTraceUtility.MaterialType.Dielectric:
+                        return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Dielectric, mat.color);
 
                     default:
-                    case MaterialType.SolidColor:
-                        return HandleMaterial(hit, direction, MaterialType.SolidColor, mat.color);
+                    case RayTraceUtility.MaterialType.SolidColor:
+                        return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.SolidColor, mat.color);
                 }
             }
 
@@ -662,15 +662,12 @@ public class RayTracerUnity : MonoBehaviour
         else
         {
             // On non-hit, return non hit color
-            return CreateNonHitColor(direction);
+            return RayTraceUtility.CreateNonHitColor(direction);
         }
 
     }
 
-    /// <summary>
-    /// Enum type containing all material types that the raytracer can differentiate between
-    /// </summary>
-    public enum MaterialType { SolidColor = 1, Metal = 2, Dielectric = 3 };
+    
     private List<Vector3> rt_points = new List<Vector3>();
 
     /// <summary>
@@ -681,7 +678,7 @@ public class RayTracerUnity : MonoBehaviour
     /// <param name="matType">Type of material hit <see cref="MaterialType"/></param>
     /// <param name="matColor">Color of the hit material</param>
     /// <returns></returns>
-    private Color HandleMaterial(RaycastHit hit, Vector3 direction, MaterialType matType, Color matColor)
+    private Color HandleMaterial(RaycastHit hit, Vector3 direction, RayTraceUtility.MaterialType matType, Color matColor)
     {
         rt_points.Clear();
 
@@ -708,15 +705,15 @@ public class RayTracerUnity : MonoBehaviour
             switch (matType)
             {
 
-                case MaterialType.SolidColor:
+                case RayTraceUtility.MaterialType.SolidColor:
                     rayHit = RayTraceUtility.ScatterDiffuse(mainRay, hit, out attenuation, out scatterRay, matColorVec);
                     break;
 
-                case MaterialType.Metal:
+                case RayTraceUtility.MaterialType.Metal:
                     rayHit = RayTraceUtility.ScatterMetal(mainRay, hit, out attenuation, out scatterRay, matColorVec);
                     break;
 
-                case MaterialType.Dielectric:
+                case RayTraceUtility.MaterialType.Dielectric:
                     float ref_idx = 1.5f;
                     rayHit = RayTraceUtility.ScatterDielectric(mainRay, hit, out attenuation, out scatterRay, ref_idx, matColorVec);
                     break;
@@ -748,46 +745,10 @@ public class RayTracerUnity : MonoBehaviour
         else
         {
             // On non-hit, return non-hit color
-            return CreateNonHitColor(direction);
+            return RayTraceUtility.CreateNonHitColor(direction);
         }
     }
 
-    /// <summary>
-    /// Create a color for the case that a ray does not hit an object.
-    /// This function creates a color between white and RGB(0.5, 0.7, 1.0)
-    /// based on the direction vector.
-    /// Based on "Raytracing in a weekend" C++ function
-    /// </summary>
-    /// <param name="direction"></param>
-    /// <returns></returns>
-    public static Color CreateNonHitColor(Vector3 direction)
-    {
-        Vector3 unit_direction = Vector3.Normalize(direction);
-        float t = 0.5f * (unit_direction.y + 1f);
-        var colVec = (1f - t) * new Vector3(1f, 1f, 1f) + t * new Vector3(.5f, .7f, 1f);
-        return new Color(colVec.x, colVec.y, colVec.z);
-    }
-
-    /// <summary>
-    /// Static function to translate an ingame material into a <see cref="MaterialType"/> enum value
-    /// based on ingame material identifier.
-    /// </summary>
-    /// <param name="mat"></param>
-    /// <returns></returns>
-    private static MaterialType DetermineMaterialType(Material mat)
-    {
-        string matName = mat.name;
-
-        // Remove ' (Instance)' postfix
-        matName = matName.Split(' ')[0];
-
-        switch (matName)
-        {
-            case "Metal": return MaterialType.Metal;
-            case "Dielectric": return MaterialType.Dielectric;
-            default: return MaterialType.SolidColor;
-        };
-    }
 
     private List<Vector3> rt_rec_points = new List<Vector3>();
 
@@ -821,18 +782,18 @@ public class RayTracerUnity : MonoBehaviour
             // Stop recursion above max depth
             if (depth < 50)
             {
-                switch (DetermineMaterialType(mat))
+                switch (RayTraceUtility.DetermineMaterialType(mat))
                 {
-                    case MaterialType.Metal:
+                    case RayTraceUtility.MaterialType.Metal:
                         rayHit = RayTraceUtility.ScatterMetal(ray, hit, out attenuation, out scatter, matColVec);
                         break;
 
-                    case MaterialType.Dielectric:
+                    case RayTraceUtility.MaterialType.Dielectric:
                         float ref_idx = 1.5f;
                         rayHit = RayTraceUtility.ScatterDielectric(ray, hit, out attenuation, out scatter, ref_idx, matColVec);
                         break;
 
-                    case MaterialType.SolidColor:
+                    case RayTraceUtility.MaterialType.SolidColor:
                         rayHit = RayTraceUtility.ScatterDiffuse(ray, hit, out attenuation, out scatter, matColVec);
                         break;
                 }
@@ -859,7 +820,7 @@ public class RayTracerUnity : MonoBehaviour
             }
             else
             {
-                Color c = CreateNonHitColor(ray.direction);
+                Color c = RayTraceUtility.CreateNonHitColor(ray.direction);
                 return new Vector3(c.r, c.g, c.b);
 
                 //Vector3 unit_direction = Vector3.Normalize(ray.direction);
@@ -871,7 +832,7 @@ public class RayTracerUnity : MonoBehaviour
         }
         else
         {
-            Color c = CreateNonHitColor(ray.direction);
+            Color c = RayTraceUtility.CreateNonHitColor(ray.direction);
             return new Vector3(c.r, c.g, c.b);
 
             //Vector3 unit_direction = Vector3.Normalize(ray.direction);
@@ -1009,7 +970,7 @@ public class RayTracerUnity : MonoBehaviour
             }
             else
             {
-                Color c = CreateNonHitColor(aa_DirectionVectors[i]);
+                Color c = RayTraceUtility.CreateNonHitColor(aa_DirectionVectors[i]);
                 colorSummation += new Vector3(c.r, c.g, c.b);
             }
 
