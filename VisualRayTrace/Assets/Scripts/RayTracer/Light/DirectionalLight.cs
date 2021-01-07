@@ -20,6 +20,11 @@ public class DirectionalLight : AbstractLight
         return _dir;
     }
 
+    public override bool InShadow(Ray ray, RaycastHit hit)
+    {
+        return false;
+    }
+
     public override Color L(RaycastHit hit)
     {
         throw new System.NotImplementedException();

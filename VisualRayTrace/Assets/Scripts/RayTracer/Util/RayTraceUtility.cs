@@ -190,7 +190,7 @@ public static class RayTraceUtility
     /// </summary>
     /// <param name="mat"></param>
     /// <returns></returns>
-    private static MaterialType DetermineMaterialType(Material mat)
+    public static MaterialType DetermineMaterialType(Material mat)
     {
         string matName = mat.name;
 
