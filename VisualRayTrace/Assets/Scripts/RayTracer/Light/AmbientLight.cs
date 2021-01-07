@@ -25,6 +25,11 @@ public class AmbientLight : AbstractLight
         return Vector3.zero;
     }
 
+    public override bool InShadow(Ray ray, RaycastHit hit)
+    {
+        return false;
+    }
+
     public override Color L(RaycastHit hit)
     {
         return _ls * _color;
