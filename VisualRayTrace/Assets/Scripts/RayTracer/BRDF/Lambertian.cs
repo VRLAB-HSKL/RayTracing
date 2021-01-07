@@ -4,14 +4,20 @@ using UnityEngine;
 
 public class Lambertian : AbstractBRDF
 {
-    private float _kd;
+    private float _kd;    
+    public float KD { get => _kd; set { _kd = value; } }
+    
     private Color _cd;    
+    public Color CD { get => _cd; set { _cd = value; } }
 
     public Lambertian() : base()
     {
         _kd = 0f;
         _cd = new Color(0f, 0f, 0f);
     }
+
+
+
 
     public override Color F(RaycastHit hit, Vector3 wo, Vector3 wi)
     {

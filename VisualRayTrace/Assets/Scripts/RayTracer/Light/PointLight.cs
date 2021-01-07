@@ -33,6 +33,15 @@ public class PointLight : AbstractLight
         return tmp; 
     }
 
+    public override bool InShadow(Ray ray, RaycastHit hit)
+    {
+        // ToDo: Implement this ?
+        float t;
+        float d = Vector3.Distance(_location, ray.origin);
+
+        return false;
+    }
+
     public override Color L(RaycastHit hit)
     {
         return _ls * _color;

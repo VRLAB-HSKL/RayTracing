@@ -250,11 +250,13 @@ public class RayTracerUnity : MonoBehaviour
 
         _startPointSettings = new StartPointInformation(ViewPortStart, _textureInfo.TextureDimension);
         CurrentPixel = new int[2] { _startPointSettings.InitXValue, _startPointSettings.InitYValue };
-                
+
         float hStep = _viewPortInfo.HorizontalIterationStep;
         float vStep = _viewPortInfo.VerticalIterationStep;
 
         _aaStrategy = new AntiAliasingStrategy(SamplingMethod, SampleSize, SampleSetCount, hStep, vStep);
+
+        _world = new WorldInformation(_viewPortInfo);
     }
 
     /// <summary>
@@ -281,7 +283,9 @@ public class RayTracerUnity : MonoBehaviour
             for (int i = 0; i < 1; ++i)
             {
                 // Start current raytracing iteration using next texture coordinate
-                StartCoroutine(DoRayTraceAA(CurrentPixel[0], CurrentPixel[1]));
+
+                StartCoroutine(DoRayTraceVersion02(CurrentPixel[0], CurrentPixel[1]));
+                //StartCoroutine(DoRayTraceAA(CurrentPixel[0], CurrentPixel[1]));
 
                 visualRayLine.enabled = true;
 
@@ -314,6 +318,8 @@ public class RayTracerUnity : MonoBehaviour
         // Initialize information object
         _viewPortInfo = new ViewPortPlaneInformation(viewPortPlane, transform, planeWidth, planeHeight);
 
+
+        
         // Direction vector from the ray origin point to the center of the viewport plane
         //_viewPortInfo.DirectionVector = new Vector3(
         //        transform.right.x,
@@ -531,7 +537,7 @@ public class RayTracerUnity : MonoBehaviour
         // Average anti-aliasing results
         Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
 
-        
+
 
         //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
 
@@ -623,7 +629,7 @@ public class RayTracerUnity : MonoBehaviour
             Material mat = hit.transform.gameObject.GetComponent<MeshRenderer>().material;
 
             // On empty material, return error color
-            if (mat is null) return new Color(1, 0, 0);
+            if (mat is null) return Color.red; // new Color(1, 0, 0);
 
             // If material contains a texture, use that texture
             if (!(mat.mainTexture is null))
@@ -1036,7 +1042,21 @@ public class RayTracerUnity : MonoBehaviour
 
     public static Color DisplayPixel(Vector3 rgb)
     {
+        Color col = new Color(rgb.x, rgb.y, rgb.z);
+
         // Tone mapping
+        // ToDo: add this to settings
+        bool showOutOfGamut = true;        
+        if (showOutOfGamut)
+        {
+            col = WorldInformation.ClampToColor(col);
+        }
+        else
+        {
+            col = WorldInformation.MaxToOne(col);
+        }
+
+        
 
         // Gamma correction
 
@@ -1049,7 +1069,7 @@ public class RayTracerUnity : MonoBehaviour
         //rgb.z = Mathf.Sqrt(rgb.z);
         //Color finalColor = new Color(rgb.x, rgb.y, rgb.z);
 
-        if(gamma != 1f)
+        if (gamma != 1f)
         {
             rgb.x = Mathf.Pow(rgb.x, powVal);
             rgb.y = Mathf.Pow(rgb.y, powVal);
@@ -1058,11 +1078,234 @@ public class RayTracerUnity : MonoBehaviour
 
         // Integer mapping
 
-        return new Color(rgb.x, rgb.y, rgb.z);
+
+        return col;
     }
+
+
+    private WorldInformation _world;
+
+    private IEnumerator DoRayTraceVersion02(int hCord, int vCord)
+    {
+        Vector3 rayDir = CalculateRayDirectionVector(hCord, vCord);
+
+        //Debug.Log("(" + hCord + "," + vCord + "): " + rayDir);
+
+        // Calculate direction vectors
+        Vector3[] aa_DirectionVectors = _aaStrategy.CreateAARays(rayDir);
+        int directionRayCount = aa_DirectionVectors.Length;
+
+        //Debug.Log("DirectionRayCount: " + directionRayCount);
+
+        List<RaycastHit> hitList = ShootRays(aa_DirectionVectors);
+
+        //Debug.Log("HitList - ColLength: " + hitList.Count);
+
+        yield return null;
+
+        // Caclulcate pixel color
+        Vector3 colorSummation = CalculatePixelColor(hitList, aa_DirectionVectors);
+
+        //Debug.Log("RawColorSummation: " + colorSummation.ToString());
+
+
+        // Average anti-aliasing results
+        Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
+
+        //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
+
+        //finalColVector.x = Mathf.Sqrt(finalColVector.x);
+        //finalColVector.y = Mathf.Sqrt(finalColVector.y);
+        //finalColVector.z = Mathf.Sqrt(finalColVector.z);
+        //Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
+
+        UpdateScene(rayDir, finalColVector, hCord, vCord);
+
+        //Vector3 rotationDirection = Vector3.RotateTowards(transform.parent.position, initDir, Time.deltaTime, 0.0f);
+        //transform.parent.rotation = Quaternion.LookRotation(rotationDirection);
+
+        yield return null;
+
+    }
+
+    private List<RaycastHit> ShootRays(Vector3[] directionRays)
+    {
+        // Create job collections
+        using (NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRays.Length, Allocator.TempJob))
+        {
+            NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRays.Length, Allocator.TempJob);
+
+            for (int i = 0; i < raycastCommands.Length; ++i)
+            {
+                raycastCommands[i] = new RaycastCommand(rayOrigin, directionRays[i], RayTrace_Range, layerMask);
+            }
+
+            // Add raycasts to job queue and wait for them to finish
+            JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, directionRays.Length, default(JobHandle));
+            raycastHandle.Complete();
+
+            // Deallocate job collections
+            //raycastHits.Dispose();
+            raycastCommands.Dispose();
+
+            return raycastHits.ToList();
+        }
+    }
+
+    private Vector3 CalculatePixelColor(List<RaycastHit> hitList, Vector3[] aa_DirectionVectors)
+    {
+        Vector3 colorSummation = Vector3.zero;
+        int validHitCounter = 0;
+        for (int i = 0; i < hitList.Count(); ++i)
+        {
+            if (hitList[i].distance > 1e-3)
+            {
+                ++validHitCounter;
+                Color tmpColor = DetermineHitColor(hitList[i], aa_DirectionVectors[i]);
+                colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
+            }
+            else
+            {
+                Color c = CreateNonHitColor(aa_DirectionVectors[i]);
+                colorSummation += new Vector3(c.r, c.g, c.b);
+            }
+
+            //Debug.Log("ColorSummation - Iteration " + i + ": " + colorSummation);
+            //yield return null;
+        }
+        return colorSummation;
+    }
+
+    private void UpdateScene(Vector3 rayDir, Vector3 finalColVector, int hCord, int vCord)
+    {
+        Color finalColor = DisplayPixel(finalColVector);
+
+        //Debug.Log("FinalColor: " + finalColor.ToString());
+
+        // Set pixels on texture
+        SetTexturePixel(hCord, vCord, finalColor);
+
+        // Apply changes to texture
+        UpdateRenderTexture();
+
+        // Set line renderer point count based on settings value
+        visualRayLine.positionCount = VisualizePath ? 2 + rt_rec_points.Count() : 2;
+
+        // Begin visual line at the origin
+        visualRayLine.SetPosition(0, rayOrigin);
+
+        // Use first ray as visual representation
+        Vector3 initDir = new Vector3(rayDir.x, rayDir.y, rayDir.z);
+
+        //_viewPortInfo.DirectionVector;
+        //initDir.y += hCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
+        //initDir.z -= vCord * _viewPortInfo.HorizontalIterationStep;
+
+        //Debug.Log("InitDir:" + initDir.ToString());
+
+        Vector3 endpoint;
+        if (Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
+        {
+            endpoint = hit.point;
+        }
+        else
+        {
+            endpoint = rayOrigin + (initDir * RayTrace_Range);
+        }
+
+        visualRayLine.SetPosition(1, endpoint);
+
+        // On full path visualization, add all points to line renderer
+        if (VisualizePath)
+        {
+            byte counter = 2;
+            foreach (Vector3 point in rt_rec_points)
+            {
+                visualRayLine.SetPosition(counter++, point);
+            }
+        }
+
+        // ToDo: Refactor this
+        // Rotate eye to face current ray target 
+        transform.parent.rotation =
+            Quaternion.Euler(
+                new Vector3(
+                    0.0f,
+                    _eyeRotation.HorizontalEyeRotation(vCord),
+                    _eyeRotation.VerticalEyeRotation(hCord)
+                    )
+         );
+    }
+
 
     public abstract class Tracer
     {
         public abstract Color TraceRay(Vector3 ray);
+    }
+
+    public class WorldInformation
+    {
+        public ViewPortPlaneInformation VP { get; set; }
+        public AbstractTracer Tracer { get; set; } = new RayCastTracer(30f, layerMask, Color.black);
+
+        public Color BackgroundColor { get; set; } = Color.black;
+
+        public AmbientLight GlobalAmbientLight { get; set; } = new AmbientLight(.5f, Color.white);
+
+        public List<AbstractLight> GlobalLights { get; set; } = new List<AbstractLight>();
+
+        public WorldInformation(ViewPortPlaneInformation vp)
+        {
+            VP = vp;
+
+            // Parse scene lights
+            foreach(Light l in Resources.FindObjectsOfTypeAll(typeof(Light)) as Light[])
+            {
+                switch(l.type)
+                {
+                    case LightType.Directional:
+                        
+                        Vector3 lightRotationVec = l.transform.rotation.eulerAngles;
+                        float x = (lightRotationVec.x / 360f);
+                        float y = (lightRotationVec.y / 360f);
+                        float z = (lightRotationVec.z / 360f);
+
+                        Vector3 dirVector = new Vector3(x, y, z);
+                        GlobalLights.Add(new DirectionalLight(dirVector));
+                        break;
+
+                    case LightType.Point:
+                        GlobalLights.Add(new PointLight(l.intensity, l.color, l.transform.position));
+                        break;
+                }
+            }
+        }
+
+        public static Color MaxToOne(Color c)
+        {
+            float maxValue = Mathf.Max(c.r, Mathf.Max(c.g, c.b));
+
+            if(maxValue > 1f)
+            {
+                return c / maxValue;
+            }
+            else
+            {
+                return c;
+            }
+        }
+
+        public static Color ClampToColor(Color rawColor)
+        {
+            Color c = new Color(rawColor.r, rawColor.g, rawColor.g);
+
+            if(rawColor.r > 1f || rawColor.g > 1f || rawColor.b > 1f)
+            {
+                c.r = 1f; c.g = 0f; c.b = 0f;
+            }
+
+            return c;
+        }
+
     }
 }

@@ -11,7 +11,7 @@ public class RayCastTracer : AbstractTracer
     public RayCastTracer()
     {
         _maxDist = 30f;
-        // _layerMask =
+        _layerMask = ~(1 << 9);
         _bgColor = Color.black;
     }
 

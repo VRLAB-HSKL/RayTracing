@@ -7,5 +7,7 @@ public abstract class AbstractLight
     protected bool _shadows;
 
     public abstract Vector3 GetDirection(RaycastHit hit);
-    public abstract Color L(RaycastHit hit);    
+    public abstract Color L(RaycastHit hit);
+
+    public abstract bool InShadow(Ray ray, RaycastHit hit);
 }
