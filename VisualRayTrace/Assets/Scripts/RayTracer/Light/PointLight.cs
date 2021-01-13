@@ -10,7 +10,7 @@ public class PointLight : AbstractLight
 
     public PointLight() : base()
     {
-
+        _color = Color.white;
     }
 
     public PointLight(float ls, Color color, Vector3 location) : base()
@@ -24,7 +24,7 @@ public class PointLight : AbstractLight
     {
         Vector3 tmp = (_location - hit.point);
 
-        // ToDo: Decouple "hat" function
+        // ToDo: Decouple "hat" function // hat = make unit vector
         float length = Mathf.Sqrt(tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z);
         tmp.x /= length; 
         tmp.y /= length; 
@@ -35,9 +35,12 @@ public class PointLight : AbstractLight
 
     public override bool InShadow(Ray ray, RaycastHit hit)
     {
-        // ToDo: Implement this ?
-        float t;
-        float d = Vector3.Distance(_location, ray.origin);
+        if (Physics.Raycast(ray, out RaycastHit tmpHit, 30, ~(1 << 9)))
+        {
+            float t = tmpHit.distance;
+            float d = Vector3.Distance(_location, ray.origin);
+            return t < d;
+        }
 
         return false;
     }

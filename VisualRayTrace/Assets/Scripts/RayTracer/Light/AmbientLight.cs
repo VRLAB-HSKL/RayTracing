@@ -4,20 +4,26 @@ using UnityEngine;
 
 public class AmbientLight : AbstractLight
 {
-    private float _ls;
-    private Color _color;
+    /// <summary>
+    /// Radiance scaling factor (brightness)
+    /// </summary>
+    public float _ls;
+
+    /// <summary>
+    /// Light color
+    /// </summary>
+    public Color LightColor { get; set; }
 
     public AmbientLight() : base()
     {
         _ls = 1f;
-        _color = Color.white;
-
+        LightColor = Color.white;
     }
 
     public AmbientLight(float ls, Color color) : base()
     {
         _ls = ls;
-        _color = color;
+        LightColor = color;
     }
 
     public override Vector3 GetDirection(RaycastHit hit)
@@ -32,6 +38,6 @@ public class AmbientLight : AbstractLight
 
     public override Color L(RaycastHit hit)
     {
-        return _ls * _color;
+        return _ls * LightColor;
     }
 }

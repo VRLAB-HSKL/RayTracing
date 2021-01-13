@@ -9,19 +9,23 @@ public class MatteMaterial : AbstractMaterial
 
     private Vector3 _rayDir;
     private AbstractLight[] _lights;
+    private AbstractLight _worldAmbientLight;
+    
 
-    private AmbientLight _worldAmbientLight;
-
-    public MatteMaterial(Vector3 rayDir, AbstractLight[] lights, AmbientLight worldAmbientLight)
+    public MatteMaterial(Vector3 rayDir, RayTraceUtility.WorldInformation world)
     {
         _ambientBRDF = new Lambertian();
         _diffuseBRDF = new Lambertian();
 
         _rayDir = rayDir;
-        _lights = lights;
-        _worldAmbientLight = worldAmbientLight;
+        _lights = world.GlobalLights.ToArray();
+        _worldAmbientLight = world.GlobalAmbientLight;
     }
 
+    /// <summary>
+    /// Set ambient reflection coefficient
+    /// </summary>
+    /// <param name="ka">Ambient reflection coefficient</param>
     public void SetKA(float ka)
     {
         _ambientBRDF.KD = ka;
@@ -38,15 +42,22 @@ public class MatteMaterial : AbstractMaterial
         _diffuseBRDF.CD = cd;
     }
 
-    public override Color Shade(RaycastHit hit)
+    public override Color Shade(RaycastHit hit, int depth)
     {
         Vector3 wout = -_rayDir;
 
-        Color L = _ambientBRDF.Rho(hit, wout) * _worldAmbientLight.L(hit);
-        int numLights = _lights.Length;
+        // Initialise color with ambient light 
+        Color ambientRho = _ambientBRDF.Rho(hit, wout);
+        //Debug.Log("MatteMaterial - AmbientRho: " + ambientRho);
+        Color worldAmbientL = _worldAmbientLight.L(hit);
+        //Debug.Log("MatteMaterial - WorldAmbientL: " + worldAmbientL);
+        Color L = ambientRho * worldAmbientL;
+        //Debug.Log("MatteMaterial - AfterAmbientBRDF - Color: " + L);
 
-        for(int i = 0; i < numLights; ++i)
+        // Iterate over global light sources and add diffuse radiance to color
+        for(int i = 0; i < _lights.Length; ++i)
         {
+            // Get input ray direction
             Vector3 wi = _lights[i].GetDirection(hit);
             
             // ToDo: Make sure this dot product is correct
@@ -57,6 +68,7 @@ public class MatteMaterial : AbstractMaterial
                 L += _diffuseBRDF.F(hit, wout, wi) * _lights[i].L(hit) * ndotwi;
             }
         }
+        //Debug.Log("MatteMaterial - AfterDiffuseBRDF - Color: " + L);
 
         return L;
     }

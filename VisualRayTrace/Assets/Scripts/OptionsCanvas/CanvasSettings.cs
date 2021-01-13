@@ -36,6 +36,7 @@ public class CanvasSettings : MonoBehaviour
     {
         canvas = GetComponent<Canvas>();
         canvasRectTransform = GetComponent<RectTransform>();
+        canvas.enabled = true;
     }
 
     // Update is called once per frame
@@ -43,15 +44,15 @@ public class CanvasSettings : MonoBehaviour
     {
         if (ViveInput.GetPressDown(HandRole.LeftHand, ControllerButton.Menu)) // && !isRaytracing)
         {
-            _settingsVisible = !_settingsVisible;
+            //_settingsVisible = !_settingsVisible;
         }
         
-        canvas.enabled = _settingsVisible;
+        //canvas.enabled = _settingsVisible;
 
         if(_settingsVisible)
         {
-            Vector3 originPosition = new Vector3(origin.transform.position.x, origin.transform.position.y, origin.transform.position.z + zAxisOffset);
-            canvasRectTransform.SetPositionAndRotation(originPosition, origin.transform.rotation);
+            //Vector3 originPosition = new Vector3(origin.transform.position.x, origin.transform.position.y, origin.transform.position.z + zAxisOffset);
+            //canvasRectTransform.SetPositionAndRotation(originPosition, origin.transform.rotation);
         }
     }
 }

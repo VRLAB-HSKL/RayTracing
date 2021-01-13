@@ -256,7 +256,14 @@ public class RayTracerUnity : MonoBehaviour
 
         _aaStrategy = new AntiAliasingStrategy(SamplingMethod, SampleSize, SampleSetCount, hStep, vStep);
 
-        _world = new WorldInformation(_viewPortInfo);
+        // Initialize static members
+        RayTraceUtility.GlobalWorld = new RayTraceUtility.WorldInformation(_viewPortInfo);
+        RayTraceUtility.GlobalWorld.Tracer = new WhittedTracer(RayTraceUtility.GlobalWorld.MaxDepth, RayTrace_Range, layerMask, RayTraceUtility.GlobalWorld.BackgroundColor); //new RayCastTracer(RayTrace_Range, layerMask, RayTraceUtility.GlobalWorld.BackgroundColor);
+        
+
+        //RayTraceUtility.SolidColorMaterial = new MatteMaterial();
+        //RayTraceUtility.MetalMaterial = new MatteMaterial();
+        //RayTraceUtility.DielectricMaterial = new MatteMaterial();
     }
 
     /// <summary>
@@ -520,7 +527,7 @@ public class RayTracerUnity : MonoBehaviour
             if (hitList[i].distance > 1e-3)
             {
                 ++validHitCounter;
-                Color tmpColor = DetermineHitColor(hitList[i], directionVectors[i]);
+                Color tmpColor = RayTraceUtility.DetermineHitColor(hitList[i], directionVectors[i]);
                 colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
             }
             else
@@ -557,7 +564,7 @@ public class RayTracerUnity : MonoBehaviour
         UpdateRenderTexture();
 
         // Set line renderer point count based on settings value
-        visualRayLine.positionCount = VisualizePath ? 2 + rt_rec_points.Count() : 2;
+        visualRayLine.positionCount = VisualizePath ? 2 + RayTraceUtility.RT_rec_points.Count() : 2;
 
         // Begin visual line at the origin
         visualRayLine.SetPosition(0, rayOrigin);
@@ -587,7 +594,7 @@ public class RayTracerUnity : MonoBehaviour
         if (VisualizePath)
         {
             byte counter = 2;
-            foreach (Vector3 point in rt_rec_points)
+            foreach (Vector3 point in RayTraceUtility.RT_rec_points)
             {
                 visualRayLine.SetPosition(counter++, point);
             }
@@ -613,235 +620,11 @@ public class RayTracerUnity : MonoBehaviour
 
 
 
-    // Partial Source: https://forum.unity.com/threads/trying-to-get-color-of-a-pixel-on-texture-with-raycasting.608431/
-    /// <summary>
-    /// Determine final pixel color based on hit object
-    /// </summary>
-    /// <param name="hit">Information about the raycast hit</param>
-    /// <param name="direction">Direction the ray was shot in</param>
-    /// <returns>Calculated pixel color</returns>
-    private Color DetermineHitColor(RaycastHit hit, Vector3 direction)
-    {
-        // Check if the ray hit anything
-        if (!(hit.collider is null))
-        {
-            // Material of the object that was hit
-            Material mat = hit.transform.gameObject.GetComponent<MeshRenderer>().material;
-
-            // On empty material, return error color
-            if (mat is null) return Color.red; // new Color(1, 0, 0);
-
-            // If material contains a texture, use that texture
-            if (!(mat.mainTexture is null))
-            {
-                // Determine u,v coordinates on texture and return texture pixel color
-                var texture = mat.mainTexture as Texture2D;
-                Vector2 pixelUVCoords = hit.textureCoord;
-                pixelUVCoords.x *= texture.width;
-                pixelUVCoords.y *= texture.height;
-                return texture.GetPixel(Mathf.FloorToInt(pixelUVCoords.x), Mathf.FloorToInt(pixelUVCoords.y));
-            }
-            else
-            {
-                // On raw material hit, check for type
-                switch (RayTraceUtility.DetermineMaterialType(mat))
-                {
-                    case RayTraceUtility.MaterialType.Metal:
-                        return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Metal, mat.color);
-
-                    case RayTraceUtility.MaterialType.Dielectric:
-                        return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Dielectric, mat.color);
-
-                    default:
-                    case RayTraceUtility.MaterialType.SolidColor:
-                        return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.SolidColor, mat.color);
-                }
-            }
-
-        }
-        else
-        {
-            // On non-hit, return non hit color
-            return RayTraceUtility.CreateNonHitColor(direction);
-        }
-
-    }
+    
+    
+    
 
     
-    private List<Vector3> rt_points = new List<Vector3>();
-
-    /// <summary>
-    /// Handles additional ray calculations based on initial material hit
-    /// </summary>
-    /// <param name="hit">Initial raycast hit information</param>
-    /// <param name="direction">Initial raycast direction vector</param>
-    /// <param name="matType">Type of material hit <see cref="MaterialType"/></param>
-    /// <param name="matColor">Color of the hit material</param>
-    /// <returns></returns>
-    private Color HandleMaterial(RaycastHit hit, Vector3 direction, RayTraceUtility.MaterialType matType, Color matColor)
-    {
-        rt_points.Clear();
-
-        // Determine if ray hit anything and discard all hits below a fixed distance
-        // to prevent dark spots in final image
-        if (!(hit.collider is null) && hit.distance > 1e-3f)
-        {
-            // Direction ray of next ray that scatters from the initial material point 
-            Ray scatterRay = new Ray();
-
-            // Attenuation 
-            Vector3 attenuation = new Vector3();
-
-            // Color values of the hit material
-            Vector3 matColorVec = new Vector3(matColor.r, matColor.g, matColor.b);
-
-            // Reconstructed initial ray
-            Ray mainRay = new Ray(hit.point, direction);
-
-            // Checks if next ray hits another object
-            bool rayHit = false;
-
-            // Determine values based on hit material type
-            switch (matType)
-            {
-
-                case RayTraceUtility.MaterialType.SolidColor:
-                    rayHit = RayTraceUtility.ScatterDiffuse(mainRay, hit, out attenuation, out scatterRay, matColorVec);
-                    break;
-
-                case RayTraceUtility.MaterialType.Metal:
-                    rayHit = RayTraceUtility.ScatterMetal(mainRay, hit, out attenuation, out scatterRay, matColorVec);
-                    break;
-
-                case RayTraceUtility.MaterialType.Dielectric:
-                    float ref_idx = 1.5f;
-                    rayHit = RayTraceUtility.ScatterDielectric(mainRay, hit, out attenuation, out scatterRay, ref_idx, matColorVec);
-                    break;
-            }
-
-            // Second ray hit
-            if (rayHit)
-            {
-                // Enter recursive ray tracing
-                rt_rec_points.Clear();
-                Vector3 tmpColorVec = RayTrace_Recursive(scatterRay, 0);
-
-                // Attenuate color vector
-                tmpColorVec.x *= attenuation.x;
-                tmpColorVec.y *= attenuation.y;
-                tmpColorVec.z *= attenuation.z;
-
-                // Initialize and return color based on vector values
-                Color retColor = new Color(tmpColorVec.x, tmpColorVec.y, tmpColorVec.z);
-                return retColor;
-            }
-            else
-            {
-                // On non-hit, return black color
-                return new Color(0f, 0f, 0f);
-            }
-
-        }
-        else
-        {
-            // On non-hit, return non-hit color
-            return RayTraceUtility.CreateNonHitColor(direction);
-        }
-    }
-
-
-    private List<Vector3> rt_rec_points = new List<Vector3>();
-
-    /// <summary>
-    /// Recursive raytracing used for special materials, i.e. reflection or refraction
-    /// of materials
-    /// </summary>
-    /// <param name="ray">Next ray</param>
-    /// <param name="depth">Current recursion depth</param>
-    /// <returns></returns>
-    private Vector3 RayTrace_Recursive(Ray ray, int depth)
-    {
-        // If ray hit another object and distance is above the threshold
-        if (Physics.Raycast(ray, out RaycastHit hit) && hit.distance > 1e-3)
-        {
-            rt_rec_points.Add(hit.point);
-
-            // Scatter & attenuation
-            Ray scatter = new Ray();
-            Vector3 attenuation = Vector3.zero;
-
-            // Get mesh renderer
-            var mesh = hit.transform.gameObject.GetComponent<MeshRenderer>();
-            if (mesh == null) return Vector3.zero;
-
-            // Get material color
-            Material mat = mesh.material;
-            Vector3 matColVec = new Vector3(mat.color.r, mat.color.g, mat.color.b);
-            bool rayHit = false;
-
-            // Stop recursion above max depth
-            if (depth < 50)
-            {
-                switch (RayTraceUtility.DetermineMaterialType(mat))
-                {
-                    case RayTraceUtility.MaterialType.Metal:
-                        rayHit = RayTraceUtility.ScatterMetal(ray, hit, out attenuation, out scatter, matColVec);
-                        break;
-
-                    case RayTraceUtility.MaterialType.Dielectric:
-                        float ref_idx = 1.5f;
-                        rayHit = RayTraceUtility.ScatterDielectric(ray, hit, out attenuation, out scatter, ref_idx, matColVec);
-                        break;
-
-                    case RayTraceUtility.MaterialType.SolidColor:
-                        rayHit = RayTraceUtility.ScatterDiffuse(ray, hit, out attenuation, out scatter, matColVec);
-                        break;
-                }
-
-                if (rayHit)
-                {
-                    // Next recursion level
-
-                    var tmpVec = RayTrace_Recursive(scatter, depth + 1);
-
-                    // Apply attenuation
-                    tmpVec.x *= attenuation.x;
-                    tmpVec.y *= attenuation.y;
-                    tmpVec.z *= attenuation.z;
-
-                    return tmpVec;
-                }
-                else
-                {
-                    Vector3 unit_direction = Vector3.Normalize(ray.direction);
-                    float t = 0.5f * (unit_direction.y + 1f);
-                    return (1f - t) * new Vector3(1f, 1f, 1f) + t * new Vector3(.5f, .7f, 1f);
-                }
-            }
-            else
-            {
-                Color c = RayTraceUtility.CreateNonHitColor(ray.direction);
-                return new Vector3(c.r, c.g, c.b);
-
-                //Vector3 unit_direction = Vector3.Normalize(ray.direction);
-                //float t = 0.5f * (unit_direction.y + 1f);
-                //return (1f - t) * new Vector3(1f, 1f, 1f) + t * new Vector3(.5f, .7f, 1f);
-            }
-
-
-        }
-        else
-        {
-            Color c = RayTraceUtility.CreateNonHitColor(ray.direction);
-            return new Vector3(c.r, c.g, c.b);
-
-            //Vector3 unit_direction = Vector3.Normalize(ray.direction);
-            //float t = 0.5f * (unit_direction.y + 1f);
-            //return (1f - t) * new Vector3(1f, 1f, 1f) + t * new Vector3(.5f, .7f, 1f);
-
-        }
-    }
-
     
 
     public static Color DisplayPixel(Vector3 rgb)
@@ -850,14 +633,14 @@ public class RayTracerUnity : MonoBehaviour
 
         // Tone mapping
         // ToDo: add this to settings
-        bool showOutOfGamut = true;        
+        bool showOutOfGamut = false;        
         if (showOutOfGamut)
         {
-            col = WorldInformation.ClampToColor(col);
+            col = RayTraceUtility.ClampToColor(col);
         }
         else
         {
-            col = WorldInformation.MaxToOne(col);
+            col = RayTraceUtility.MaxToOne(col);
         }
 
         
@@ -887,7 +670,9 @@ public class RayTracerUnity : MonoBehaviour
     }
 
 
-    private WorldInformation _world;
+    
+
+    //private AbstractTracer _tracer = new WhittedTracer(50, 30f, layerMask, Color.black);
 
     private IEnumerator DoRayTraceVersion02(int hCord, int vCord)
     {
@@ -901,20 +686,36 @@ public class RayTracerUnity : MonoBehaviour
 
         //Debug.Log("DirectionRayCount: " + directionRayCount);
 
-        List<RaycastHit> hitList = ShootRays(aa_DirectionVectors);
+        
+        Vector3 colorSummation = Vector3.zero;
+        int validHitCounter = 0;
+        foreach(var x in aa_DirectionVectors)
+        {
+            if(Physics.Raycast(new Ray(rayOrigin, x), RayTrace_Range, layerMask))
+            {
+                var tmpCol = RayTraceUtility.GlobalWorld.Tracer.TraceRay(new Ray(rayOrigin, x), 0);
+                colorSummation += new Vector3(tmpCol.r, tmpCol.g, tmpCol.b);
+                ++validHitCounter;
+            }
+            yield return null;
+        }
+
+        // Average anti-aliasing results
+        Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
+
+
+        //List<RaycastHit> hitList = ShootRays(aa_DirectionVectors);
 
         //Debug.Log("HitList - ColLength: " + hitList.Count);
 
-        yield return null;
+
 
         // Caclulcate pixel color
-        Vector3 colorSummation = CalculatePixelColor(hitList, aa_DirectionVectors);
+        //Vector3 colorSummation = CalculatePixelColor(hitList, aa_DirectionVectors);
 
         //Debug.Log("RawColorSummation: " + colorSummation.ToString());
 
 
-        // Average anti-aliasing results
-        Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
 
         //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
 
@@ -931,6 +732,8 @@ public class RayTracerUnity : MonoBehaviour
         yield return null;
 
     }
+
+   
 
     private List<RaycastHit> ShootRays(Vector3[] directionRays)
     {
@@ -965,7 +768,7 @@ public class RayTracerUnity : MonoBehaviour
             if (hitList[i].distance > 1e-3)
             {
                 ++validHitCounter;
-                Color tmpColor = DetermineHitColor(hitList[i], aa_DirectionVectors[i]);
+                Color tmpColor = RayTraceUtility.DetermineHitColor(hitList[i], aa_DirectionVectors[i]);
                 colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
             }
             else
@@ -993,7 +796,7 @@ public class RayTracerUnity : MonoBehaviour
         UpdateRenderTexture();
 
         // Set line renderer point count based on settings value
-        visualRayLine.positionCount = VisualizePath ? 2 + rt_rec_points.Count() : 2;
+        visualRayLine.positionCount = VisualizePath ? 2 + RayTraceUtility.RT_rec_points.Count() : 2;
 
         // Begin visual line at the origin
         visualRayLine.SetPosition(0, rayOrigin);
@@ -1023,7 +826,7 @@ public class RayTracerUnity : MonoBehaviour
         if (VisualizePath)
         {
             byte counter = 2;
-            foreach (Vector3 point in rt_rec_points)
+            foreach (Vector3 point in RayTraceUtility.RT_rec_points)
             {
                 visualRayLine.SetPosition(counter++, point);
             }
@@ -1041,75 +844,14 @@ public class RayTracerUnity : MonoBehaviour
          );
     }
 
-
+    
+    /*
     public abstract class Tracer
     {
         public abstract Color TraceRay(Vector3 ray);
     }
+    */
 
-    public class WorldInformation
-    {
-        public ViewPortPlaneInformation VP { get; set; }
-        public AbstractTracer Tracer { get; set; } = new RayCastTracer(30f, layerMask, Color.black);
 
-        public Color BackgroundColor { get; set; } = Color.black;
 
-        public AmbientLight GlobalAmbientLight { get; set; } = new AmbientLight(.5f, Color.white);
-
-        public List<AbstractLight> GlobalLights { get; set; } = new List<AbstractLight>();
-
-        public WorldInformation(ViewPortPlaneInformation vp)
-        {
-            VP = vp;
-
-            // Parse scene lights
-            foreach(Light l in Resources.FindObjectsOfTypeAll(typeof(Light)) as Light[])
-            {
-                switch(l.type)
-                {
-                    case LightType.Directional:
-                        
-                        Vector3 lightRotationVec = l.transform.rotation.eulerAngles;
-                        float x = (lightRotationVec.x / 360f);
-                        float y = (lightRotationVec.y / 360f);
-                        float z = (lightRotationVec.z / 360f);
-
-                        Vector3 dirVector = new Vector3(x, y, z);
-                        GlobalLights.Add(new DirectionalLight(dirVector));
-                        break;
-
-                    case LightType.Point:
-                        GlobalLights.Add(new PointLight(l.intensity, l.color, l.transform.position));
-                        break;
-                }
-            }
-        }
-
-        public static Color MaxToOne(Color c)
-        {
-            float maxValue = Mathf.Max(c.r, Mathf.Max(c.g, c.b));
-
-            if(maxValue > 1f)
-            {
-                return c / maxValue;
-            }
-            else
-            {
-                return c;
-            }
-        }
-
-        public static Color ClampToColor(Color rawColor)
-        {
-            Color c = new Color(rawColor.r, rawColor.g, rawColor.g);
-
-            if(rawColor.r > 1f || rawColor.g > 1f || rawColor.b > 1f)
-            {
-                c.r = 1f; c.g = 0f; c.b = 0f;
-            }
-
-            return c;
-        }
-
-    }
 }

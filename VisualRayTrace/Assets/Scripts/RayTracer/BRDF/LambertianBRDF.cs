@@ -4,15 +4,19 @@ using UnityEngine;
 
 public class Lambertian : AbstractBRDF
 {
-    private float _kd;    
+    private float _kd;
+    
+    // Reflection coefficient
     public float KD { get => _kd; set { _kd = value; } }
     
-    private Color _cd;    
+    private Color _cd;  
+    
+    // Diffuse color
     public Color CD { get => _cd; set { _cd = value; } }
 
     public Lambertian() : base()
     {
-        _kd = 0f;
+        _kd = 0.5f;
         _cd = new Color(0f, 0f, 0f);
     }
 
@@ -24,12 +28,12 @@ public class Lambertian : AbstractBRDF
         return _kd * _cd * INV_PI;
     }    
 
-    public override Color SampleF(RaycastHit hit, Vector3 wo, Vector3 wi)
+    public override Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wi)
     {
         throw new System.NotImplementedException();
     }
 
-    public override Color SampleF(RaycastHit hit, Vector3 wo, Vector3 wi, out float pdf)
+    public override Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wi, out float pdf)
     {
         Vector3 w = hit.normal;
         Vector3 v = new Vector3(0.0034f, 1f, 0.0071f);

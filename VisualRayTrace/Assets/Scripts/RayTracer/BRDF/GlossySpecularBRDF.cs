@@ -5,13 +5,19 @@ using UnityEngine;
 public class GlossySpecular : AbstractBRDF
 {
     private float _ks;
+    public float KS { get => _ks; set { _ks = value; } }
+
     private Color _cs;  // specular color
     private float _exp; // specular exponent
+
+    public float SpecularExponent { get => _exp; set { _exp = value; } }
 
     public GlossySpecular() : base()
     {
         _ks = 0f;
         _cs = new Color(1f, 1f, 1f);
+
+        _exp = 1f;
     }
 
     public void SetSampler(AbstractSampler sampler, float exp)
@@ -61,12 +67,12 @@ public class GlossySpecular : AbstractBRDF
         return Color.black;
     }
 
-    public override Color SampleF(RaycastHit hit, Vector3 wi, Vector3 wo)
+    public override Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wi)
     {
         throw new System.NotImplementedException();
     }
 
-    public override Color SampleF(RaycastHit hit, Vector3 wo, Vector3 wi, out float pdf)
+    public override Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wi, out float pdf)
     {
         float ndotwo = Vector3.Dot(hit.normal, wo);
 

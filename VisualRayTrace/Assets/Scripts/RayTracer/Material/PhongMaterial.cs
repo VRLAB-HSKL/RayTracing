@@ -8,12 +8,48 @@ public class PhongMaterial : AbstractMaterial
     protected Lambertian _diffuseBRDF;
     protected GlossySpecular _specularBRDF;
 
-    private Vector3 _rayDir;
-    private AbstractLight[] _lights;
+    protected Vector3 _rayDir;
+    protected AbstractLight[] _lights;
+    protected AbstractLight _worldAmbientLight;
 
-    private AmbientLight _worldAmbientLight;
+    public PhongMaterial(Vector3 rayDir, RayTraceUtility.WorldInformation world)
+    {
+        _ambientBRDF = new Lambertian();
+        _diffuseBRDF = new Lambertian();
+        _specularBRDF = new GlossySpecular();
 
-    public override Color Shade(RaycastHit hit)
+        _rayDir = rayDir;
+        _lights = world.GlobalLights.ToArray();
+        _worldAmbientLight = world.GlobalAmbientLight;
+    }
+
+    public void SetKA(float ka)
+    {
+        _ambientBRDF.KD = ka;
+    }
+
+    public void SetKD(float kd)
+    {        
+        _diffuseBRDF.KD = kd;
+    }
+
+    public void SetCD(Color cd)
+    {
+        _ambientBRDF.CD = cd;
+        _diffuseBRDF.CD = cd;
+    }
+
+    public void SetKS(float ks)
+    {
+        _specularBRDF.KS = ks;
+    }
+
+    public void SetExp(int exp)
+    {
+        _specularBRDF.SpecularExponent = exp;
+    }
+
+    public override Color Shade(RaycastHit hit, int depth)
     {
         Vector3 wo = -_rayDir;
         Color L = _ambientBRDF.Rho(hit, wo) * _worldAmbientLight.L(hit);
@@ -30,12 +66,19 @@ public class PhongMaterial : AbstractMaterial
             {
                 bool inShadow = false;
 
-                // ToDo: Add shadows
-                //if(_lights[i])
+                if(_lights[i].CastShadows)
+                {
+                    Ray shadowRay = new Ray(hit.point, wi);
+                    inShadow = _lights[i].InShadow(shadowRay, hit);
+                }
 
                 if(!inShadow)
                 {
-                    L += (_diffuseBRDF.F(hit, wo, wi) + _specularBRDF.F(hit, wo, wi)) * _lights[i].L(hit) * ndotwi;
+                    var diff = _diffuseBRDF.F(hit, wo, wi);
+                    var spec = _specularBRDF.F(hit, wo, wi);
+                    var lambertianLight = (diff + spec);
+                    var worldLights = _lights[i].L(hit) * ndotwi;
+                    L += lambertianLight * worldLights;
                 }                
             }
         }

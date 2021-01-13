@@ -14,7 +14,7 @@ public abstract class AbstractBRDF
     }
 
     public abstract Color F(RaycastHit hit, Vector3 wo, Vector3 wi);
-    public abstract Color SampleF(RaycastHit hit, Vector3 wo, Vector3 wi);
-    public abstract Color SampleF(RaycastHit hit, Vector3 wo, Vector3 wi, out float pdf);
+    public abstract Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wi);
+    public abstract Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wi, out float pdf);
     public abstract Color Rho(RaycastHit hit, Vector3 wo);
 }

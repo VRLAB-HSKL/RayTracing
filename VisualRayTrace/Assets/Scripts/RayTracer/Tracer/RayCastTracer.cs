@@ -34,15 +34,24 @@ public class RayCastTracer : AbstractTracer
     {
         // ToDo: Add recursion using depth parameter
 
-        if(Physics.Raycast(ray, out RaycastHit hitInfo, _maxDist, _layerMask))
-        {
-            // ToDo: Start shading
+        //if(Physics.Raycast(ray, out RaycastHit hitInfo, _maxDist, _layerMask))
+        //{
+        //    // ToDo: Start shading
 
-            return Color.white;
+        //    return Color.white;
+        //}
+        //else
+        //{
+        //    return _bgColor;
+        //}
+
+        if(Physics.Raycast(ray, out RaycastHit hit, 30f, ~(1 << 9)))
+        {
+            return RayTraceUtility.DetermineHitColor(hit, ray.direction);
         }
         else
         {
-            return _bgColor;
+            return RayTraceUtility.CreateNonHitColor(ray.direction);
         }
     }
 
@@ -50,4 +59,6 @@ public class RayCastTracer : AbstractTracer
     {
         throw new System.NotImplementedException();
     }
+
+
 }
