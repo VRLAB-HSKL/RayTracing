@@ -18,8 +18,9 @@ public class CanvasSettings : MonoBehaviour
     /// </summary>
     private Canvas canvas;
 
-
     private RectTransform canvasRectTransform;
+
+
 
     /// <summary>
     /// Truth value that signals wether the settings canvas is visible or not
@@ -31,12 +32,20 @@ public class CanvasSettings : MonoBehaviour
     /// </summary>
     private float zAxisOffset = 3f;
 
+
+    private AbstractState _currentMainState;
+
+    private AbstractState _currentSamplerState;
+
     // Start is called before the first frame update
     void Start()
     {
         canvas = GetComponent<Canvas>();
         canvasRectTransform = GetComponent<RectTransform>();
         canvas.enabled = true;
+
+        SetMainState(new MainMenuState(gameObject, "MainMenu"));
+
     }
 
     // Update is called once per frame
@@ -53,6 +62,61 @@ public class CanvasSettings : MonoBehaviour
         {
             //Vector3 originPosition = new Vector3(origin.transform.position.x, origin.transform.position.y, origin.transform.position.z + zAxisOffset);
             //canvasRectTransform.SetPositionAndRotation(originPosition, origin.transform.rotation);
+        }
+    }   
+    
+    private void SetMainState(AbstractState state)
+    {
+        if (_currentMainState != null)
+            _currentMainState.OnStateExit();
+
+        _currentMainState = state; //new SamplerMenuState(canvas.gameObject, name);
+
+        _currentMainState.OnStateEnter();
+    }
+
+    private void SetSamplersSubMenuState(AbstractSamplerState state)
+    {
+
+    }
+
+    public void SwitchToMainMenu(string name)
+    {
+        SetMainState(new MainMenuState(canvas.gameObject, name));
+    }
+
+    public void SwitchToSamplersMenu(string name)
+    {
+        SetMainState(new SamplerMenuState(canvas.gameObject, name));
+    }
+
+    public void SwitchSamplersSubMenuState(int index)
+    {
+        switch(index)
+        {
+            case 0:
+                _currentSamplerState = new RandomSamplerState(canvas.gameObject, "RandomSamplerInfo");
+                break;
+
+            case 1:
+
+                break;
+
+            case 2:
+
+                break;
+
+            case 3:
+
+                break;
+
+            case 4:
+
+                break;
+
+            case 5:
+
+                break;
         }
     }
 }
