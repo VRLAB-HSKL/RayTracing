@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class RandomSamplerState : AbstractSamplerState
 {
-    public RandomSamplerState(GameObject canv, string name) : base(canv, name) { }
-    public override void OnStateEnter()
+    public RandomSamplerState(GameObject canv, string subMenuName) : base(canv, subMenuName) { }
+    public override void OnStateEntered()
     {
-        base.OnStateEnter();
+        base.OnStateEntered();
     }
 }

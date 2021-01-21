@@ -4,24 +4,27 @@ using UnityEngine;
 
 public abstract class AbstractState
 {
-    protected GameObject _uiCanvas;
+    protected GameObject _uiHeaderElement;
     protected string _subMenuName;
 
-    public AbstractState(GameObject canv, string subMenuName)
+    public AbstractState(GameObject headerObject, string subMenuName)
     {
-        _uiCanvas = canv;
+        _uiHeaderElement = headerObject;
         _subMenuName = subMenuName;
     }
 
-    public virtual void OnStateEnter() 
+    public virtual void OnStateEntered() 
     {
-        for (int i = 0; i < _uiCanvas.transform.childCount; ++i)
+        // Hide all children except current selection and selection buttons
+        for (int i = 0; i < _uiHeaderElement.transform.childCount; ++i)
         {
-            GameObject child = _uiCanvas.transform.GetChild(i).gameObject;
+            GameObject child = _uiHeaderElement.transform.GetChild(i).gameObject;
             if (child.name.Equals("MenuButtons")) continue;
             child.SetActive(child.name.Equals(_subMenuName));
         }
     }
 
-    public virtual void OnStateExit() { }
+    public virtual void OnStateUpdate() { }
+
+    public virtual void OnStateQuit() { }
 }

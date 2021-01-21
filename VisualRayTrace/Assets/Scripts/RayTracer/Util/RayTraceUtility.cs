@@ -539,7 +539,7 @@ public static class RayTraceUtility
                             // Direction vector of default direction light path
                             Vector3 dirVector = new Vector3(0, 0, 1);
                             Vector3 lightRotationVec = l.transform.rotation.eulerAngles;
-                            Debug.Log("GlobalLights - DirectionalLight: EulerAngles: " + lightRotationVec);
+                            //Debug.Log("GlobalLights - DirectionalLight: EulerAngles: " + lightRotationVec);
 
                             if (lightRotationVec.x != 0f)
                                 dirVector = Quaternion.AngleAxis(lightRotationVec.x, Vector3.right) * dirVector;
@@ -559,7 +559,7 @@ public static class RayTraceUtility
                             tmpLight.RadianceFactor = l.intensity;
 
                             GlobalLights.Add(tmpLight);
-                            Debug.Log("GlobalLights - DirectionalLight Added: " + dirVector);
+                            //Debug.Log("GlobalLights - DirectionalLight Added: " + dirVector);
                         }
                         break;
 

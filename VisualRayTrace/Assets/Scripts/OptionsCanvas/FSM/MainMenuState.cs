@@ -6,8 +6,8 @@ public class MainMenuState : AbstractState
 {
     public MainMenuState(GameObject canv, string subMenuName) : base(canv, subMenuName) { }
 
-    public override void OnStateEnter()
+    public override void OnStateEntered()
     {
-        base.OnStateEnter();        
+        base.OnStateEntered();        
     }
 }
