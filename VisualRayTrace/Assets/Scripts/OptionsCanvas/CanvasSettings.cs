@@ -82,6 +82,7 @@ public class CanvasSettings : MonoBehaviour
         canvasRectTransform = GetComponent<RectTransform>();
         canvas.enabled = true;
 
+        /*
         // Import string assets
         foreach(KeyValuePair<string, string> pair in StringAssetImportPairs)
         {
@@ -94,7 +95,7 @@ public class CanvasSettings : MonoBehaviour
         {
             SetImage(pair.Key, pair.Value);
         }
-        
+        */
 
         SetMainState(new MainMenuState(gameObject, InitMenuName));
         SetSamplersSubMenuState(new RandomSamplerState(SamplersSubMenu, InitSamplerMenuName));

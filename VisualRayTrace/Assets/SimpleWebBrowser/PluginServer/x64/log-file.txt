@@ -1,0 +1,136 @@
+2016-09-02 18:03:10,302 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2016-09-02 18:03:10,437 [1] INFO  SharedPluginServer.Program [(null)] - ARGS:
+2017-02-27 17:15:56,645 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2017-02-27 17:15:56,743 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:500,height:500,url:http://www.google.com,memfile:48184c0b-8d2c-4074-bc0b-1011dae9f8a3,port:8315
+2017-02-27 17:16:05,327 [7] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2017-02-27 17:16:07,998 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2017-02-27 17:16:08,062 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:500,height:500,url:http://www.google.com,memfile:9bb0b443-e767-4514-a92c-de677ad8941e,port:8135
+2017-02-27 17:16:11,097 [7] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2017-02-27 18:24:29,979 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2017-02-27 18:24:30,046 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:500,height:500,url:http://www.google.com,memfile:0fdef6cd-1bda-4815-84fa-aabf5c41bc1b,port:8008
+2017-02-27 18:24:35,168 [1] ERROR SharedPluginServer.Program [(null)] - CefRuntime return 0
+2017-02-27 18:24:35,803 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2017-02-27 18:24:35,863 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:500,height:500,url:http://www.google.com,memfile:0fdef6cd-1bda-4815-84fa-aabf5c41bc1b,port:8008
+2017-02-27 18:24:40,837 [7] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2017-02-27 18:24:55,005 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2017-02-27 18:24:55,072 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:500,height:500,url:http://www.google.com,memfile:e3e562f6-4ddb-424d-b290-4f2f7fb63fb8,port:8426
+2017-02-27 18:25:06,324 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 10:52:18,653 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 10:52:18,684 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:b19db932-7eac-4302-97ce-b038102e2a54,port:8140
+2020-05-14 10:52:23,852 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 10:52:52,199 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 10:52:52,232 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:1ee73600-c8c1-458b-95fd-f1cbf9f0b86e,port:8138
+2020-05-14 10:52:59,015 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:00:46,711 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:00:46,740 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:1311b12f-91b1-47c5-91b5-cfea36b8905e,port:8785
+2020-05-14 11:00:57,335 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:01:06,214 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:01:06,243 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:14bab717-5ce3-4697-ad10-dfbf3e74a9a7,port:8079
+2020-05-14 11:01:27,330 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:02:35,199 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:02:35,230 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:491000cf-1fd6-4275-b110-4649ceb38649,port:8096
+2020-05-14 11:02:37,143 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:02:59,930 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:02:59,960 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:53f71bb1-eb09-40c9-88f3-d8eeff35525b,port:8763
+2020-05-14 11:06:16,961 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:06:41,506 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:06:41,532 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:d2bf4401-5487-441f-af29-8bbaae1a25db,port:8883
+2020-05-14 11:07:15,783 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:07:18,098 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:07:18,125 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:c1f548b4-3082-4ad7-9520-4dadd46475ee,port:8993
+2020-05-14 11:07:31,757 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:09:09,407 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:09:09,438 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:fa871983-3822-4b7c-bc51-24ec86a281d9,port:8722
+2020-05-14 11:10:31,492 [10] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:15:01,925 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:15:01,956 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:e4ec4005-8f12-460a-af08-96f0d863518b,port:8481
+2020-05-14 11:15:43,410 [10] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:15:46,185 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:15:46,217 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:24205ab1-bd42-421b-8a70-9712163d3aaf,port:8160
+2020-05-14 11:15:49,541 [8] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:16:56,950 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:16:56,979 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:01ac7b8c-aad1-47f1-a0d2-84582bacd375,port:8110
+2020-05-14 11:18:25,944 [13] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:20:47,949 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:20:47,979 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:24ecbabe-8e40-44eb-a58d-1a9bf5e625c8,port:8358
+2020-05-14 11:21:03,549 [8] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:21:19,620 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:21:19,646 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:df5af009-9e35-454d-80a3-867aa8c61c0a,port:8449
+2020-05-14 11:21:24,308 [8] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:22:18,719 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:22:18,746 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:9b304b0d-bae3-4222-a0f7-5493077eb1d1,port:8650
+2020-05-14 11:22:22,718 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:42:41,237 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:42:41,268 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:b317889b-b64c-4e26-83e0-3edb641db84f,port:8238
+2020-05-14 11:42:48,569 [10] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:48:11,147 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:48:11,174 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:5fba8c74-6434-46ac-bd61-057c5ed73484,port:8201
+2020-05-14 11:48:15,082 [8] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 11:57:23,776 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 11:57:23,803 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:0869747f-e348-4100-ac21-5db854ad8071,port:8491
+2020-05-14 11:57:26,830 [8] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 12:26:45,771 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 12:26:45,800 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:47e6c602-9bef-4179-9c71-2a7b9445ff24,port:8535
+2020-05-14 12:26:48,362 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2020-05-14 12:27:01,079 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2020-05-14 12:27:01,112 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1366,height:768,url:file:///C:/Users/basti/Desktop/ReactApp.html,memfile:c9a4af94-b002-4ac0-8569-073355ae25fc,port:8717
+2020-05-14 12:27:04,850 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-22 22:48:25,950 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-22 22:48:26,126 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:4079cb93-6616-4e1a-8f06-6fef429cdad8,port:8161
+2021-01-22 22:49:21,656 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-22 22:50:19,800 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-22 22:50:19,855 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:7ea22463-2098-4470-be73-e82af5a26d8a,port:8647
+2021-01-22 22:50:30,256 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 20:45:09,367 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 20:45:09,726 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:6f650fbd-1bc4-4681-87ce-60b0c74effed,port:8951
+2021-01-27 20:45:23,742 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 20:45:23,821 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1280,height:720,url:http://test.webrtc.org,memfile:MainSharedMem,port:8885
+2021-01-27 20:45:24,059 [1] ERROR SharedPluginServer.Program [(null)] - CefRuntime return 0
+2021-01-27 20:49:54,073 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 20:55:59,610 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 20:55:59,668 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:807062f6-f5f4-4dd8-adb3-213da261fa51,port:8617
+2021-01-27 20:56:27,657 [7] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:08:48,525 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:08:48,582 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:aa48be45-8ae0-4771-951f-0853245137c1,port:8740
+2021-01-27 21:08:48,968 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:09:29,807 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:09:29,858 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:ce57b8b8-1d73-477d-b26a-97eac84584a9,port:8174
+2021-01-27 21:09:40,029 [1] INFO  SharedPluginServer.App [(null)] - Exiting by timer,timeout:10000
+2021-01-27 21:09:40,029 [1] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:11:45,542 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:11:45,595 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:ae50140d-698c-41e2-a22d-3b184a62a28b,port:8215
+2021-01-27 21:11:45,994 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:12:51,158 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:12:51,208 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:484cf3fa-5009-4057-bcf3-6faf7bb14e7a,port:8377
+2021-01-27 21:13:01,345 [1] INFO  SharedPluginServer.App [(null)] - Exiting by timer,timeout:10000
+2021-01-27 21:13:01,345 [1] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:22:15,916 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:22:15,965 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:d1f85e91-76d7-436a-b973-863dcb29a631,port:8073
+2021-01-27 21:22:16,375 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:32:10,052 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:32:10,116 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:867d4867-a15a-47e2-b1e2-d6c4b55dc40c,port:8013
+2021-01-27 21:32:10,503 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:41:41,993 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:41:42,044 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:4ada47ef-b701-4f32-a58e-d9784309474e,port:8380
+2021-01-27 21:41:42,451 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 21:44:36,257 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 21:44:36,307 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://campusboard.hs-kl.de,memfile:328ca2df-5142-460f-9730-dd216cae1e22,port:8349
+2021-01-27 21:44:36,710 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 22:05:19,745 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 22:05:19,792 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:8c284aab-02c5-4d53-a6aa-3fbd9c626278,port:8478
+2021-01-27 22:05:20,123 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 22:08:20,083 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 22:08:20,138 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:d2a1791b-0973-4ff4-b34b-0aeec3c66724,port:8140
+2021-01-27 22:08:20,467 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 22:09:53,453 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 22:09:53,500 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://www.google.com,memfile:951452ec-ce5d-475a-8144-9046c88f2215,port:8603
+2021-01-27 22:10:21,948 [7] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 22:10:38,497 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 22:10:38,544 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://campusboard.hs-kl.de,memfile:ef65ab11-978c-4a03-8404-af235b356841,port:8296
+2021-01-27 22:11:14,002 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 22:11:29,558 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 22:11:29,604 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://campusboard.hs-kl.de,memfile:c9bdb35a-e27b-4d25-a890-3b01facead64,port:8900
+2021-01-27 22:12:07,631 [10] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-01-27 22:29:07,941 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-01-27 22:29:07,988 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://campusboard.hs-kl.de,memfile:c1808599-dc48-4288-9a55-676c4223d964,port:8792
+2021-01-27 22:29:08,335 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
