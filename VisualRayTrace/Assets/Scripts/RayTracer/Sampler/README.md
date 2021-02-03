@@ -137,7 +137,7 @@ Ein `RandomSampler` generiert alle seine Punkte rein zufällig. Hierzu wird der 
 
 
 <figure>
-    <img src="..\..\..\Resources\Samplers\Images\RandomSampler01.png" style="width:25%">
+    <img src="..\..\..\Resources\Samplers\Images\RandomSampler01.jpg" style="width:25%">
     <figcaption style="padding:5px; text-align:left;">
         <b>Abbildung 2.1: Verteilung eines RandomSampler Muster in x- und y-Richtung [1]</b>
     </figcaption>
