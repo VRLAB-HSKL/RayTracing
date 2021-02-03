@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Script that spawns sphere prefab instances on collision with button object
+/// Script that creates a new prefab instance when an object collision occurs
 /// </summary>
-public class ButtonHitCollision : MonoBehaviour, IColliderEventHoverEnterHandler
+public class SpawnButtonHitCollision : MonoBehaviour, IColliderEventHoverEnterHandler
 { 
     /// <summary>
     /// Prefab to be instantiated

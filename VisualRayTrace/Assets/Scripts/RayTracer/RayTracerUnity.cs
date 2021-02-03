@@ -44,6 +44,18 @@ public class RayTracerUnity : MonoBehaviour
         return isRaytracing;
     }
 
+    public void SetIsRaytracing(bool isRT)
+    {
+        isRaytracing = isRT;
+    }
+
+    public void StopRaytracer()
+    {
+        isRaytracing = false;
+        CurrentPixel[0] = 0;
+        CurrentPixel[1] = 0;
+    }
+
     /// <summary>
     /// Bitfield mask to control which objects can be hit by a ray.
     /// Currently, all objects that should be ignored by the raytracer were moved to a

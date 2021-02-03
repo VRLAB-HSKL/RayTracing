@@ -146,8 +146,8 @@ public abstract class AbstractSampler
 
         // Use local value copy of class members to prevent OutOfRange exceptions
         // due to Unity multi-threading/parallelizing everything and calculating false values...
-        var localCount = _count;
-        var localJump = _jump;
+        int localCount = _count;
+        int localJump = _jump;
 
         if (localCount % _numSamples == 0)
             localJump = (UnityEngine.Random.Range(0, int.MaxValue) % _numSets) * _numSamples;
@@ -257,10 +257,11 @@ public abstract class AbstractSampler
 
         return retVec;
     }
-    
+
 
     // Fisher-Yates Shuffle
-    private List<int> Shuffle(List<int> list)
+    // https://stackoverflow.com/a/1262619
+    private static List<int> Shuffle(List<int> list)
     {
         int n = list.Count;
         while (n > 1)

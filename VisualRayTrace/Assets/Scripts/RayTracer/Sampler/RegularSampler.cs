@@ -20,7 +20,10 @@ public class RegularSampler : AbstractSampler
                 for (int q = 0; q < n; q++)
                 {
                     //_samples.Add(new Vector2((q + 0.5f) / (float)n, (p + 0.5f) / (float)n));
+
                     _samples.Add(new Vector2((q * _hStep) / (float)n, (p * _vStep) / (float)n));
+
+                    //_samples.Add(new Vector2((q * (_hStep * 0.5f)) / (float)n, (p * (_vStep * 0.5f)) / (float)n));
                 }
             }
         }

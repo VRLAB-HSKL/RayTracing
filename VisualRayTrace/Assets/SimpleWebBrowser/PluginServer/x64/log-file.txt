@@ -143,3 +143,9 @@
 2021-01-28 02:47:06,507 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
 2021-01-28 02:47:06,559 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:45901132-af64-465f-b9a9-903eb959f0eb,port:8408
 2021-01-28 02:47:32,036 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-02-04 00:07:57,860 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-02-04 00:07:58,823 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:d1d2e446-73c2-455a-9ed9-ea74f4a07dfd,port:8614
+2021-02-04 00:09:49,579 [9] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-02-04 00:29:56,926 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-02-04 00:29:56,976 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:ea3eaec5-834d-4e35-9e9e-11241d3125ea,port:8120
+2021-02-04 00:32:05,233 [7] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========

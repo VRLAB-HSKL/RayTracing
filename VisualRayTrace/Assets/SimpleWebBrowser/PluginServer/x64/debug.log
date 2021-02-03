@@ -1,1 +1,3 @@
 [0127/220954.633:WARNING:spdy_session.cc(2224)] Received HEADERS for invalid stream 1
+[0204/000811.523:ERROR:broker_win.cc(59)] Error reading broker pipe: Die Pipe wurde beendet. (0x6D)
+[0204/000811.526:ERROR:broker_win.cc(59)] Error reading broker pipe: Die Pipe wurde beendet. (0x6D)
