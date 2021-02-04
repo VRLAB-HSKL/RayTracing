@@ -15,11 +15,14 @@ public abstract class AbstractState
 
     public virtual void OnStateEntered() 
     {
+        Debug.Log("SubmenuName: " + _subMenuName);
+
         // Hide all children except current selection and selection buttons
         for (int i = 0; i < _uiHeaderElement.transform.childCount; ++i)
         {
             GameObject child = _uiHeaderElement.transform.GetChild(i).gameObject;
             if (child.name.Equals("MenuButtons")) continue;
+            Debug.Log(child.name);
             child.SetActive(child.name.Equals(_subMenuName));
         }
     }

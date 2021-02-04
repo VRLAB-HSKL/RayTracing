@@ -7,9 +7,21 @@ public static class RayTraceUtility
     public static WorldInformation GlobalWorld;
 
     public static AbstractMaterial SolidColorMaterial;
+
     public static AbstractMaterial MetalMaterial;
+
+    public static float Metal_KA = 0.25f;
+    public static float Metal_KD = 0.5f;
+    public static float Metal_KS = 0.15f;
+    public static int Metal_EXP = 100;
+    public static float Metal_KR = 0.75f;
+    
     public static AbstractMaterial DielectricMaterial;
 
+    public static float Dielectric_KS = 0.2f;
+    public static float Dielectric_EXP = 2000f;
+    public static float Dielectric_EtaIN = 1.5f;
+    public static float Dielectric_EtaOUT = 1f;
 
 
     /// <summary>

@@ -22,6 +22,7 @@ public class CanvasSettings : MonoBehaviour
 
     public string InitMenuName = "MainMenu";
     public string InitSamplerMenuName = "RandomSamplerInfo";
+    public string InitMaterialMenuName = "SolidColorSubmenu";
 
     private RectTransform canvasRectTransform;
 
@@ -32,6 +33,8 @@ public class CanvasSettings : MonoBehaviour
 
     public UnityEngine.UI.Slider SamplersContentSlider;
 
+
+    public GameObject MaterialsSubMenu;
 
 
     /// <summary>
@@ -48,6 +51,7 @@ public class CanvasSettings : MonoBehaviour
 
     private AbstractSamplerState _currentSamplerState;
 
+    private AbstractMaterialState _currentMaterialState;
 
 
     public List<KeyValuePair<string, string>> StringAssetImportPairs = new List<KeyValuePair<string, string>>()
@@ -99,7 +103,7 @@ public class CanvasSettings : MonoBehaviour
 
         SetMainState(new MainMenuState(gameObject, InitMenuName));
         SetSamplersSubMenuState(new RandomSamplerState(SamplersSubMenu, InitSamplerMenuName));
-
+        SetMaterialsSubMenuState(new SolidColorMaterialState(MaterialsSubMenu, InitMaterialMenuName));
     }
 
     private void SetInfoText(string gameObjectName, string textAssetRessourcePath)
@@ -167,6 +171,16 @@ public class CanvasSettings : MonoBehaviour
         _currentSamplerState.OnStateEntered();
     }
 
+    private void SetMaterialsSubMenuState(AbstractMaterialState state)
+    {
+        if (_currentMaterialState != null)
+            _currentMaterialState.OnStateQuit();
+
+        _currentMaterialState = state;
+
+        _currentMaterialState.OnStateEntered();
+    }
+
     public void SwitchToMainMenu(string name)
     {
         SetMainState(new MainMenuState(canvas.gameObject, name));
@@ -175,6 +189,11 @@ public class CanvasSettings : MonoBehaviour
     public void SwitchToSamplersMenu(string name)
     {
         SetMainState(new SamplerMenuState(canvas.gameObject, name));
+    }
+
+    public void SwitchToMaterialsMenu(string name)
+    {
+        SetMainState(new MaterialMenuState(canvas.gameObject, name));
     }
 
     public void SwitchSamplersSubMenuState()
@@ -210,10 +229,27 @@ public class CanvasSettings : MonoBehaviour
         }
     }
 
-    public void SetSamplerContentIndex()
+
+    public enum MaterialSubMenuEntry { SolidColor, Metal, Dielectric};
+
+
+    public void SwitchMaterialsSubMenuState(int index)
     {
-        int index = (int)SamplersContentSlider.value;
-        //Debug.Log("SliderIndex: " + index);
-        _currentSamplerState.SetSamplerContentIndex(index);   
+        switch(index)
+        {
+            case 0: //MaterialSubMenuEntry.SolidColor:
+                SetMaterialsSubMenuState(new SolidColorMaterialState(MaterialsSubMenu, "SolidColorSubmenu"));
+                break;
+
+            case 1: // MaterialSubMenuEntry.Metal:
+                SetMaterialsSubMenuState(new MetalMaterialState(MaterialsSubMenu, "MetalSubmenu"));
+                break;
+
+            case 2: // MaterialSubMenuEntry.Dielectric:
+                SetMaterialsSubMenuState(new DielectricMaterialState(MaterialsSubMenu, "DielectricSubmenu"));
+                break;
+        }
     }
+
+
 }

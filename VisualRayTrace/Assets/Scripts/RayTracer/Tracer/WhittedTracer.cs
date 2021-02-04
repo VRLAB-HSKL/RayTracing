@@ -72,12 +72,12 @@ public class WhittedTracer : AbstractTracer
                                 //Debug.Log("Metal Hit!");
 
                                 ReflectiveMaterial metalMat = new ReflectiveMaterial(ray.direction, RayTraceUtility.GlobalWorld);
-                                metalMat.SetKA(0.25f);
-                                metalMat.SetKD(0.5f);
+                                metalMat.SetKA(RayTraceUtility.Metal_KA);
+                                metalMat.SetKD(RayTraceUtility.Metal_KD);
                                 metalMat.SetCD(mat.color);
-                                metalMat.SetKS(0.15f);
-                                metalMat.SetExp(100);
-                                metalMat.SetKR(0.75f);
+                                metalMat.SetKS(RayTraceUtility.Metal_KS);
+                                metalMat.SetExp(RayTraceUtility.Metal_EXP);
+                                metalMat.SetKR(RayTraceUtility.Metal_KR);
                                 metalMat.SetCR(Color.white);
                                 return metalMat.Shade(hit, depth);
 
@@ -91,12 +91,12 @@ public class WhittedTracer : AbstractTracer
                                         Color.white, Color.white
                                     );
 
-                                dielectricMat.SetKS(0.2f);
-                                dielectricMat.SetExp(2000f);
-                                dielectricMat.SetEtaIn(1.5f);
-                                dielectricMat.SetEtaOut(1f);
+                                dielectricMat.SetKS(RayTraceUtility.Dielectric_KS);
+                                dielectricMat.SetExp(RayTraceUtility.Dielectric_EXP);
+                                dielectricMat.SetEtaIn(RayTraceUtility.Dielectric_EtaIN);
+                                dielectricMat.SetEtaOut(RayTraceUtility.Dielectric_EtaOUT);
 
-                                dielectricMat.SetCD(Color.white);//mat.color);
+                                dielectricMat.SetCD(mat.color); //Color.white);//mat.color);
                                 return dielectricMat.Shade(hit, depth);
 
                             //return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Dielectric, mat.color);

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class AbstractSamplerState : AbstractState
+public class AbstractMaterialState : AbstractState
 {
-    //protected string _samplerSubMenuName;
-    public AbstractSamplerState(GameObject headerObj, string subMenuName) : base(headerObj, subMenuName) 
+    public AbstractMaterialState(GameObject headerObj, string subMenuName) : base(headerObj, subMenuName)
     {
         //_samplerSubMenuName = name;
     }
@@ -20,7 +19,7 @@ public abstract class AbstractSamplerState : AbstractState
     public void SetSamplerContentIndex(int index)
     {
         GameObject subMenu = GameObject.Find(_subMenuName);
-        
+
 
 
         if (subMenu is null) return;
@@ -45,6 +44,6 @@ public abstract class AbstractSamplerState : AbstractState
             //Debug.Log(childList[i].name);
             childList[i].SetActive(i == index);
         }
-            
+
     }
 }
