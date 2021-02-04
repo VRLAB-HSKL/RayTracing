@@ -135,7 +135,6 @@ public override void GenerateSamples()
 
 Ein `RandomSampler` generiert alle seine Punkte rein zufällig. Hierzu wird der Zufallszahlgenerator der `UnityEngine` verwendet. Da alle Punkte zufällig in beide Richtungen generiert werden, kann keine der Bedingungen eines guten Sampling Verfahrens garantiert werden. Leicht entstehen große Ansammlungen von Punkten und große Flächen werden nicht repräsentiert. 
 
-
 <figure>
     <img src="..\..\..\Resources\Samplers\Images\RandomSampler01.jpg" style="width:25%">
     <figcaption style="padding:5px; text-align:left;">
@@ -173,7 +172,9 @@ public override void GenerateSamples()
 
 ## Jittered Sampler
 
-Im Verfahren des `JitteredSampler` wird durch Aufteilung des Pixelbereichs eine erste Verbesserung erzielt. Der Pixelbereich wird in $\sqrt{n} \times \sqrt{n}$  Teilbereiche aufgeteilt. In jedem Teilbereich wird ein Punkt generiert. Der Abstand des Punktes zum Mittelpunkt eines Teilbereich ist zufällig. Dieses Verfahren garantiert, das die Punkte auf die Teilbereiche verteilt werden und sich nicht innerhalb eines Teilbereichs zu Ansammlungen  vereinen können.
+Im Verfahren des `JitteredSampler` wird durch Aufteilung des Pixelbereichs eine erste Verbesserung erzielt. Der Pixelbereich wird in $n \times n$ Teilbereiche mit $n \times n = $ `_numSamples` aufgeteilt, um `_numSamples`  Punkte zu generieren. Entsprechend sollte bei Verfahren dieser Art ein Wert für `_numSamples` gewählt werden, der zu einer ganzzahligen Wurzel führt (z.B. Zweierpotenzen) da diese Wurzel zur Dimensionierung verwendet wird. In jedem Teilbereich wird ein Punkt generiert. Der Abstand des Punktes zum Mittelpunkt eines Teilbereich ist zufällig. Dieses Verfahren garantiert, das die Punkte auf die Teilbereiche verteilt werden und sich nicht innerhalb eines Teilbereichs zu Ansammlungen  vereinen können.
+
+
 
 <figure>
     <img src="..\..\..\Resources\Samplers\Images\JitteredSampler01.png" style="width:25%">
@@ -195,26 +196,25 @@ ToDo: GenerateSamples() Erläuterung
 ```c#
 public override void GenerateSamples()
 {
-	int n = (int)Math.Sqrt(_numSamples);
-
-    for (int p = 0; p < _numSets; ++p)
-    {
-    	for (int j = 0; j < n; ++j)
-        {
-        	for (int k = 0; k < n; ++k)
-            {
-            	float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
-                float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);                
+ int n = (int)Math.Sqrt(_numSamples);
+ for (int p = 0; p < _numSets; ++p)
+ {
+  for (int j = 0; j < n; ++j)
+  {
+   for (int k = 0; k < n; ++k)
+   {
+    float hRnd = UnityEngine.Random.Range(0f, _hStep - 1e-5f);
+    float vRnd = UnityEngine.Random.Range(0f, _vStep - 1e-5f);                
 				
-                Vector2 sp = new Vector2(
-                    (k * _hStep + hRnd) / (float)n,
-                    (j * _vStep + vRnd) / (float)n
-                );
+    Vector2 sp = new Vector2(
+     (k * _hStep + hRnd) / (float)n,
+     (j * _vStep + vRnd) / (float)n
+    );
                 
-                _samples.Add(sp);
-        	}
-    	}
-	}
+    _samples.Add(sp);
+   }
+  }
+ }
 }
 ```
 
@@ -224,6 +224,52 @@ public override void GenerateSamples()
 
 ## N-Rooks Sampler
 
+Eine weitere Verbesserung der Ergebnisqualität kann mit dem `NRooksSampler` erreicht werden. Ähnlich dem vorherigen Verfahren wird der Bereich in `_numSamples` $\times$ `_numSamples` einheitliche Teilbereiche aufgeteilt. Es werden `_numSamples`$^2$ Punkte generiert. Zusätzlich wird jedem Punkt die Kondition auferlegt, dass seine $x$- und $y$-Koordinate im gesamten Muster einzigartig ist. Entsprechend werden die Punkte mit Koordinaten an der Hauptdiagonale des Quadrats initialisiert. 
+
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\NRooksSampler02.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 4.1: Initialisierung der Punkte an der Hauptdiagonale (n=16) [1]</b>
+    </figcaption>
+</figure>
+
+Im nächsten Schritt werden die kalkulierten $x$- und $y$-Koordinaten mit einem Algorithmus so vertauscht, dass die Punkte immer noch die Einzigartigkeitsbedingung erfüllen, jedoch zufällig verteilt sind. 
+
+
+
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\NRooksSampler03.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 4.2: Punkte nach der Neuordnung der Koordinaten (n=16) [1]</b>
+    </figcaption>
+</figure>  
+
+Betrachtet man das Muster . Die Verteilung weist in den einzelnen, singulären Dimensionen (1D) $x$ und $y$ im Vergleich zu einem `JitteredSampler` eine Verbesserung auf. Vergleicht man das komplette Muster (2D) jedoch mit einem `RandomSampler`, so ist keine signifikante Verbesserung der Verteilung ersichtlich.
+
+
+
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\NRooksSampler01.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.1: Beispielmuster eines NRooksSampler (n=256) [1]</b>
+    </figcaption>
+</figure>
+
+ 
+
+ToDo: `GenerateSamples()`
+
+
+
+ToDo: `ShuffleXCoordinates()`, `ShuffleYCoordinates()` 
+
+```c#
+private void ShuffleXCoordinates();
+private void ShuffleYCoordinates();
+```
+
+
+
 
 
 
@@ -232,7 +278,53 @@ public override void GenerateSamples()
 
 ## Multi Jittered Sampler
 
+ToDo: Verfahren
+
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\MultiJitteredSampler01.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.1: Verteilung eines RandomSampler Muster in x- und y-Richtung [1]</b>
+    </figcaption>
+</figure>
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\MultiJitteredSampler02.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.2: Beispielmuster eines RandomSampler mit n=256 [1]</b>
+    </figcaption>
+</figure>
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\MultiJitteredSampler03.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.2: Beispielmuster eines RandomSampler mit n=256 [1]</b>
+    </figcaption>
+</figure>
+
+
+
 ## Hammersley Sampler
+
+ToDo: Verfahren
+
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\HammersleySampler01.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.1: Verteilung eines RandomSampler Muster in x- und y-Richtung [1]</b>
+    </figcaption>
+</figure>
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\HammersleySampler02.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.2: Beispielmuster eines RandomSampler mit n=256 [1]</b>
+    </figcaption>
+</figure>
+<figure>
+    <img src="..\..\..\Resources\Samplers\Images\HammersleySampler03.jpg" style="width:25%">
+    <figcaption style="padding:5px; text-align:left;">
+        <b>Abbildung 2.2: Beispielmuster eines RandomSampler mit n=256 [1]</b>
+    </figcaption>
+</figure>
+
+
 
 
 
