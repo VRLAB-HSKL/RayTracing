@@ -7,21 +7,18 @@ public class Lambertian : AbstractBRDF
     private float _kd;
     
     // Reflection coefficient
-    public float KD { get => _kd; set { _kd = value; } }
+    public float ReflectionCoefficient { get => _kd; set { _kd = value; } }
     
     private Color _cd;  
     
     // Diffuse color
-    public Color CD { get => _cd; set { _cd = value; } }
+    public Color DiffuseColor { get => _cd; set { _cd = value; } }
 
     public Lambertian() : base()
     {
         _kd = 0.5f;
         _cd = new Color(0f, 0f, 0f);
     }
-
-
-
 
     public override Color F(RaycastHit hit, Vector3 wo, Vector3 wi)
     {
@@ -48,8 +45,7 @@ public class Lambertian : AbstractBRDF
 
         wi = sp.x * u + sp.y * v + sp.z * w;
         wi = wi.normalized;
-
-        // ToDo: Make sure this dot product is correct
+                
         pdf = Vector3.Dot(hit.normal, wi) * INV_PI;
 
         return (_kd * _cd * INV_PI);

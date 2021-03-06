@@ -14,12 +14,20 @@ public class AmbientLight : AbstractLight
     /// </summary>
     public Color LightColor { get; set; }
 
+    /// <summary>
+    /// Default constructor
+    /// </summary>
     public AmbientLight() : base()
     {
         _ls = 1f;
         LightColor = Color.white;
     }
 
+    /// <summary>
+    /// Argument construcotr
+    /// </summary>
+    /// <param name="ls">Radiance scaling factor</param>
+    /// <param name="color">Light color</param>
     public AmbientLight(float ls, Color color) : base()
     {
         _ls = ls;

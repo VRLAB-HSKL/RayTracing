@@ -6,8 +6,8 @@ public class ReflectiveMaterial : PhongMaterial
 {
     PerfectSpecular _reflectiveBRDF;
 
-    public ReflectiveMaterial(Vector3 rayDir, RayTraceUtility.WorldInformation world)
-        : base(rayDir, world)
+    public ReflectiveMaterial(Vector3 rayDir)
+        : base(rayDir)
     {
         _reflectiveBRDF = new PerfectSpecular();
     }
@@ -26,14 +26,17 @@ public class ReflectiveMaterial : PhongMaterial
     {
         //Debug.Log("ReflectShade - Depth: " + depth);
 
+        // Calculate direct illumination
         Color L = base.Shade(hit, depth);
 
+        // Calculate reflection based color parts
         Vector3 wo = -_rayDir;
         Vector3 wi = Vector3.zero;
         Color fr = _reflectiveBRDF.SampleF(hit, wo, out wi);
         Ray reflected_ray = new Ray(hit.point, wi);
 
-        L += fr * RayTraceUtility.GlobalWorld.Tracer.TraceRay(reflected_ray, depth + 1) * Vector3.Dot(hit.normal, wi);
+        L += fr * RayTraceUtility.GlobalWorld.Tracer.TraceRay(reflected_ray, depth + 1)
+                * Vector3.Dot(hit.normal, wi);
 
         return L;
     }

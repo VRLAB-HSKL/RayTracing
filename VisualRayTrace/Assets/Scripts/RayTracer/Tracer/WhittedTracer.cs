@@ -13,15 +13,13 @@ public class WhittedTracer : AbstractTracer
 
     public WhittedTracer(int maxDepth)
     {
-        //_maxDepth = maxDepth;
-        _maxDist = 30f;
-        _layerMask = ~(1 << 9);
-        _bgColor = Color.black;
+        _maxDist = RayTraceUtility.Raycast_Distance;
+        _layerMask = RayTraceUtility.LayerMask;
+        _bgColor = RayTraceUtility.GlobalWorld.BackgroundColor;
     }
 
     public WhittedTracer(int maxDepth, float maxDist, int layerMask, Color bgColor)
     {
-        //_maxDepth = maxDepth;
         _maxDist = maxDist;
         _layerMask = layerMask;
         _bgColor = bgColor;
@@ -70,48 +68,23 @@ public class WhittedTracer : AbstractTracer
                         {
                             case RayTraceUtility.MaterialType.Metal:
                                 //Debug.Log("Metal Hit!");
-
-                                ReflectiveMaterial metalMat = new ReflectiveMaterial(ray.direction, RayTraceUtility.GlobalWorld);
-                                metalMat.SetKA(RayTraceUtility.Metal_KA);
-                                metalMat.SetKD(RayTraceUtility.Metal_KD);
-                                metalMat.SetCD(mat.color);
-                                metalMat.SetKS(RayTraceUtility.Metal_KS);
-                                metalMat.SetExp(RayTraceUtility.Metal_EXP);
-                                metalMat.SetKR(RayTraceUtility.Metal_KR);
-                                metalMat.SetCR(Color.white);
-                                return metalMat.Shade(hit, depth);
-
-                            //return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Metal, mat.color);
+                                RayTraceUtility.MetalMaterial.SetDir(ray.direction);
+                                RayTraceUtility.MetalMaterial.SetCD(mat.color);
+                                return RayTraceUtility.MetalMaterial.Shade(hit, depth);
 
                             case RayTraceUtility.MaterialType.Dielectric:
-                                DielectricMaterial dielectricMat =
-                                    new DielectricMaterial(
-                                        ray.direction, RayTraceUtility.GlobalWorld,
-                                        //0.5f, 2000f, 1.55f, 0.1f, 0.9f
-                                        Color.white, Color.white
-                                    );
-
-                                dielectricMat.SetKS(RayTraceUtility.Dielectric_KS);
-                                dielectricMat.SetExp(RayTraceUtility.Dielectric_EXP);
-                                dielectricMat.SetEtaIn(RayTraceUtility.Dielectric_EtaIN);
-                                dielectricMat.SetEtaOut(RayTraceUtility.Dielectric_EtaOUT);
-
-                                dielectricMat.SetCD(mat.color); //Color.white);//mat.color);
-                                return dielectricMat.Shade(hit, depth);
-
-                            //return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.Dielectric, mat.color);
+                                //Debug.Log("Dielectric Hit!");
+                                RayTraceUtility.GlassMaterial.SetDir(ray.direction);
+                                RayTraceUtility.GlassMaterial.SetCD(mat.color);
+                                return RayTraceUtility.GlassMaterial.Shade(hit, depth);
 
                             default:
                             case RayTraceUtility.MaterialType.SolidColor:
-
-                                var tmpMat = new PhongMaterial(ray.direction, RayTraceUtility.GlobalWorld);
                                 //Debug.Log("SolidColor - InitMatColor: " + mat.color);
-                                tmpMat.SetCD(mat.color);
-                                Color tmpColor = tmpMat.Shade(hit, depth);
-                                //Debug.Log("SolidColor - ShadedColor: " + tmpColor);
-                                return tmpColor;
+                                RayTraceUtility.SolidColorMaterial.SetDir(ray.direction);                                
+                                RayTraceUtility.SolidColorMaterial.SetCD(mat.color);
+                                return RayTraceUtility.SolidColorMaterial.Shade(hit, depth);
 
-                                //return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.SolidColor, mat.color);
                         }
                     }
 

@@ -6,7 +6,8 @@ public abstract class AbstractBTDF
 {
     protected readonly static float INV_PI = 0.3183098861837906715F;
 
-    //protected AbstractSampler _sampler;
+    protected static AbstractSampler _sampler = 
+        new MultiJitteredSampler(83, 50, RayTraceUtility.H_STEP, RayTraceUtility.V_STEP);
 
     //public void SetSampler(AbstractSampler sampler)
     //{

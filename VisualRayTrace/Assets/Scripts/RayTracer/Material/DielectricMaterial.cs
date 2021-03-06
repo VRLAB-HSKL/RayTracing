@@ -13,8 +13,8 @@ public class DielectricMaterial : PhongMaterial
     FresnelReflectorBRDF _fresnelBRDF;
     FresnelTransmitterBTDF _fresnelBTDF;
 
-    public DielectricMaterial(Vector3 raydir, RayTraceUtility.WorldInformation world, Color cfIn, Color cfOut)
-        : base(raydir, world)
+    public DielectricMaterial(Vector3 raydir, Color cfIn, Color cfOut)
+        : base(raydir)
     {
         CfIn = cfIn;
         CfOut = cfOut;
@@ -26,6 +26,7 @@ public class DielectricMaterial : PhongMaterial
 
     public void SetExp(float exp)
     {
+        //ToDo: Implement this
         return;
     }
 

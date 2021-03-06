@@ -7,14 +7,12 @@ public class TransparentMaterial : PhongMaterial
     private PerfectSpecular _reflectiveBRDF;
     private PerfectTransmitterBTDF _specularBTDF;
 
-    public TransparentMaterial(Vector3 rayDir, RayTraceUtility.WorldInformation world, 
+    public TransparentMaterial(Vector3 rayDir, 
         float ks, float exp, float ior, float kr, float kt)
-        : base(rayDir, world)
+        : base(rayDir)
     {
         _reflectiveBRDF = new PerfectSpecular();
         _specularBTDF = new PerfectTransmitterBTDF(rayDir);
-
-
 
         _specularBRDF.KS = ks;
         _specularBRDF.SetSpecularExponent(exp);
@@ -23,6 +21,7 @@ public class TransparentMaterial : PhongMaterial
 
         _reflectiveBRDF.ReflectionCoefficient = kr;
         _specularBTDF.KT = kt;
+
     }
 
 

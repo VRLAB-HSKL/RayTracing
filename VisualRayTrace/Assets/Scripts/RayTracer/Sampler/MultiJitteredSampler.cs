@@ -14,7 +14,6 @@ public class MultiJitteredSampler : AbstractSampler
     public override void GenerateSamples()
     {
         // _numSamples needs to be a perfect square
-
         int n = (int)System.Math.Sqrt((float)_numSamples);
         float subcell_width = _hStep / ((float)_numSamples);
         float subcell_height = _vStep / ((float)_numSamples);

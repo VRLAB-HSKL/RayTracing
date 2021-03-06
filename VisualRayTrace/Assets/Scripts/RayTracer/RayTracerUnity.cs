@@ -269,9 +269,13 @@ public class RayTracerUnity : MonoBehaviour
         _aaStrategy = new AntiAliasingStrategy(SamplingMethod, SampleSize, SampleSetCount, hStep, vStep);
 
         // Initialize static members
-        RayTraceUtility.GlobalWorld = new RayTraceUtility.WorldInformation(_viewPortInfo);
+        RayTraceUtility.H_STEP = hStep;
+        RayTraceUtility.V_STEP = vStep;
+        
+        RayTraceUtility.GlobalWorld = new RayTraceUtility.WorldInformation();
         RayTraceUtility.GlobalWorld.Tracer = new WhittedTracer(RayTraceUtility.GlobalWorld.MaxDepth, RayTrace_Range, layerMask, RayTraceUtility.GlobalWorld.BackgroundColor); //new RayCastTracer(RayTrace_Range, layerMask, RayTraceUtility.GlobalWorld.BackgroundColor);
         
+
 
         //RayTraceUtility.SolidColorMaterial = new MatteMaterial();
         //RayTraceUtility.MetalMaterial = new MatteMaterial();
@@ -500,135 +504,135 @@ public class RayTracerUnity : MonoBehaviour
         return rayDir;
     }
 
-    private IEnumerator DoRayTraceAA(int hCord, int vCord)
-    {
-        Vector3 rayDir = CalculateRayDirectionVector(hCord, vCord);
+    //private IEnumerator DoRayTraceAA(int hCord, int vCord)
+    //{
+    //    Vector3 rayDir = CalculateRayDirectionVector(hCord, vCord);
 
-        //Debug.Log("(" + hCord + "," + vCord + "): " + rayDir);
+    //    //Debug.Log("(" + hCord + "," + vCord + "): " + rayDir);
 
-        // Calculate direction vectors
-        Vector3[] directionVectors = _aaStrategy.CreateAARays(rayDir);
-        int directionRayCount = directionVectors.Length;
+    //    // Calculate direction vectors
+    //    Vector3[] directionVectors = _aaStrategy.CreateAARays(rayDir);
+    //    int directionRayCount = directionVectors.Length;
 
-        //Debug.Log("DirectionRayCount: " + directionRayCount);
+    //    //Debug.Log("DirectionRayCount: " + directionRayCount);
 
-        // Create job collections
-        NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRayCount, Allocator.TempJob);
-        NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRayCount, Allocator.TempJob);
+    //    // Create job collections
+    //    NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRayCount, Allocator.TempJob);
+    //    NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRayCount, Allocator.TempJob);
 
-        for (int i = 0; i < raycastCommands.Length; ++i)
-        {
-            raycastCommands[i] = new RaycastCommand(rayOrigin, directionVectors[i], RayTrace_Range, layerMask);
-        }
+    //    for (int i = 0; i < raycastCommands.Length; ++i)
+    //    {
+    //        raycastCommands[i] = new RaycastCommand(rayOrigin, directionVectors[i], RayTrace_Range, layerMask);
+    //    }
 
-        // Add raycasts to job queue and wait for them to finish
-        JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, directionRayCount, default(JobHandle));
-        raycastHandle.Complete();
+    //    // Add raycasts to job queue and wait for them to finish
+    //    JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, directionRayCount, default(JobHandle));
+    //    raycastHandle.Complete();
 
-        List<RaycastHit> hitList = raycastHits.ToList();
+    //    List<RaycastHit> hitList = raycastHits.ToList();
 
-        // Deallocate job collections
-        raycastHits.Dispose();
-        raycastCommands.Dispose();
-        yield return null;
+    //    // Deallocate job collections
+    //    raycastHits.Dispose();
+    //    raycastCommands.Dispose();
+    //    yield return null;
 
-        Vector3 colorSummation = Vector3.zero;
-        int validHitCounter = 0;
-        for (int i = 0; i < hitList.Count(); ++i)
-        {
-            if (hitList[i].distance > 1e-3)
-            {
-                ++validHitCounter;
-                Color tmpColor = RayTraceUtility.DetermineHitColor(hitList[i], directionVectors[i]);
-                colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
-            }
-            else
-            {
-                Color c = RayTraceUtility.CreateNonHitColor(directionVectors[i]);
-                colorSummation += new Vector3(c.r, c.g, c.b);
-            }
-            yield return null;
-        }
+    //    Vector3 colorSummation = Vector3.zero;
+    //    int validHitCounter = 0;
+    //    for (int i = 0; i < hitList.Count(); ++i)
+    //    {
+    //        if (hitList[i].distance > 1e-3)
+    //        {
+    //            ++validHitCounter;
+    //            Color tmpColor = RayTraceUtility.DetermineHitColor(hitList[i], directionVectors[i]);
+    //            colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
+    //        }
+    //        else
+    //        {
+    //            Color c = RayTraceUtility.CreateNonHitColor(directionVectors[i]);
+    //            colorSummation += new Vector3(c.r, c.g, c.b);
+    //        }
+    //        yield return null;
+    //    }
 
-        //Debug.Log("RawColorSummation: " + colorSummation.ToString());
-
-
-        // Average anti-aliasing results
-        Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
+    //    //Debug.Log("RawColorSummation: " + colorSummation.ToString());
 
 
+    //    // Average anti-aliasing results
+    //    Vector3 finalColVector = colorSummation / directionRayCount; // validHitCounter;
 
-        //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
 
-        //finalColVector.x = Mathf.Sqrt(finalColVector.x);
-        //finalColVector.y = Mathf.Sqrt(finalColVector.y);
-        //finalColVector.z = Mathf.Sqrt(finalColVector.z);
-        //Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
 
-        Color finalColor = DisplayPixel(finalColVector);
+    //    //Debug.Log("FinalColorVector (before gamma correction): " + finalColVector.ToString());
 
-        //Debug.Log("FinalColor: " + finalColor.ToString());
+    //    //finalColVector.x = Mathf.Sqrt(finalColVector.x);
+    //    //finalColVector.y = Mathf.Sqrt(finalColVector.y);
+    //    //finalColVector.z = Mathf.Sqrt(finalColVector.z);
+    //    //Color finalColor = new Color(finalColVector.x, finalColVector.y, finalColVector.z);
 
-        // Set pixels on texture
-        SetTexturePixel(hCord, vCord, finalColor);
+    //    Color finalColor = DisplayPixel(finalColVector);
 
-        // Apply changes to texture
-        UpdateRenderTexture();
+    //    //Debug.Log("FinalColor: " + finalColor.ToString());
 
-        // Set line renderer point count based on settings value
-        visualRayLine.positionCount = VisualizePath ? 2 + RayTraceUtility.RT_rec_points.Count() : 2;
+    //    // Set pixels on texture
+    //    SetTexturePixel(hCord, vCord, finalColor);
 
-        // Begin visual line at the origin
-        visualRayLine.SetPosition(0, rayOrigin);
+    //    // Apply changes to texture
+    //    UpdateRenderTexture();
 
-        // Use first ray as visual representation
-        Vector3 initDir = new Vector3(rayDir.x, rayDir.y, rayDir.z);
+    //    // Set line renderer point count based on settings value
+    //    visualRayLine.positionCount = VisualizePath ? 2 + RayTraceUtility.RT_rec_points.Count() : 2;
 
-        //_viewPortInfo.DirectionVector;
-        //initDir.y += hCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
-        //initDir.z -= vCord * _viewPortInfo.HorizontalIterationStep;
+    //    // Begin visual line at the origin
+    //    visualRayLine.SetPosition(0, rayOrigin);
 
-        //Debug.Log("InitDir:" + initDir.ToString());
+    //    // Use first ray as visual representation
+    //    Vector3 initDir = new Vector3(rayDir.x, rayDir.y, rayDir.z);
 
-        Vector3 endpoint;
-        if (Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
-        {
-            endpoint = hit.point;
-        }
-        else
-        {
-            endpoint = rayOrigin + (initDir * RayTrace_Range);
-        }
+    //    //_viewPortInfo.DirectionVector;
+    //    //initDir.y += hCord * _viewPortInfo.VerticalIterationStep;   //rayDir.y += x * verticalIterationStep;
+    //    //initDir.z -= vCord * _viewPortInfo.HorizontalIterationStep;
 
-        visualRayLine.SetPosition(1, endpoint);
+    //    //Debug.Log("InitDir:" + initDir.ToString());
 
-        // On full path visualization, add all points to line renderer
-        if (VisualizePath)
-        {
-            byte counter = 2;
-            foreach (Vector3 point in RayTraceUtility.RT_rec_points)
-            {
-                visualRayLine.SetPosition(counter++, point);
-            }
-        }
+    //    Vector3 endpoint;
+    //    if (Physics.Raycast(new Ray(rayOrigin, initDir), out RaycastHit hit, RayTrace_Range, layerMask))
+    //    {
+    //        endpoint = hit.point;
+    //    }
+    //    else
+    //    {
+    //        endpoint = rayOrigin + (initDir * RayTrace_Range);
+    //    }
 
-        // ToDo: Refactor this
-        // Rotate eye to face current ray target 
-        transform.parent.rotation =
-            Quaternion.Euler(
-                new Vector3(
-                    0.0f,
-                    _eyeRotation.HorizontalEyeRotation(vCord),
-                    _eyeRotation.VerticalEyeRotation(hCord)
-                    )
-         );
+    //    visualRayLine.SetPosition(1, endpoint);
 
-        //Vector3 rotationDirection = Vector3.RotateTowards(transform.parent.position, initDir, Time.deltaTime, 0.0f);
-        //transform.parent.rotation = Quaternion.LookRotation(rotationDirection);
+    //    // On full path visualization, add all points to line renderer
+    //    if (VisualizePath)
+    //    {
+    //        byte counter = 2;
+    //        foreach (Vector3 point in RayTraceUtility.RT_rec_points)
+    //        {
+    //            visualRayLine.SetPosition(counter++, point);
+    //        }
+    //    }
 
-        yield return null;
+    //    // ToDo: Refactor this
+    //    // Rotate eye to face current ray target 
+    //    transform.parent.rotation =
+    //        Quaternion.Euler(
+    //            new Vector3(
+    //                0.0f,
+    //                _eyeRotation.HorizontalEyeRotation(vCord),
+    //                _eyeRotation.VerticalEyeRotation(hCord)
+    //                )
+    //     );
 
-    }
+    //    //Vector3 rotationDirection = Vector3.RotateTowards(transform.parent.position, initDir, Time.deltaTime, 0.0f);
+    //    //transform.parent.rotation = Quaternion.LookRotation(rotationDirection);
+
+    //    yield return null;
+
+    //}
 
 
 
@@ -747,53 +751,53 @@ public class RayTracerUnity : MonoBehaviour
 
    
 
-    private List<RaycastHit> ShootRays(Vector3[] directionRays)
-    {
-        // Create job collections
-        using (NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRays.Length, Allocator.TempJob))
-        {
-            NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRays.Length, Allocator.TempJob);
+    //private List<RaycastHit> ShootRays(Vector3[] directionRays)
+    //{
+    //    // Create job collections
+    //    using (NativeArray<RaycastHit> raycastHits = new NativeArray<RaycastHit>(directionRays.Length, Allocator.TempJob))
+    //    {
+    //        NativeArray<RaycastCommand> raycastCommands = new NativeArray<RaycastCommand>(directionRays.Length, Allocator.TempJob);
 
-            for (int i = 0; i < raycastCommands.Length; ++i)
-            {
-                raycastCommands[i] = new RaycastCommand(rayOrigin, directionRays[i], RayTrace_Range, layerMask);
-            }
+    //        for (int i = 0; i < raycastCommands.Length; ++i)
+    //        {
+    //            raycastCommands[i] = new RaycastCommand(rayOrigin, directionRays[i], RayTrace_Range, layerMask);
+    //        }
 
-            // Add raycasts to job queue and wait for them to finish
-            JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, directionRays.Length, default(JobHandle));
-            raycastHandle.Complete();
+    //        // Add raycasts to job queue and wait for them to finish
+    //        JobHandle raycastHandle = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, directionRays.Length, default(JobHandle));
+    //        raycastHandle.Complete();
 
-            // Deallocate job collections
-            //raycastHits.Dispose();
-            raycastCommands.Dispose();
+    //        // Deallocate job collections
+    //        //raycastHits.Dispose();
+    //        raycastCommands.Dispose();
 
-            return raycastHits.ToList();
-        }
-    }
+    //        return raycastHits.ToList();
+    //    }
+    //}
 
-    private Vector3 CalculatePixelColor(List<RaycastHit> hitList, Vector3[] aa_DirectionVectors)
-    {
-        Vector3 colorSummation = Vector3.zero;
-        int validHitCounter = 0;
-        for (int i = 0; i < hitList.Count(); ++i)
-        {
-            if (hitList[i].distance > 1e-3)
-            {
-                ++validHitCounter;
-                Color tmpColor = RayTraceUtility.DetermineHitColor(hitList[i], aa_DirectionVectors[i]);
-                colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
-            }
-            else
-            {
-                Color c = RayTraceUtility.CreateNonHitColor(aa_DirectionVectors[i]);
-                colorSummation += new Vector3(c.r, c.g, c.b);
-            }
+    //private Vector3 CalculatePixelColor(List<RaycastHit> hitList, Vector3[] aa_DirectionVectors)
+    //{
+    //    Vector3 colorSummation = Vector3.zero;
+    //    int validHitCounter = 0;
+    //    for (int i = 0; i < hitList.Count(); ++i)
+    //    {
+    //        if (hitList[i].distance > 1e-3)
+    //        {
+    //            ++validHitCounter;
+    //            Color tmpColor = RayTraceUtility.DetermineHitColor(hitList[i], aa_DirectionVectors[i]);
+    //            colorSummation += new Vector3(tmpColor.r, tmpColor.g, tmpColor.b);
+    //        }
+    //        else
+    //        {
+    //            Color c = RayTraceUtility.CreateNonHitColor(aa_DirectionVectors[i]);
+    //            colorSummation += new Vector3(c.r, c.g, c.b);
+    //        }
 
-            //Debug.Log("ColorSummation - Iteration " + i + ": " + colorSummation);
-            //yield return null;
-        }
-        return colorSummation;
-    }
+    //        //Debug.Log("ColorSummation - Iteration " + i + ": " + colorSummation);
+    //        //yield return null;
+    //    }
+    //    return colorSummation;
+    //}
 
     private void UpdateScene(Vector3 rayDir, Vector3 finalColVector, int hCord, int vCord)
     {

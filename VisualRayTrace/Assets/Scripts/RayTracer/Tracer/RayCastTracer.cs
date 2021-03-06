@@ -10,9 +10,9 @@ public class RayCastTracer : AbstractTracer
 
     public RayCastTracer()
     {
-        _maxDist = 30f;
-        _layerMask = ~(1 << 9);
-        _bgColor = Color.black;
+        _maxDist = RayTraceUtility.Raycast_Distance;
+        _layerMask = RayTraceUtility.LayerMask;
+        _bgColor = RayTraceUtility.GlobalWorld.BackgroundColor;
     }
 
     public RayCastTracer(float maxDist, int layerMask, Color bgColor)
@@ -32,22 +32,65 @@ public class RayCastTracer : AbstractTracer
 
     public override Color TraceRay(Ray ray, int depth)
     {
-        // ToDo: Add recursion using depth parameter
-
-        //if(Physics.Raycast(ray, out RaycastHit hitInfo, _maxDist, _layerMask))
-        //{
-        //    // ToDo: Start shading
-
-        //    return Color.white;
-        //}
-        //else
-        //{
-        //    return _bgColor;
-        //}
-
-        if(Physics.Raycast(ray, out RaycastHit hit, 30f, ~(1 << 9)))
+        if (Physics.Raycast(ray, out RaycastHit hit, _maxDist, _layerMask))
         {
-            return RayTraceUtility.DetermineHitColor(hit, ray.direction);
+            // Check if the ray hit anything
+            if (!(hit.collider is null))
+            {
+                // Material of the object that was hit
+                Material mat = hit.transform.gameObject.GetComponent<MeshRenderer>().material;
+
+                // On empty material, return error color
+                if (mat is null) return Color.red; // new Color(1, 0, 0);
+
+                // If material contains a texture, use that texture
+                if (!(mat.mainTexture is null))
+                {
+                    // Determine u,v coordinates on texture and return texture pixel color
+                    var texture = mat.mainTexture as Texture2D;
+                    Vector2 pixelUVCoords = hit.textureCoord;
+                    pixelUVCoords.x *= texture.width;
+                    pixelUVCoords.y *= texture.height;
+                    return texture.GetPixel(Mathf.FloorToInt(pixelUVCoords.x), Mathf.FloorToInt(pixelUVCoords.y));
+                }
+                else
+                {
+                    // On raw material hit, check for type
+                    switch (RayTraceUtility.DetermineMaterialType(mat))
+                    {
+                        case RayTraceUtility.MaterialType.Metal:
+                            //Debug.Log("Metal Hit!");
+                            RayTraceUtility.MetalMaterial.SetCD(mat.color); 
+                            RayTraceUtility.MetalMaterial.SetDir(ray.direction);
+                            RayTraceUtility.MetalMaterial.SetCR(Color.white);
+                            return RayTraceUtility.MetalMaterial.Shade(hit, depth);
+                                                    
+                        case RayTraceUtility.MaterialType.Dielectric:
+                            RayTraceUtility.GlassMaterial.SetDir(ray.direction);
+                            RayTraceUtility.GlassMaterial.SetCD(mat.color);
+                            return RayTraceUtility.GlassMaterial.Shade(hit, depth);
+                                                    
+                        default:
+                        case RayTraceUtility.MaterialType.SolidColor:
+
+                            var tmpMat = new PhongMaterial(ray.direction);
+                            //Debug.Log("SolidColor - InitMatColor: " + mat.color);
+                            tmpMat.SetCD(mat.color);
+                            Color tmpColor = tmpMat.Shade(hit, depth);
+                            //Debug.Log("SolidColor - ShadedColor: " + tmpColor);
+                            return tmpColor;
+
+                            //return HandleMaterial(hit, direction, RayTraceUtility.MaterialType.SolidColor, mat.color);
+                    }
+                }
+
+            }
+            else
+            {
+                // On non-hit, return non hit color
+                return RayTraceUtility.CreateNonHitColor(ray.direction);
+            }
+
         }
         else
         {

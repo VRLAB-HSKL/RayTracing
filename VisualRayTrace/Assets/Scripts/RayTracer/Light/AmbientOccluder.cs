@@ -45,20 +45,22 @@ public class AmbientOccluder : AbstractLight
 
     public override bool InShadow(Ray ray, RaycastHit hit)
     {
-        if (Physics.Raycast(ray, out RaycastHit tmpHit, 30, ~(1 << 9)))
-        {
-            // ToDo: Is this correct ?
-            
+        if (Physics.Raycast(ray, out RaycastHit tmpHit, RayTraceUtility.Raycast_Distance , RayTraceUtility.LayerMask))
+        {            
             return true;
         }
 
         return false;
-        //return RayTraceUtility.ShootRay(ray, out RaycastHit tmpHit);
     }
 
     public override Color L(RaycastHit hit)
     {
         _w = hit.normal;
+
+        Vector3 wCrossUp = Vector3.Cross(_w, Vector3.up);
+        _v = wCrossUp / Vector3.Magnitude(wCrossUp);
+
+        _u = Vector3.Cross(_v, _w);
 
         // Jitter up vector in case normal is vertical
         _v.x = Mathf.Pow(_w.x, 0.0072f);

@@ -101,9 +101,22 @@ public class CanvasSettings : MonoBehaviour
         }
         */
 
+        // Set menu states
         SetMainState(new MainMenuState(gameObject, InitMenuName));
         SetSamplersSubMenuState(new RandomSamplerState(SamplersSubMenu, InitSamplerMenuName));
         SetMaterialsSubMenuState(new SolidColorMaterialState(MaterialsSubMenu, InitMaterialMenuName));
+
+        // Set sliders
+        MetalKASlider.value = RayTraceUtility.Metal_KA;
+        MetalKDSlider.value = RayTraceUtility.Metal_KD;
+        MetalKSSlider.value = RayTraceUtility.Metal_KS;
+        MetalExpSlider.value = RayTraceUtility.Metal_EXP;
+        MetalKRSlider.value = RayTraceUtility.Metal_KR;
+
+        DielectricKSSlider.value = RayTraceUtility.Dielectric_KS;
+        DielectricExpSlider.value = RayTraceUtility.Dielectric_EXP;
+        DielectricEtaInSlider.value = RayTraceUtility.Dielectric_EtaIN;
+        DielectricEtaOutSlider.value = RayTraceUtility.Dielectric_EtaOUT;
     }
 
     private void SetInfoText(string gameObjectName, string textAssetRessourcePath)
@@ -251,5 +264,65 @@ public class CanvasSettings : MonoBehaviour
         }
     }
 
+    #region Material Values
 
+    [Header("Metal Parameters")]
+    public Slider MetalKASlider;
+    public Slider MetalKDSlider;
+    public Slider MetalKSSlider;
+    public Slider MetalExpSlider;
+    public Slider MetalKRSlider;
+
+    public void UpdateMetalKA()
+    {
+        RayTraceUtility.Metal_KA = MetalKASlider.value;
+    }
+
+    public void UpdateMetalKD()
+    {
+        RayTraceUtility.Metal_KD = MetalKDSlider.value;
+    }
+
+    public void UpdateMetalKS()
+    {
+        RayTraceUtility.Metal_KS = MetalKSSlider.value;
+    }
+
+    public void UpdateMetalExp()
+    {
+        RayTraceUtility.Metal_EXP = (int)MetalExpSlider.value;
+    }
+
+    public void UpdateMetalKR()
+    {
+        RayTraceUtility.Metal_KR = MetalKRSlider.value;
+    }
+
+    [Header("Dielectric Parameters")]
+    public Slider DielectricKSSlider;
+    public Slider DielectricExpSlider;
+    public Slider DielectricEtaInSlider;
+    public Slider DielectricEtaOutSlider;
+
+    public void UpdateDielectricKS()
+    {
+        RayTraceUtility.Dielectric_KS = DielectricKSSlider.value;
+    }
+
+    public void UpdateDielectricExp()
+    {
+        RayTraceUtility.Dielectric_EXP = DielectricExpSlider.value;
+    }
+
+    public void UpdateDielectricEtaIn()
+    {
+        RayTraceUtility.Dielectric_EtaIN = DielectricEtaInSlider.value;
+    }
+
+    public void UpdateDielectricEtaOut()
+    {
+        RayTraceUtility.Dielectric_EtaOUT = DielectricEtaOutSlider.value;
+    }
+
+    #endregion Material Values
 }

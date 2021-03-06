@@ -178,3 +178,10 @@
 2021-02-04 06:26:27,956 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
 2021-02-04 06:26:28,010 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:fe712f19-a56f-469e-949f-d8ec0faecb0a,port:8211
 2021-02-04 06:27:24,523 [10] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-02-04 15:02:48,540 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-02-04 15:02:48,815 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:5565cefb-4554-4576-be7d-72cbeb8a6e80,port:8723
+2021-02-04 15:02:55,083 [1] ERROR SharedPluginServer.Program [(null)] - CefRuntime return 0
+2021-02-04 16:06:43,536 [10] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-02-04 16:07:39,834 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-02-04 16:07:39,898 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:02041cf1-a9c6-439f-b76e-fdd4f7d8f12d,port:8492
+2021-02-04 16:28:30,294 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
