@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class PhongMaterial : AbstractMaterial
 {
-    protected Lambertian _ambientBRDF;
-    protected Lambertian _diffuseBRDF;
-    protected GlossySpecular _specularBRDF;
+    protected LambertianBRDF _ambientBRDF;
+    protected LambertianBRDF _diffuseBRDF;
+    protected GlossySpecularBRDF _specularBRDF;
 
     protected Vector3 _rayDir;
 
@@ -17,9 +17,9 @@ public class PhongMaterial : AbstractMaterial
 
     public PhongMaterial(Vector3 rayDir)
     {
-        _ambientBRDF = new Lambertian();
-        _diffuseBRDF = new Lambertian();
-        _specularBRDF = new GlossySpecular();
+        _ambientBRDF = new LambertianBRDF();
+        _diffuseBRDF = new LambertianBRDF();
+        _specularBRDF = new GlossySpecularBRDF();
 
         _rayDir = rayDir;
     }

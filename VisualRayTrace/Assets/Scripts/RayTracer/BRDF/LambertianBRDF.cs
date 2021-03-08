@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Lambertian : AbstractBRDF
+public class LambertianBRDF : AbstractBRDF
 {
     private float _kd;
     
@@ -14,7 +14,7 @@ public class Lambertian : AbstractBRDF
     // Diffuse color
     public Color DiffuseColor { get => _cd; set { _cd = value; } }
 
-    public Lambertian() : base()
+    public LambertianBRDF() : base()
     {
         _kd = 0.5f;
         _cd = new Color(0f, 0f, 0f);

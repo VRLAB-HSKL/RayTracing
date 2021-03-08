@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PerfectSpecular : AbstractBRDF
+public class PerfectSpecularBRDF : AbstractBRDF
 {
     private float _kr; // reflection coefficient
     
@@ -10,7 +10,7 @@ public class PerfectSpecular : AbstractBRDF
     
     public Color ReflectionColor { get; set; } // the reflection color
     
-    public PerfectSpecular() : base()
+    public PerfectSpecularBRDF() : base()
     {
         _kr = 0f;
         ReflectionColor = new Color(1f, 1f, 1f);

@@ -2,19 +2,33 @@
 using UnityEngine;
 
 
+/// <summary>
+/// Public enum used in unity inspector to show the different samplers available in the architecture
+/// </summary>
 public enum AASamplingStrategy { Regular, Random, Jittered, NRooks, MultiJittered, Hammersley }
 
+/// <summary>
+/// Wrapper class for sampling 
+/// </summary>
 public class AntiAliasingStrategy
 {
-    protected AbstractSampler _sampler;
+    private AbstractSampler _sampler;
 
-    protected int _SampleSize;
-    protected int _rootSampleSize;
-    protected int _halfRootSampleSize;
+    private int _SampleSize;
+    private int _rootSampleSize;
+    private int _halfRootSampleSize;
 
     protected float _hStep;
     protected float _vStep;
 
+    /// <summary>
+    /// Argument constructor
+    /// </summary>
+    /// <param name="sampleStrat">Sampling strategy</param>
+    /// <param name="sampleSize">Number of samples</param>
+    /// <param name="numSteps">Number of steps</param>
+    /// <param name="hStep">Horizontal step width</param>
+    /// <param name="vStep">Vertical step height</param>
     public AntiAliasingStrategy(AASamplingStrategy sampleStrat, int sampleSize, int numSteps, float hStep, float vStep)
     {
         _SampleSize = sampleSize > 0 ? sampleSize : 1;
@@ -61,6 +75,11 @@ public class AntiAliasingStrategy
     }
 
 
+    /// <summary>
+    /// Precalculate and cache anit-aliasing rays
+    /// </summary>
+    /// <param name="initRay"></param>
+    /// <returns></returns>
     public Vector3[] CreateAARays(Vector3 initRay)
     {
         List<Vector3> rayList = new List<Vector3>();
@@ -71,16 +90,6 @@ public class AntiAliasingStrategy
             Vector3 tmpRay = new Vector3(initRay.x + offsets.x, initRay.y + offsets.y, initRay.z);
             rayList.Add(tmpRay);
         }
-
-        //for (int x = -_halfRootSampleSize; x < _halfRootSampleSize; ++x)
-        //{
-        //    for (int y = -_halfRootSampleSize; y < _halfRootSampleSize; ++y)
-        //    {
-        //        Vector3 tmpRay =
-        //            new Vector3(initRay.x + (x * _hStep), initRay.y + (y * _vStep), initRay.z);
-        //        rayList.Add(tmpRay);
-        //    }
-        //}
 
         return rayList.ToArray();
     }

@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class MatteMaterial : AbstractMaterial
 {
-    private Lambertian _ambientBRDF;
-    private Lambertian _diffuseBRDF;
+    private LambertianBRDF _ambientBRDF;
+    private LambertianBRDF _diffuseBRDF;
 
     private Vector3 _rayDir;  
 
     public MatteMaterial(Vector3 rayDir)
     {
-        _ambientBRDF = new Lambertian();
-        _diffuseBRDF = new Lambertian();
+        _ambientBRDF = new LambertianBRDF();
+        _diffuseBRDF = new LambertianBRDF();
 
         _rayDir = rayDir;
     }

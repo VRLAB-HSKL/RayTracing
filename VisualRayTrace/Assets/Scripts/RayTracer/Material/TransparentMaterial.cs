@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class TransparentMaterial : PhongMaterial
 {
-    private PerfectSpecular _reflectiveBRDF;
+    private PerfectSpecularBRDF _reflectiveBRDF;
     private PerfectTransmitterBTDF _specularBTDF;
 
     public TransparentMaterial(Vector3 rayDir, 
         float ks, float exp, float ior, float kr, float kt)
         : base(rayDir)
     {
-        _reflectiveBRDF = new PerfectSpecular();
+        _reflectiveBRDF = new PerfectSpecularBRDF();
         _specularBTDF = new PerfectTransmitterBTDF(rayDir);
 
         _specularBRDF.KS = ks;

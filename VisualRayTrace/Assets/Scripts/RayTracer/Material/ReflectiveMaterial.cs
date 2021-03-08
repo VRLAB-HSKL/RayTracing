@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class ReflectiveMaterial : PhongMaterial
 {
-    PerfectSpecular _reflectiveBRDF;
+    PerfectSpecularBRDF _reflectiveBRDF;
 
     public ReflectiveMaterial(Vector3 rayDir)
         : base(rayDir)
     {
-        _reflectiveBRDF = new PerfectSpecular();
+        _reflectiveBRDF = new PerfectSpecularBRDF();
     }
 
     public void SetKR(float kr)

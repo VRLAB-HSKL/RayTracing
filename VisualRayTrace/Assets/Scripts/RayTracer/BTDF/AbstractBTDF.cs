@@ -9,10 +9,10 @@ public abstract class AbstractBTDF
     protected static AbstractSampler _sampler = 
         new MultiJitteredSampler(83, 50, RayTraceUtility.H_STEP, RayTraceUtility.V_STEP);
 
-    //public void SetSampler(AbstractSampler sampler)
-    //{
-    //    _sampler = sampler;
-    //}
+    public void SetSampler(AbstractSampler sampler)
+    {
+        _sampler = sampler;
+    }
 
     public abstract Color F(RaycastHit hit, Vector3 wo, Vector3 wi);
     public abstract Color SampleF(RaycastHit hit, Vector3 wo, out Vector3 wt);

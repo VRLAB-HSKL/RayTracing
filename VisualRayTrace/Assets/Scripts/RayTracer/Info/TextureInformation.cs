@@ -77,4 +77,12 @@ public class TextureInformation
 
         PixelColorData[index] = col;
     }
+
+    /// <summary>
+    /// Resets the texture
+    /// </summary>
+    public void ResetTexture()
+    {
+        Texture = new RenderTexture(TextureDimension, TextureDimension, 1);
+    }
 }

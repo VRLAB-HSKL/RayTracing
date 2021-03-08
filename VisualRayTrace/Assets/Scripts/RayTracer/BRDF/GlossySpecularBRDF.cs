@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GlossySpecular : AbstractBRDF
+public class GlossySpecularBRDF : AbstractBRDF
 {
     private float _ks;
     public float KS { get => _ks; set { _ks = value; } }
@@ -12,7 +12,7 @@ public class GlossySpecular : AbstractBRDF
 
     public float SpecularExponent { get => _exp; set { _exp = value; } }
 
-    public GlossySpecular() : base()
+    public GlossySpecularBRDF() : base()
     {
         _ks = 0f;
         _cs = new Color(1f, 1f, 1f);
