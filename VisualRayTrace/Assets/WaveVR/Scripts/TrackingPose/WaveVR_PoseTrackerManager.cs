@@ -63,6 +63,7 @@ public enum WVR_SimulationOption
 	NoSimulation = 2
 };
 
+[DisallowMultipleComponent]
 public class WaveVR_PoseTrackerManager : MonoBehaviour
 {
 	private const string LOG_TAG = "WaveVR_PoseTrackerManager";

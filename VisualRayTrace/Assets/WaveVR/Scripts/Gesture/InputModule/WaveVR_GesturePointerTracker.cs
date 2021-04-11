@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using WVR_Log;
 using UnityEngine.EventSystems;
 
+[DisallowMultipleComponent]
 [RequireComponent(typeof(Camera), typeof(PhysicsRaycaster))]
 public class WaveVR_GesturePointerTracker : MonoBehaviour {
 	private const string LOG_TAG = "WaveVR_GesturePointerTracker";

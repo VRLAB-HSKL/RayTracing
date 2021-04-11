@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -8,7 +8,6 @@
 // conditions signed by you and all SDK and API requirements,
 // specifications, and documentation provided by HTC to You."
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using wvr;
@@ -67,7 +66,9 @@ public class WaveVR_UnityEditor : MonoBehaviour
 		WVR_InputId.WVR_InputId_Alias1_DPad_Down,
 		WVR_InputId.WVR_InputId_Alias1_Volume_Up,
 		WVR_InputId.WVR_InputId_Alias1_Volume_Down,
-		WVR_InputId.WVR_InputId_Alias1_Digital_Trigger,
+		WVR_InputId.WVR_InputId_Alias1_Bumper,
+		WVR_InputId.WVR_InputId_Alias1_A,
+		WVR_InputId.WVR_InputId_Alias1_B,
 		WVR_InputId.WVR_InputId_Alias1_Back,
 		WVR_InputId.WVR_InputId_Alias1_Enter,
 		WVR_InputId.WVR_InputId_Alias1_Touchpad,
@@ -200,64 +201,100 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	{
 		switch (type)
 		{
-		case WVR_DeviceType.WVR_DeviceType_Controller_Right:
-			if (IsButtonAvailable (type, WVR_InputId.WVR_InputId_Alias1_Touchpad))
-			{
-				if (Input.GetMouseButtonDown (1))   // right mouse key
+			case WVR_DeviceType.WVR_DeviceType_Controller_Right:
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Touchpad))
 				{
-					DEBUG ("ButtonPressed() " + type + ", touchpad.");
-					mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
-					mEvent.device.type = type;
-					mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Touchpad;
-					hasEvent = true;
+					if (Input.GetMouseButtonDown(1))   // right mouse key
+					{
+						DEBUG("ButtonPressed() " + type + ", touchpad.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Touchpad;
+						hasEvent = true;
+					}
 				}
-			}
 
-			if (IsButtonAvailable (type, WVR_InputId.WVR_InputId_Alias1_Trigger))
-			{
-				if (Input.GetKeyDown (KeyCode.T))
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Trigger))
 				{
-					DEBUG ("ButtonPressed() " + type + ", trigger.");
-					mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
-					mEvent.device.type = type;
-					mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
-					hasEvent = true;
+					if (Input.GetKeyDown(KeyCode.T))
+					{
+						DEBUG("ButtonPressed() " + type + ", trigger.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
+						hasEvent = true;
+					}
 				}
-			}
 
-			for (int _p = 0; _p < pressIds.Length; _p++)
-			{
-				if (pressIds [_p] == mEvent.input.inputId)
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Bumper))
 				{
-					state_press_right [_p] = true;
-					break;
+					if (Input.GetKeyDown(KeyCode.B))
+					{
+						DEBUG("ButtonPressed() " + type + ", bumper.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Bumper;
+						hasEvent = true;
+					}
 				}
-			}
-			break;
-		case WVR_DeviceType.WVR_DeviceType_Controller_Left:
-			if (IsButtonAvailable (type, WVR_InputId.WVR_InputId_Alias1_Trigger))
-			{
-				if (Input.GetKeyDown (KeyCode.R))
-				{
-					DEBUG ("ButtonPressed() " + type + ", trigger.");
-					mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
-					mEvent.device.type = type;
-					mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
-					hasEvent = true;
-				}
-			}
 
-			for (int _p = 0; _p < pressIds.Length; _p++)
-			{
-				if (pressIds [_p] == mEvent.input.inputId)
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_A))
 				{
-					state_press_left [_p] = true;
-					break;
+					if (Input.GetKeyDown(KeyCode.X))
+					{
+						DEBUG("ButtonPressed() " + type + ", A_X.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_A;
+						hasEvent = true;
+					}
 				}
-			}
-			break;
-		default:
-			break;
+
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_B))
+				{
+					if (Input.GetKeyDown(KeyCode.Y))
+					{
+						DEBUG("ButtonPressed() " + type + ", B_Y.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_B;
+						hasEvent = true;
+					}
+				}
+
+				for (int _p = 0; _p < pressIds.Length; _p++)
+				{
+					if (pressIds[_p] == mEvent.input.inputId)
+					{
+						state_press_right[_p] = true;
+						break;
+					}
+				}
+				break;
+			case WVR_DeviceType.WVR_DeviceType_Controller_Left:
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Trigger))
+				{
+					if (Input.GetKeyDown(KeyCode.R))
+					{
+						DEBUG("ButtonPressed() " + type + ", trigger.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonPressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
+						hasEvent = true;
+					}
+				}
+
+				for (int _p = 0; _p < pressIds.Length; _p++)
+				{
+					if (pressIds[_p] == mEvent.input.inputId)
+					{
+						state_press_left[_p] = true;
+						break;
+					}
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -265,64 +302,100 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	{
 		switch (type)
 		{
-		case WVR_DeviceType.WVR_DeviceType_Controller_Right:
-			if (IsButtonAvailable (type, WVR_InputId.WVR_InputId_Alias1_Touchpad))
-			{
-				if (Input.GetMouseButtonUp (1))	 // right mouse key
+			case WVR_DeviceType.WVR_DeviceType_Controller_Right:
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Touchpad))
 				{
-					DEBUG ("ButtonUnpressed() " + type + ", touchpad.");
-					mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
-					mEvent.device.type = type;
-					mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Touchpad;
-					hasEvent = true;
+					if (Input.GetMouseButtonUp(1))   // right mouse key
+					{
+						DEBUG("ButtonUnpressed() " + type + ", touchpad.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Touchpad;
+						hasEvent = true;
+					}
 				}
-			}
 
-			if (IsButtonAvailable (type, WVR_InputId.WVR_InputId_Alias1_Trigger))
-			{
-				if (Input.GetKeyUp (KeyCode.T))
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Trigger))
 				{
-					DEBUG ("ButtonUnpressed() " + type + ", trigger.");
-					mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
-					mEvent.device.type = type;
-					mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
-					hasEvent = true;
+					if (Input.GetKeyUp(KeyCode.T))
+					{
+						DEBUG("ButtonUnpressed() " + type + ", trigger.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
+						hasEvent = true;
+					}
 				}
-			}
 
-			for (int _p = 0; _p < pressIds.Length; _p++)
-			{
-				if (pressIds [_p] == mEvent.input.inputId)
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Bumper))
 				{
-					state_press_right [_p] = false;
-					break;
+					if (Input.GetKeyUp(KeyCode.B))
+					{
+						DEBUG("ButtonUnpressed() " + type + ", bumper.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Bumper;
+						hasEvent = true;
+					}
 				}
-			}
-			break;
-		case WVR_DeviceType.WVR_DeviceType_Controller_Left:
-			if (IsButtonAvailable (type, WVR_InputId.WVR_InputId_Alias1_Trigger))
-			{
-				if (Input.GetKeyUp (KeyCode.R))
-				{
-					DEBUG ("ButtonUnpressed() " + type + ", trigger.");
-					mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
-					mEvent.device.type = type;
-					mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
-					hasEvent = true;
-				}
-			}
 
-			for (int _p = 0; _p < pressIds.Length; _p++)
-			{
-				if (pressIds [_p] == mEvent.input.inputId)
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_A))
 				{
-					state_press_left [_p] = false;
-					break;
+					if (Input.GetKeyUp(KeyCode.X))
+					{
+						DEBUG("ButtonUnpressed() " + type + ", A_X.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_A;
+						hasEvent = true;
+					}
 				}
-			}
-			break;
-		default:
-			break;
+
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_B))
+				{
+					if (Input.GetKeyUp(KeyCode.Y))
+					{
+						DEBUG("ButtonUnpressed() " + type + ", B_Y.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_B;
+						hasEvent = true;
+					}
+				}
+
+				for (int _p = 0; _p < pressIds.Length; _p++)
+				{
+					if (pressIds[_p] == mEvent.input.inputId)
+					{
+						state_press_right[_p] = false;
+						break;
+					}
+				}
+				break;
+			case WVR_DeviceType.WVR_DeviceType_Controller_Left:
+				if (IsButtonAvailable(type, WVR_InputId.WVR_InputId_Alias1_Trigger))
+				{
+					if (Input.GetKeyUp(KeyCode.R))
+					{
+						DEBUG("ButtonUnpressed() " + type + ", trigger.");
+						mEvent.common.type = WVR_EventType.WVR_EventType_ButtonUnpressed;
+						mEvent.device.type = type;
+						mEvent.input.inputId = WVR_InputId.WVR_InputId_Alias1_Trigger;
+						hasEvent = true;
+					}
+				}
+
+				for (int _p = 0; _p < pressIds.Length; _p++)
+				{
+					if (pressIds[_p] == mEvent.input.inputId)
+					{
+						state_press_left[_p] = false;
+						break;
+					}
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -530,7 +603,7 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	private Vector3 NECK_OFFSET = new Vector3(0, 0.15f, -0.08f);
 	// Head rotation variables.
 	private Quaternion headRotation = Quaternion.identity;
-	private float headAngleX = 0, headAngleY = 0, headAngleZ = 0;
+	//private float headAngleX = 0, headAngleY = 0, headAngleZ = 0;
 	// Head RigidTransform and Pose Matirx
 	private WaveVR_Utils.RigidTransform headRigidTransform = WaveVR_Utils.RigidTransform.identity;
 	private WVR_Matrix4f_t headPoseMatrix;
@@ -601,46 +674,76 @@ public class WaveVR_UnityEditor : MonoBehaviour
 		}
 	}
 
+	private float MinimumX = -90F;
+	private float MaximumX = 90F;
+	Quaternion ClampRotationAroundXAxis(Quaternion q)
+	{
+		q.x /= q.w;
+		q.y /= q.w;
+		q.z /= q.w;
+		q.w = 1.0f;
+
+		float angleX = 2.0f * Mathf.Rad2Deg * Mathf.Atan(q.x);
+		angleX = Mathf.Clamp(angleX, MinimumX, MaximumX);
+		q.x = Mathf.Tan(0.5f * Mathf.Deg2Rad * angleX);
+
+		return q;
+	}
+
+	private Quaternion headRotHorizontal = Quaternion.identity, headRotVertical = Quaternion.identity;
 	private void UpdateHeadPose(float axis_x, float axis_y, float axis_z)
 	{
-		if (Input.GetKey (KeyCode.LeftAlt))
+		/*if (Input.GetKey(KeyCode.LeftAlt))
 		{
 			headAngleX -= axis_y * 2.4f;
-			headAngleX = Mathf.Clamp (headAngleX, -89, 89);
+			headAngleX = Mathf.Clamp(headAngleX, -89, 89);
 			headAngleY += axis_x * 5;
 			if (headAngleY <= -180)
 			{
 				headAngleY += 360;
-			} else if (headAngleY > 180)
+			}
+			else if (headAngleY > 180)
 			{
 				headAngleY -= 360;
 			}
 		}
-		if (Input.GetKey (KeyCode.LeftControl))
+		if (Input.GetKey(KeyCode.LeftControl))
 		{
 			headAngleZ += axis_x * 5;
-			headAngleZ = Mathf.Clamp (headAngleZ, -89, 89);
+			headAngleZ = Mathf.Clamp(headAngleZ, -89, 89);
+		}
+		headRotation = Quaternion.Euler(headAngleX, headAngleY, headAngleZ);*/
+
+		if (!Input.GetKey(KeyCode.RightAlt) && !Input.GetKey(KeyCode.LeftAlt) && Input.GetMouseButton(1))    // right mouse key
+		{
+			float yRot = axis_x * 2;
+			float xRot = axis_y * 2;
+
+			headRotHorizontal *= Quaternion.Euler(0f, yRot, 0f);
+			headRotVertical *= Quaternion.Euler(-xRot, 0f, 0f);
+			headRotVertical = ClampRotationAroundXAxis(headRotVertical);
+
+			headRotation = headRotHorizontal * headRotVertical;
 		}
 
-		if (Input.GetKey (KeyCode.LeftShift))
+		if (!Input.GetKey(KeyCode.RightShift) && !Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0))   // left mouse key
 		{
 			headPosX += axis_x / 5;
 			headPosY += axis_y / 5;
 			headPosZ += axis_z;
+
+			headPosition.x = headPosX;
+			headPosition.y = headPosY;
+			headPosition.z = headPosZ;
+			if (hmdOriginModel == WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnHead_3DoF && enableNeckModel)
+			{
+				headPosition = ApplyNeckToHead(headPosition);
+			}
+			headPosition.y = hmdOriginModel == WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnGround ? headPosition.y + 1.75f : headPosition.y;
 		}
 
-		headPosition.x = headPosX;
-		headPosition.y = headPosY;
-		headPosition.z = headPosZ;
-		if (hmdOriginModel == WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnHead_3DoF && enableNeckModel)
-		{
-			headPosition = ApplyNeckToHead (headPosition);
-		}
-		headPosition.y = hmdOriginModel == WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnGround ? headPosition.y + 1.75f : headPosition.y;
-
-		headRotation = Quaternion.Euler (headAngleX, headAngleY, headAngleZ);
-		headRigidTransform.update (headPosition, headRotation);
-		headPoseMatrix = GetOpenGLMatrix44 (headPosition, headRotation);
+		headRigidTransform.update(headPosition, headRotation);
+		headPoseMatrix = GetOpenGLMatrix44(headPosition, headRotation);
 	}
 
 	private void UpdateRightPose(float axis_x, float axis_y, float axis_z)
@@ -695,18 +798,18 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	private void UpdateLefHandPose(float axis_x, float axis_y, float axis_z)
 	{
 		//-------- mouse control ---------
-		if (Input.GetKey (KeyCode.C))
+		if (Input.GetKey (KeyCode.LeftAlt))
 		{
 			leftAngleY += axis_x / 2;
 			leftAngleX -= (float)(axis_y * 1.5f);
 		}
-		if (Input.GetKey (KeyCode.X))
+		if (Input.GetKey (KeyCode.LeftControl))
 		{
 			leftAngleZ += axis_z * 5;
 		}
 		leftRotation = Quaternion.Euler (leftAngleX, leftAngleY, leftAngleZ);
 
-		if (Input.GetKey (KeyCode.Z))
+		if (Input.GetKey (KeyCode.LeftShift))
 		{
 			leftPosX += axis_x / 5;
 			leftPosY += axis_y / 5;
@@ -1094,36 +1197,39 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	{
 		for (int i = 0; i < buttons.Length; i++)
 		{
-			switch (buttons [i])
+			switch (buttons[i])
 			{
-			case WVR_InputId.WVR_InputId_Alias1_System:
-			case WVR_InputId.WVR_InputId_Alias1_Menu:
-			case WVR_InputId.WVR_InputId_Alias1_Grip:
-			case WVR_InputId.WVR_InputId_Alias1_DPad_Left:
-			case WVR_InputId.WVR_InputId_Alias1_DPad_Up:
-			case WVR_InputId.WVR_InputId_Alias1_DPad_Right:
-			case WVR_InputId.WVR_InputId_Alias1_DPad_Down:
-			case WVR_InputId.WVR_InputId_Alias1_Volume_Up:
-			case WVR_InputId.WVR_InputId_Alias1_Volume_Down:
-			case WVR_InputId.WVR_InputId_Alias1_Digital_Trigger:
-			case WVR_InputId.WVR_InputId_Alias1_Enter:
-				inputTable [i].source.id = buttons [i];
-				inputTable [i].source.capability = (uint)WVR_InputType.WVR_InputType_Button;
-				inputTable [i].source.axis_type = WVR_AnalogType.WVR_AnalogType_None;
-				break;
-			case WVR_InputId.WVR_InputId_Alias1_Touchpad:
-			case WVR_InputId.WVR_InputId_Alias1_Thumbstick:
-				inputTable [i].source.id = buttons [i];
-				inputTable [i].source.capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
-				inputTable [i].source.axis_type = WVR_AnalogType.WVR_AnalogType_2D;
-				break;
-			case WVR_InputId.WVR_InputId_Alias1_Trigger:
-				inputTable [i].source.id = buttons [i];
-				inputTable [i].source.capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
-				inputTable [i].source.axis_type = WVR_AnalogType.WVR_AnalogType_1D;
-				break;
-			default:
-				break;
+				case WVR_InputId.WVR_InputId_Alias1_System:
+				case WVR_InputId.WVR_InputId_Alias1_Menu:
+				case WVR_InputId.WVR_InputId_Alias1_Grip:
+				case WVR_InputId.WVR_InputId_Alias1_DPad_Left:
+				case WVR_InputId.WVR_InputId_Alias1_DPad_Up:
+				case WVR_InputId.WVR_InputId_Alias1_DPad_Right:
+				case WVR_InputId.WVR_InputId_Alias1_DPad_Down:
+				case WVR_InputId.WVR_InputId_Alias1_Volume_Up:
+				case WVR_InputId.WVR_InputId_Alias1_Volume_Down:
+				case WVR_InputId.WVR_InputId_Alias1_Bumper:
+				case WVR_InputId.WVR_InputId_Alias1_A:
+				case WVR_InputId.WVR_InputId_Alias1_B:
+				case WVR_InputId.WVR_InputId_Alias1_Back:
+				case WVR_InputId.WVR_InputId_Alias1_Enter:
+					inputTable[i].source.id = buttons[i];
+					inputTable[i].source.capability = (uint)WVR_InputType.WVR_InputType_Button;
+					inputTable[i].source.axis_type = WVR_AnalogType.WVR_AnalogType_None;
+					break;
+				case WVR_InputId.WVR_InputId_Alias1_Touchpad:
+				case WVR_InputId.WVR_InputId_Alias1_Thumbstick:
+					inputTable[i].source.id = buttons[i];
+					inputTable[i].source.capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
+					inputTable[i].source.axis_type = WVR_AnalogType.WVR_AnalogType_2D;
+					break;
+				case WVR_InputId.WVR_InputId_Alias1_Trigger:
+					inputTable[i].source.id = buttons[i];
+					inputTable[i].source.capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
+					inputTable[i].source.axis_type = WVR_AnalogType.WVR_AnalogType_1D;
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -1139,14 +1245,20 @@ public class WaveVR_UnityEditor : MonoBehaviour
 			count = (uint)inputTable_Hmd.Length;
 			break;
 		case WVR_DeviceType.WVR_DeviceType_Controller_Right:
-			for (int i = 0; i < inputTable_Right.Length; i++)
-				table [i] = inputTable_Right [i];
-			count = (uint)inputTable_Right.Length;
+				if (inputTable_Right != null)
+				{
+					for (int i = 0; i < inputTable_Right.Length; i++)
+						table[i] = inputTable_Right[i];
+					count = (uint)inputTable_Right.Length;
+				}
 			break;
 		case WVR_DeviceType.WVR_DeviceType_Controller_Left:
-			for (int i = 0; i < inputTable_Left.Length; i++)
-				table [i] = inputTable_Left [i];
-			count = (uint)inputTable_Left.Length;
+				if (inputTable_Left != null)
+				{
+					for (int i = 0; i < inputTable_Left.Length; i++)
+						table[i] = inputTable_Left[i];
+					count = (uint)inputTable_Left.Length;
+				}
 			break;
 		default:
 			break;
@@ -1266,7 +1378,6 @@ public class WaveVR_UnityEditor : MonoBehaviour
 		WVR_HandGestureType.WVR_HandGestureType_OK,
 		WVR_HandGestureType.WVR_HandGestureType_ThumbUp,
 		WVR_HandGestureType.WVR_HandGestureType_IndexUp,
-		WVR_HandGestureType.WVR_HandGestureType_Pinch
 	};
 	private int staticGesturesIndex = 0;
 	private float staticGestureTime = 0;
@@ -1501,6 +1612,7 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	private List<WVR_Vector3f_t> rightBonesPosition = new List<WVR_Vector3f_t>();
 	private List<WVR_Quatf_t> rightBonesOrientation = new List<WVR_Quatf_t> ();
 	private WVR_Matrix4f_t rightWristMatrix;
+	private Vector3 rightPinchDirection = new Vector3(0, 0.5f, 1);
 
 	private void InitializeBonesAndHandTrackingData()
 	{
@@ -1771,88 +1883,100 @@ public class WaveVR_UnityEditor : MonoBehaviour
 	}
 
 	private WVR_PoseOriginModel gestureOriginModel = WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnHead;
-	public WVR_Result GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+
+	public WVR_Result GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel)
 	{
 		if (!isHandTrackingEnabled)
 			return WVR_Result.WVR_Error_FeatureNotSupport;
 
 		gestureOriginModel = originModel;
 
-		data.left.IsValidPose = true;
-		data.left.PoseTimestamp_ns = Time.frameCount;
+		pose.left.state.type = WVR_HandPoseType.WVR_HandPoseType_Invalid;
+
+		skeleton.left.wrist.IsValidPose = true;
+		skeleton.left.wrist.PoseTimestamp_ns = Time.frameCount;
+		skeleton.left.confidence = 1;
 		// Left wrist.
-		data.left.PoseMatrix = leftWristMatrix;
-		data.left.RawPose.position = leftBonesPosition[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_L];
-		data.left.RawPose.rotation = leftBonesOrientation[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_L];
+		skeleton.left.wrist.PoseMatrix = leftWristMatrix;
+		skeleton.left.wrist.RawPose.position = leftBonesPosition[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_L];
+		skeleton.left.wrist.RawPose.rotation = leftBonesOrientation[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_L];
 
 		// Left thumb.
-		data.leftFinger.thumb.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOIN1_L];
-		data.leftFinger.thumb.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOIN2_L];
-		data.leftFinger.thumb.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOIN3_L];
-		data.leftFinger.thumb.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_TIP_L];
+		skeleton.left.thumb.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOIN1_L];
+		skeleton.left.thumb.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOIN2_L];
+		skeleton.left.thumb.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOIN3_L];
+		skeleton.left.thumb.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_TIP_L];
 
 		// Left index.
-		data.leftFinger.index.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT1_L];
-		data.leftFinger.index.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT2_L];
-		data.leftFinger.index.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT3_L];
-		data.leftFinger.index.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_TIP_L];
+		skeleton.left.index.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT1_L];
+		skeleton.left.index.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT2_L];
+		skeleton.left.index.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT3_L];
+		skeleton.left.index.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_TIP_L];
 
 		// Left middle.
-		data.leftFinger.middle.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT1_L];
-		data.leftFinger.middle.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT2_L];
-		data.leftFinger.middle.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT3_L];
-		data.leftFinger.middle.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_TIP_L];
+		skeleton.left.middle.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT1_L];
+		skeleton.left.middle.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT2_L];
+		skeleton.left.middle.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT3_L];
+		skeleton.left.middle.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_TIP_L];
 
 		// Left ring.
-		data.leftFinger.ring.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT1_L];
-		data.leftFinger.ring.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT2_L];
-		data.leftFinger.ring.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT3_L];
-		data.leftFinger.ring.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_TIP_L];
+		skeleton.left.ring.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT1_L];
+		skeleton.left.ring.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT2_L];
+		skeleton.left.ring.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT3_L];
+		skeleton.left.ring.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_TIP_L];
 
 		// Left pinky.
-		data.leftFinger.pinky.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT1_L];
-		data.leftFinger.pinky.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT2_L];
-		data.leftFinger.pinky.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT3_L];
-		data.leftFinger.pinky.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_TIP_L];
+		skeleton.left.pinky.joint1 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT1_L];
+		skeleton.left.pinky.joint2 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT2_L];
+		skeleton.left.pinky.joint3 = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT3_L];
+		skeleton.left.pinky.tip = leftBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_TIP_L];
 
 		// ---------------------------------------------------------------------------------------
 
-		data.right.IsValidPose = true;
-		data.right.PoseTimestamp_ns = Time.frameCount;
+		pose.right.state.type = WVR_HandPoseType.WVR_HandPoseType_Pinch;
+		pose.right.pinch.state.type = WVR_HandPoseType.WVR_HandPoseType_Pinch;
+		pose.right.pinch.finger = WVR_FingerType.WVR_FingerType_Index;
+		pose.right.pinch.strength = 0.8f;
+		pose.right.pinch.origin = rightBonesPosition[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_R];
+		pose.right.pinch.direction = GetOpenGLVector(rightPinchDirection);
+
+		skeleton.right.wrist.IsValidPose = true;
+		skeleton.right.wrist.PoseTimestamp_ns = Time.frameCount;
+		skeleton.right.confidence = 0.5f;
 		// Right wrist.
-		data.right.PoseMatrix = rightWristMatrix;
-		data.right.RawPose.position = rightBonesPosition[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_R];
-		data.right.RawPose.rotation = rightBonesOrientation[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_R];
+		skeleton.right.wrist.PoseMatrix = rightWristMatrix;
+		skeleton.right.wrist.RawPose.position = rightBonesPosition[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_R];
+		skeleton.right.wrist.RawPose.rotation = rightBonesOrientation[(int)EWaveVRGestureBoneType.BONE_HAND_WRIST_R];
 
 		// Right thumb.
-		data.rightFinger.thumb.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOINT1_R];
-		data.rightFinger.thumb.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOINT2_R];
-		data.rightFinger.thumb.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOINT3_R];
-		data.rightFinger.thumb.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_TIP_R];
+		skeleton.right.thumb.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOINT1_R];
+		skeleton.right.thumb.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOINT2_R];
+		skeleton.right.thumb.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_JOINT3_R];
+		skeleton.right.thumb.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_THUMB_TIP_R];
 
 		// Right index.
-		data.rightFinger.index.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT1_R];
-		data.rightFinger.index.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT2_R];
-		data.rightFinger.index.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT3_R];
-		data.rightFinger.index.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_TIP_R];
+		skeleton.right.index.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT1_R];
+		skeleton.right.index.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT2_R];
+		skeleton.right.index.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_JOINT3_R];
+		skeleton.right.index.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_INDEX_TIP_R];
 
 		// Right middle.
-		data.rightFinger.middle.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT1_R];
-		data.rightFinger.middle.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT2_R];
-		data.rightFinger.middle.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT3_R];
-		data.rightFinger.middle.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_TIP_R];
+		skeleton.right.middle.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT1_R];
+		skeleton.right.middle.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT2_R];
+		skeleton.right.middle.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_JOINT3_R];
+		skeleton.right.middle.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_MIDDLE_TIP_R];
 
 		// Right ring.
-		data.rightFinger.ring.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT1_R];
-		data.rightFinger.ring.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT2_R];
-		data.rightFinger.ring.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT3_R];
-		data.rightFinger.ring.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_TIP_R];
+		skeleton.right.ring.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT1_R];
+		skeleton.right.ring.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT2_R];
+		skeleton.right.ring.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_JOINT3_R];
+		skeleton.right.ring.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_RING_TIP_R];
 
 		// Right pinky.
-		data.rightFinger.pinky.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT1_R];
-		data.rightFinger.pinky.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT2_R];
-		data.rightFinger.pinky.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT3_R];
-		data.rightFinger.pinky.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_TIP_R];
+		skeleton.right.pinky.joint1 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT1_R];
+		skeleton.right.pinky.joint2 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT2_R];
+		skeleton.right.pinky.joint3 = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_JOINT3_R];
+		skeleton.right.pinky.tip = rightBonesPosition [(int)EWaveVRGestureBoneType.BONE_PINKY_TIP_R];
 
 		return WVR_Result.WVR_Success;
 	}

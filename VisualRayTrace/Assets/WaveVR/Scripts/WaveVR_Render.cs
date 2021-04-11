@@ -1995,10 +1995,13 @@ public class WaveVR_Render : MonoBehaviour
 #endif
 			if (isDuringFirstFrame)
 				Log.d(TAG, "FirstFrame : call WVR_PreRenderEye +++");
+			Interop.WVR_SetFoveationConfig(contextRTOnly.eye, ref contextRTOnly.foveationParams[(contextRTOnly.eye == WVR_Eye.WVR_Eye_Left) ? 0 : 1]);
+			if (contextRTOnly.textureParam[0].target == WVR_TextureTarget.WVR_TextureTarget_2D_ARRAY)
+				Interop.WVR_SetFoveationConfig(WVR_Eye.WVR_Eye_Right, ref contextRTOnly.foveationParams[1]);
 			Interop.WVR_PreRenderEye(
 				contextRTOnly.eye,
 				contextRTOnly.textureCount == 0 ? null : contextRTOnly.textureParam,
-				contextRTOnly.foveationCount == 0 ? null : contextRTOnly.foveationParams);
+				null);
 			if (isDuringFirstFrame)
 				Log.d(TAG, "FirstFrame : call WVR_PreRenderEye ---");
 		}

@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -149,8 +149,6 @@ public class WaveVR_ControllerListener : MonoBehaviour
 		}
 
 		internal WaveVR_Utils.WVR_ButtonState_t state, pre_state;
-		internal WVR_Axis_t axis;
-		internal WVR_PoseState_t pose;
 
 		public delegate void ButtonEventHandler();
 		// Listeners of press

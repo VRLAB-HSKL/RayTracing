@@ -19,6 +19,7 @@ using WVR_Log;
 using UnityEngine.UI;
 using wvr;
 
+[DisallowMultipleComponent]
 public class WaveVR_GazeInputModule : PointerInputModule
 {
 	private static string LOG_TAG = "WaveVR_GazeInputModule";

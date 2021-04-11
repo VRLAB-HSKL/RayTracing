@@ -28,6 +28,10 @@ namespace wvr.render
 		// update FoveatedRenderingParameter by this script.
 		private static bool useValuesInInspector = true;
 
+		[SerializeField]
+		private WVR_FoveationMode foveationMode = WVR_FoveationMode.Default;
+		public WVR_FoveationMode FoveationMode { get { return foveationMode; } set { foveationMode = value; isDirty = true; } }
+
 		[Tooltip("The the central region around left eye's focal point.  We guarantee the" +
 			" resolution here will be 100%.  The FOV value is diameter.")]
 		[Range(1, 179)]
@@ -158,7 +162,7 @@ namespace wvr.render
 #endif
 					if (Interop.WVR_IsRenderFoveationSupport())
 					{
-						Interop.WVR_RenderFoveation(true);
+						Interop.WVR_RenderFoveationMode(foveationMode);
 
 						Instance = this;
 						isEnabled = true;
@@ -194,7 +198,7 @@ namespace wvr.render
 #if UNITY_EDITOR && UNITY_ANDROID
 				if (!Application.isEditor)
 #endif
-				Interop.WVR_RenderFoveation(false);
+				Interop.WVR_RenderFoveationMode(WVR_FoveationMode.Disable);
 				isEnabled = false;
 			}
 		}

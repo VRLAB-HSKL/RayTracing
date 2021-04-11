@@ -1,3 +1,4 @@
+
 // "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
@@ -38,7 +39,12 @@ public class ButtonIndication
 		DPad_Left,
 		DPad_Right,
 		DPad_Up,
-		DPad_Down
+		DPad_Down,
+		Bumper,
+		ButtonA,
+		ButtonB,
+		ButtonX,
+		ButtonY
 	};
 
 	public KeyIndicator keyType;
@@ -76,6 +82,7 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 
 	[Header("Indication feature")]
 	public bool showIndicator = false;
+	public bool autoLayout = false;
 	[Range(0, 90.0f)]
 	public float showIndicatorAngle = 30.0f;
 	public bool hideIndicatorByRoll = true;
@@ -112,6 +119,13 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 	private GameObject _HMD = null;
 	private bool needRedraw = true;
 	private GameObject Emitter = null;
+	private WaveVR_AutoLayout auto = null;
+
+	//For AutoLayout
+	[HideInInspector]
+	public DisplayPlane _displayPlane = DisplayPlane.Button_Auto;
+	[HideInInspector]
+	public List<AutoButtonIndication> autoButtonIndicationList = new List<AutoButtonIndication>();
 
 	// reset for redraw
 	void resetIndicator()
@@ -129,9 +143,12 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 
 	void OnApplicationPause(bool pauseStatus)
 	{
-		if (pauseStatus == true)
+		if (!autoLayout)
 		{
-			resetIndicator();
+			if (pauseStatus == true)
+			{
+				resetIndicator();
+			}
 		}
 	}
 
@@ -160,17 +177,27 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 
 	void OnEnable()
 	{
-		WaveVR_Utils.Event.Listen(WaveVR_Utils.Event.ADAPTIVE_CONTROLLER_READY, onAdaptiveControllerModelReady);
+		if(!autoLayout)
+			WaveVR_Utils.Event.Listen(WaveVR_Utils.Event.ADAPTIVE_CONTROLLER_READY, onAdaptiveControllerModelReady);
 
 	}
 
 	void OnDisable()
 	{
-		WaveVR_Utils.Event.Remove(WaveVR_Utils.Event.ADAPTIVE_CONTROLLER_READY, onAdaptiveControllerModelReady);
+		if(!autoLayout)
+			WaveVR_Utils.Event.Remove(WaveVR_Utils.Event.ADAPTIVE_CONTROLLER_READY, onAdaptiveControllerModelReady);
 	}
 
 	// Use this for initialization
 	void Start() {
+		auto = this.GetComponent<WaveVR_AutoLayout>();
+		if (auto != null)
+		{
+			auto.enabled = false;
+		}
+
+		if (autoLayout)
+			createAutoIndicator();
 	}
 
 	public void createIndicator() {
@@ -314,6 +341,36 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 					partName2 = "__CM__DigitalTriggerKey.__CM__DigitalTriggerKey";
 					indicationKey = "DigitalTriggerKey";
 					break;
+				case ButtonIndication.KeyIndicator.Bumper:
+					partName = "_[CM]_BumperKey";
+					partName1 = "__CM__BumperKey";
+					partName2 = "__CM__BumperKey.__CM__BumperKey";
+					indicationKey = "BumperKey";
+					break;
+				case ButtonIndication.KeyIndicator.ButtonA:
+					partName = "_[CM]_ButtonA";
+					partName1 = "__CM__ButtonA";
+					partName2 = "__CM__ButtonA.__CM__ButtonA";
+					indicationKey = "ButtonA";
+					break;
+				case ButtonIndication.KeyIndicator.ButtonB:
+					partName = "_[CM]_ButtonB";
+					partName1 = "__CM__ButtonB";
+					partName2 = "__CM__ButtonB.__CM__ButtonB";
+					indicationKey = "ButtonB";
+					break;
+				case ButtonIndication.KeyIndicator.ButtonX:
+					partName = "_[CM]_ButtonX";
+					partName1 = "__CM__ButtonX";
+					partName2 = "__CM__ButtonX.__CM__ButtonX";
+					indicationKey = "ButtonX";
+					break;
+				case ButtonIndication.KeyIndicator.ButtonY:
+					partName = "_[CM]_ButtonY";
+					partName1 = "__CM__ButtonY";
+					partName2 = "__CM__ButtonY.__CM__ButtonY";
+					indicationKey = "ButtonY";
+					break;
 				default:
 					partName = "_[CM]_unknown";
 					partName1 = "__CM__unknown";
@@ -356,6 +413,7 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 				lineGO.name = partName + "Line";
 
 				var li = lineGO.GetComponent<IndicatorLine>();
+				li.autoLayout = autoLayout;
 				li.lineColor = lineColor;
 				li.lineLength = lineLength;
 				li.startWidth = lineStartWidth;
@@ -492,57 +550,83 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 		needRedraw = false;
 	}
 
+	public void createAutoIndicator()
+	{
+		if (auto == null)
+		{
+			auto = this.GetComponent<WaveVR_AutoLayout>();
+			if(auto == null)
+			{
+				this.gameObject.AddComponent<WaveVR_AutoLayout>();
+				auto = this.GetComponent<WaveVR_AutoLayout>();
+				if(auto == null)
+					Log.w(LOG_TAG, "WaveVR_AutoLayout can't be found.", true);
+			}
+		}
+
+		if (auto != null)
+		{
+			auto.enabled = true;
+		}
+
+		//auto flag
+		auto.autoLayout = autoLayout;
+
+		// Indicator feature
+		auto.showIndicator = showIndicator;
+		auto.showIndicatorAngle = showIndicatorAngle;
+		auto.hideIndicatorByRoll = hideIndicatorByRoll;
+		auto.basedOnEmitter = basedOnEmitter;
+		auto.displayPlane = _displayPlane;
+		// Line customization
+		auto.lineStartWidth = lineStartWidth;
+		auto.lineEndWidth = lineEndWidth;
+		auto.lineColor = lineColor;
+		// Text customization
+		auto.textCharacterSize = textCharacterSize;
+		auto.zhCharactarSize = zhCharactarSize;
+		auto.textFontSize = textFontSize;
+		auto.textColor = textColor;
+		//Auto Button Indication
+		auto.buttonIndicationList = autoButtonIndicationList;
+
+		auto.CreateIndicator();
+	}
+
 	// Update is called once per frame
 	void Update () {
 		if (!showIndicator) return;
 		if (_HMD == null) return;
-		checkCount++;
-		if (checkCount > 50) {
-			checkCount = 0;
-			if (rw != null)
-			{
-				if (rw.getSystemLanguage() != sysLang || rw.getSystemCountry() != sysCountry) resetIndicator();
-			}
-		}
-		if (needRedraw == true) createIndicator();
 
-		Vector3 _targetForward;
-		if (basedOnEmitter && (Emitter != null))
-			_targetForward = Emitter.transform.rotation * Vector3.forward;
-		else
-			_targetForward = transform.rotation * Vector3.forward;
-		Vector3 _targetRight = transform.rotation * Vector3.right;
-		Vector3 _targetUp = transform.rotation * Vector3.up;
-
-		float zAngle = Vector3.Angle(_targetForward, _HMD.transform.forward);
-		float xAngle = Vector3.Angle(_targetRight, _HMD.transform.right);
-#if DEBUG
-		float yAngle = Vector3.Angle(_targetUp, _HMD.transform.up);
-
-		if (Log.gpl.Print)
-			Log.d(LOG_TAG, "Z: " + _targetForward + ":" + zAngle + ", X: " + _targetRight + ":" + xAngle + ", Y: " + _targetUp + ":" + yAngle);
-#endif
-		if ((_targetForward.y < (showIndicatorAngle / 90f)) || (zAngle < showIndicatorAngle))
+		if(!autoLayout)
 		{
-			foreach (ComponentsIndication ci in compInd)
-			{
-				if (ci.LineIndicator != null)
+			checkCount++;
+			if (checkCount > 50) {
+				checkCount = 0;
+				if (rw != null)
 				{
-					ci.LineIndicator.SetActive(false);
-				}
-				if (ci.DestObject != null)
-				{
-					ci.DestObject.SetActive(false);
+					if (rw.getSystemLanguage() != sysLang || rw.getSystemCountry() != sysCountry) resetIndicator();
 				}
 			}
+			if (needRedraw == true) createIndicator();
 
-			return;
-		}
+			Vector3 _targetForward;
+			if (basedOnEmitter && (Emitter != null))
+				_targetForward = Emitter.transform.rotation * Vector3.forward;
+			else
+				_targetForward = transform.rotation * Vector3.forward;
+			Vector3 _targetRight = transform.rotation * Vector3.right;
+			Vector3 _targetUp = transform.rotation * Vector3.up;
 
-		if (hideIndicatorByRoll)
-		{
-			if (xAngle > 90.0f)
-			//if ((_targetRight.x < 0f) || (xAngle > 90f))
+			float zAngle = Vector3.Angle(_targetForward, _HMD.transform.forward);
+			float xAngle = Vector3.Angle(_targetRight, _HMD.transform.right);
+	#if DEBUG
+			float yAngle = Vector3.Angle(_targetUp, _HMD.transform.up);
+
+			if (Log.gpl.Print)
+				Log.d(LOG_TAG, "Z: " + _targetForward + ":" + zAngle + ", X: " + _targetRight + ":" + xAngle + ", Y: " + _targetUp + ":" + yAngle);
+	#endif
+			if ((_targetForward.y < (showIndicatorAngle / 90f)) || (zAngle < showIndicatorAngle))
 			{
 				foreach (ComponentsIndication ci in compInd)
 				{
@@ -558,54 +642,76 @@ public class WaveVR_ShowIndicator : MonoBehaviour {
 
 				return;
 			}
-		}
 
-		foreach (ComponentsIndication ci in compInd)
-		{
-			if (ci.SourceObject != null)
+			if (hideIndicatorByRoll)
 			{
-				ci.SourceObject.SetActive(true);
-			}
-
-			if (ci.LineIndicator != null)
-			{
-				ci.LineIndicator.SetActive(true);
-			}
-
-			if (ci.DestObject != null)
-			{
-				ci.DestObject.SetActive(true);
-				if (ci.followButtonRoration == false)
+				if (xAngle > 90.0f)
+				//if ((_targetRight.x < 0f) || (xAngle > 90f))
 				{
-					ci.LineIndicator.transform.position = ci.SourceObject.transform.position + ci.Offset;
-					if (ci.alignment == ButtonIndication.Alignment.RIGHT)
+					foreach (ComponentsIndication ci in compInd)
 					{
-						ci.DestObject.transform.position = new Vector3(transform.position.x + lineLength, ci.SourceObject.transform.position.y, ci.SourceObject.transform.position.z) + ci.Offset;
-					} else
-					{
-						ci.DestObject.transform.position = new Vector3(transform.position.x - lineLength, ci.SourceObject.transform.position.y, ci.SourceObject.transform.position.z) + ci.Offset;
-
-						TextMesh[] texts = ci.DestObject.GetComponentsInChildren<TextMesh>();
-						foreach (TextMesh tm in texts)
+						if (ci.LineIndicator != null)
 						{
-							if (tm != null)
-							{
-								tm.anchor = TextAnchor.MiddleRight;
-								tm.alignment = TextAlignment.Right;
-							}
+							ci.LineIndicator.SetActive(false);
+						}
+						if (ci.DestObject != null)
+						{
+							ci.DestObject.SetActive(false);
 						}
 					}
 
-					Transform[] transforms = ci.DestObject.GetComponentsInChildren<Transform>();
-					foreach (Transform tf in transforms)
+					return;
+				}
+			}
+
+			foreach (ComponentsIndication ci in compInd)
+			{
+				if (ci.SourceObject != null)
+				{
+					ci.SourceObject.SetActive(true);
+				}
+
+				if (ci.LineIndicator != null)
+				{
+					ci.LineIndicator.SetActive(true);
+				}
+
+				if (ci.DestObject != null)
+				{
+					ci.DestObject.SetActive(true);
+					if (ci.followButtonRoration == false)
 					{
-						if (tf != null)
+						ci.LineIndicator.transform.position = ci.SourceObject.transform.position + ci.Offset;
+						if (ci.alignment == ButtonIndication.Alignment.RIGHT)
 						{
-							tf.rotation = Quaternion.identity;
+							ci.DestObject.transform.position = new Vector3(transform.position.x + lineLength, ci.SourceObject.transform.position.y, ci.SourceObject.transform.position.z) + ci.Offset;
+						} else
+						{
+							ci.DestObject.transform.position = new Vector3(transform.position.x - lineLength, ci.SourceObject.transform.position.y, ci.SourceObject.transform.position.z) + ci.Offset;
+
+							TextMesh[] texts = ci.DestObject.GetComponentsInChildren<TextMesh>();
+							foreach (TextMesh tm in texts)
+							{
+								if (tm != null)
+								{
+									tm.anchor = TextAnchor.MiddleRight;
+									tm.alignment = TextAlignment.Right;
+								}
+							}
+						}
+
+						Transform[] transforms = ci.DestObject.GetComponentsInChildren<Transform>();
+						foreach (Transform tf in transforms)
+						{
+							if (tf != null)
+							{
+								tf.rotation = Quaternion.identity;
+							}
 						}
 					}
 				}
 			}
 		}
+
 	}
 }

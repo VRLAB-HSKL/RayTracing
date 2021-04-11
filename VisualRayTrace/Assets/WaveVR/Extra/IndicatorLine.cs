@@ -26,6 +26,11 @@ public class IndicatorLine : MonoBehaviour {
 	public Color lineColor = Color.white;
 	public ButtonIndication.Alignment alignment = ButtonIndication.Alignment.RIGHT;
 
+	[HideInInspector]
+	public bool autoLayout = false;
+	[HideInInspector]
+	public AutoButtonIndication.Alignment autoAlignment = AutoButtonIndication.Alignment.Right;
+
 	private float startOffset = 0f;
 	private float endOffset = 0.03f;
 
@@ -37,7 +42,12 @@ public class IndicatorLine : MonoBehaviour {
 	private void Validate()
 	{
 		endOffset = lineLength;
-		if (alignment == ButtonIndication.Alignment.LEFT)
+		if (!autoLayout && alignment == ButtonIndication.Alignment.LEFT)
+		{
+			endOffset = endOffset * (-1.0f);
+		}
+
+		if (autoLayout && autoAlignment == AutoButtonIndication.Alignment.Left)
 		{
 			endOffset = endOffset * (-1.0f);
 		}

@@ -193,7 +193,12 @@ public class WaveVR_ControllerResourceHolder {
 		PrintDebugLog("---  thread start  ---");
 		PrintInfoLog("Render model name: " + curr.renderModelName + ", merge = " + curr.mergeToOne);
 
-		IntPtr ptrError = Marshal.AllocHGlobal(64);
+		IntPtr ptrError = Marshal.AllocHGlobal(256);
+		for (int i = 0; i < 256; i++)
+		{
+			Marshal.WriteByte(ptrError, i, 0);
+		}
+
 		string FBXFile = modelFolderPath + "/";
 		if (ms == ModelSpecify.MS_Dominant)
 		{
@@ -212,18 +217,21 @@ public class WaveVR_ControllerResourceHolder {
 		if (File.Exists(FBXFile))
 		{
 			ret = Interop.WVR_OpenMesh(FBXFile, ref sessionid, ptrError, mergeTo);
-			errorCode = Marshal.PtrToStringAnsi(ptrError);
 
 			if (!ret)
 			{
+				errorCode = Marshal.PtrToStringAnsi(ptrError);
 				PrintWarningLog("FBX parse failed: " + errorCode);
+				Marshal.FreeHGlobal(ptrError);
 				return;
 			}
 		} else
 		{
 			PrintWarningLog("FBX is not found");
+			Marshal.FreeHGlobal(ptrError);
 			return;
 		}
+		Marshal.FreeHGlobal(ptrError);
 
 		PrintInfoLog("FBX parse succeed, sessionid = " + sessionid);
 		bool finishLoading = Interop.WVR_GetSectionCount(sessionid, ref sectionCount);
@@ -244,6 +252,10 @@ public class WaveVR_ControllerResourceHolder {
 			curr.SectionInfo[i] = new MeshInfo_t();
 
 			curr.FBXInfo[i].meshName = Marshal.AllocHGlobal(256);
+			for (int k=0;k<256;k++)
+			{
+				Marshal.WriteByte(curr.FBXInfo[i].meshName, k, 0);
+			}
 		}
 
 

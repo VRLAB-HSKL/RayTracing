@@ -4,10 +4,11 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: WaveVR_Reticle
-  m_Shader: {fileID: 4800000, guid: 24980c51fcdfeb94980ea14c1fe1fdc4, type: 3}
+  m_Shader: {fileID: 4800000, guid: d7c0278ba42999f4a8f0c02519e61eed, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
@@ -69,6 +70,7 @@ Material:
     - _OuterDiameter: 2
     - _Parallax: 0.02
     - _SrcBlend: 1
+    - _TriggerProgress: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

@@ -25,6 +25,7 @@ public enum ERaycastStartPoint
 	RightEye
 }
 
+[DisallowMultipleComponent]
 public class WaveVR_ControllerInputModule : BaseInputModule
 {
 	private const string LOG_TAG = "WaveVR_ControllerInputModule";

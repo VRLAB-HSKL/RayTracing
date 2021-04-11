@@ -301,10 +301,10 @@ public class WVR_Android : wvr.Interop.WVR_Base
 	}
 
 	[DllImportAttribute("wvr_api", EntryPoint = "WVR_GetHandTrackingData", CallingConvention = CallingConvention.Cdecl)]
-	public static extern WVR_Result WVR_GetHandTrackingData (ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec);
-	public override WVR_Result GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+	public static extern WVR_Result WVR_GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel);
+	public override WVR_Result GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel)
 	{
-		return WVR_GetHandTrackingData (ref data, originModel, predictedMilliSec);
+		return WVR_GetHandTrackingData (ref skeleton, ref pose, originModel);
 	}
 	#endregion
 
@@ -426,21 +426,21 @@ public class WVR_Android : wvr.Interop.WVR_Base
 			return WVR_GetCameraFrameBuffer_Android(pFramebuffer, frameBufferSize);
 		}
 
-		[DllImportAttribute("wvrutility", EntryPoint = "GetFrameBufferWithPoseState", CallingConvention = CallingConvention.Cdecl)]
+		[DllImportAttribute("camerautility", EntryPoint = "GetFrameBufferWithPoseState", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool GetFrameBufferWithPoseState_Android(IntPtr pFramebuffer, uint frameBufferSize, WVR_PoseOriginModel origin, uint predictInMs, ref WVR_PoseState_t poseState);
 		public override bool GetFrameBufferWithPoseState(IntPtr pFramebuffer, uint frameBufferSize, WVR_PoseOriginModel origin, uint predictInMs, ref WVR_PoseState_t poseState)
 		{
 			return GetFrameBufferWithPoseState_Android(pFramebuffer, frameBufferSize, origin, predictInMs, ref poseState);
 		}
 
-		[DllImportAttribute("wvrutility", EntryPoint = "ReleaseAll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImportAttribute("camerautility", EntryPoint = "ReleaseAll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void ReleaseCameraTexture_Android();
 		public override void ReleaseCameraTexture()
 		{
 			ReleaseCameraTexture_Android();
 		}
 
-		[DllImportAttribute("wvrutility", EntryPoint = "DrawTextureWithBuffer", CallingConvention = CallingConvention.Cdecl)]
+		[DllImportAttribute("camerautility", EntryPoint = "DrawTextureWithBuffer", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool DrawTextureWithBuffer_Android(uint textureId, WVR_CameraImageFormat imgFormat, IntPtr frameBuffer, uint size, uint width, uint height);
 		public override bool DrawTextureWithBuffer(IntPtr textureId, WVR_CameraImageFormat imgFormat, IntPtr frameBuffer, uint size, uint width, uint height)
 		{
@@ -643,6 +643,41 @@ public class WVR_Android : wvr.Interop.WVR_Base
 		public override void RenderFoveation(bool enable)
 		{
 			WVR_RenderFoveation_Android(enable);
+		}
+
+		[DllImportAttribute("wvr_api", EntryPoint = "WVR_RenderFoveationMode", CallingConvention = CallingConvention.Cdecl)]
+		public static extern WVR_Result WVR_RenderFoveationMode_Android(WVR_FoveationMode mode);
+		public override WVR_Result RenderFoveationMode(WVR_FoveationMode mode)
+		{
+			return WVR_RenderFoveationMode_Android(mode);
+		}
+
+		[DllImportAttribute("wvr_api", EntryPoint = "WVR_SetFoveationConfig", CallingConvention = CallingConvention.Cdecl)]
+		public static extern WVR_Result WVR_SetFoveationConfig_Android(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams);
+		public override WVR_Result SetFoveationConfig(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams)
+		{
+			return WVR_SetFoveationConfig_Android(eye, ref foveationParams);
+		}
+
+		[DllImportAttribute("wvr_api", EntryPoint = "WVR_GetFoveationConfig", CallingConvention = CallingConvention.Cdecl)]
+		public static extern WVR_Result WVR_GetFoveationConfig_Android(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams);
+		public override WVR_Result GetFoveationConfig(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams)
+		{
+			return WVR_GetFoveationConfig_Android(eye, ref foveationParams);
+		}
+
+		[DllImportAttribute("wvr_api", EntryPoint = "WVR_IsRenderFoveationEnabled", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool WVR_IsRenderFoveationEnabled_Android();
+		public override bool IsRenderFoveationEnabled()
+		{
+			return WVR_IsRenderFoveationEnabled_Android();
+		}
+
+		[DllImportAttribute("wvr_api", EntryPoint = "WVR_IsRenderFoveationDefaultOn", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool WVR_IsRenderFoveationDefaultOn_Android();
+		public override bool IsRenderFoveationDefaultOn()
+		{
+			return WVR_IsRenderFoveationDefaultOn_Android();
 		}
 
 		[DllImportAttribute("wvr_api", EntryPoint = "WVR_SetPosePredictEnabled", CallingConvention = CallingConvention.Cdecl)]

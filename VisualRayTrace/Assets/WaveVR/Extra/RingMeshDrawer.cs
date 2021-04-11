@@ -14,6 +14,7 @@ using UnityEngine;
 using System;
 using WVR_Log;
 
+[DisallowMultipleComponent]
 [RequireComponent(typeof(MeshRenderer), typeof(MeshFilter))]
 public class RingMeshDrawer : MonoBehaviour {
 	private const string LOG_TAG = "RingMeshDrawer";
@@ -31,7 +32,7 @@ public class RingMeshDrawer : MonoBehaviour {
 	private const float DEF_INNER_CIRCLE_RADIUS = 0.02f;
 	public float InnerCircleRadius = DEF_INNER_CIRCLE_RADIUS;
 	private const float MIN_INNER_CIRCLE_RADIUS = 0.001f;
-	// World position of ring, used by WaveVR_GazeInputModule.
+	// World position of ring.
 	[HideInInspector]
 	public Vector3 RingPosition = Vector3.zero;
 	// Z distance of ring.
@@ -54,19 +55,9 @@ public class RingMeshDrawer : MonoBehaviour {
 	private const int RENDER_QUEUE_MAX = 5000;
 	private MeshFilter meshFilt = null;
 
-	private Camera mCamera = null;
-
 	private bool ValidateParameters()
 	{
 		if (meshRend == null || meshFilt == null)
-			return false;
-
-		if (mCamera == null)
-		{
-			if (WaveVR_InputModuleManager.Instance != null)
-				mCamera = WaveVR_InputModuleManager.Instance.gameObject.GetComponent<Camera> ();
-		}
-		if (mCamera == null)
 			return false;
 
 		if (this.RingWidth < MIN_RING_WIDTH)
@@ -124,7 +115,6 @@ public class RingMeshDrawer : MonoBehaviour {
 
 		float calcRingWidth = this.RingWidth * (ringPos.z / DEF_RING_DISTANCE);
 		float calcInnerCircleRadius = this.InnerCircleRadius * (ringPos.z / DEF_RING_DISTANCE);
-
 		DrawRing(calcRingWidth + calcInnerCircleRadius, calcInnerCircleRadius, this.RingPercent, ringPos);
 	}
 

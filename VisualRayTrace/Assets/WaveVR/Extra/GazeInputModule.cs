@@ -74,7 +74,7 @@ public enum EGazeTriggerButton
 	DPad_Down = WVR_InputId.WVR_InputId_Alias1_DPad_Down,
 	Volume_Up = WVR_InputId.WVR_InputId_Alias1_Volume_Up,
 	Volume_Down = WVR_InputId.WVR_InputId_Alias1_Volume_Down,
-	DigitalTrigger = WVR_InputId.WVR_InputId_Alias1_Digital_Trigger,
+	Bumper = WVR_InputId.WVR_InputId_Alias1_Bumper,
 	Touchpad = WVR_InputId.WVR_InputId_Alias1_Touchpad,
 	Trigger = WVR_InputId.WVR_InputId_Alias1_Trigger
 }

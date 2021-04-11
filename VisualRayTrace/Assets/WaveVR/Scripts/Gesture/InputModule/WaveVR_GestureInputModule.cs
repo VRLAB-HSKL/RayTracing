@@ -1,19 +1,29 @@
-﻿using System.Collections;
+// "WaveVR SDK 
+// © 2017 HTC Corporation. All Rights Reserved.
+//
+// Unless otherwise required by copyright law and practice,
+// upon the execution of HTC SDK license agreement,
+// HTC grants you access to and use of the WaveVR SDK(s).
+// You shall fully comply with all of HTC’s SDK license agreement terms and
+// conditions signed by you and all SDK and API requirements,
+// specifications, and documentation provided by HTC to You."
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using wvr;
 using WVR_Log;
 using UnityEngine.UI;
+using System;
 
-public class WaveVR_GestureInputModule : BaseInputModule {
+[DisallowMultipleComponent]
+public class WaveVR_GestureInputModule : BaseInputModule
+{
 	private const string LOG_TAG = "WaveVR_GestureInputModule";
 	private void DEBUG(string msg)
 	{
 		if (Log.EnableDebugLog)
-		{
-			Log.d (LOG_TAG, gestureFocusHand + ", " + msg, true);
-		}
+			Log.d (LOG_TAG, msg, true);
 	}
 	private void INFO(string msg)
 	{
@@ -21,96 +31,116 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 	}
 
 
-	// ---------------------- Public Variables begins ----------------------
+	#region Customized Variables
 	[Tooltip("If not selected, no events will be sent.")]
 	public bool EnableEvent = true;
-	[Tooltip("The gesture used to trigger events.")]
-	public WaveVR_GestureManager.EStaticGestures SelectGesture = WaveVR_GestureManager.EStaticGestures.FIST;
-	// ---------------------- Public Variables ends ----------------------
-
-
-	#region Basic Declaration
+	public GameObject RightPinchSelector = null;
+	public GameObject LeftPinchSelector = null;
 	[SerializeField]
-	private bool forceModuleActive = true;
-
-	public bool ForceModuleActive
-	{
-		get { return forceModuleActive; }
-		set { forceModuleActive = value; }
-	}
-
-	public override bool IsModuleSupported()
-	{
-		return forceModuleActive;
-	}
-
-	public override bool ShouldActivateModule()
-	{
-		if (!base.ShouldActivateModule ())
-			return false;
-
-		if (forceModuleActive)
-			return true;
-
-		return false;
-	}
-
-	public override void DeactivateModule() {
-		base.DeactivateModule();
-	}
+	[Tooltip("The threshold of pinch on.")]
+	[Range(0.5f, 1)]
+	private float m_PinchOnThreshold = 0.7f;
+	public float PinchOnThreshold { get { return m_PinchOnThreshold; } set { m_PinchOnThreshold = value; } }
+	[SerializeField]
+	[Tooltip("After this pinch on interval, start dragging.")]
+	private float m_DragInterval = 1.0f;
+	public float DragInterval { get { return m_DragInterval; } set { m_DragInterval = value; } }
+	[SerializeField]
+	[Range(0.5f, 1)]
+	[Tooltip("The threshold of pinch off.")]
+	private float m_PinchOffThreshold = 0.7f;
+	public float PinchOffThreshold { get { return m_PinchOffThreshold; } set { m_PinchOffThreshold = value; } }
 	#endregion
 
 
-	private WVR_HandGestureType currentGestureRight = WVR_HandGestureType.WVR_HandGestureType_Invalid;
-	private WVR_HandGestureType previousGestureRight = WVR_HandGestureType.WVR_HandGestureType_Invalid;
-	private WVR_HandGestureType currentGestureLeft = WVR_HandGestureType.WVR_HandGestureType_Invalid;
-	private WVR_HandGestureType previousGestureLeft = WVR_HandGestureType.WVR_HandGestureType_Invalid;
-	private WaveVR_GestureManager.EGestureHand gestureFocusHand = WaveVR_GestureManager.EGestureHand.RIGHT;
+	private WVR_HandPoseType currentGestureRight = WVR_HandPoseType.WVR_HandPoseType_Invalid;
+	private WVR_HandPoseType currentGestureLeft = WVR_HandPoseType.WVR_HandPoseType_Invalid;
+	private void ActivateBeamPointer(WaveVR_GestureManager.EGestureHand hand, bool active)
+	{
+		GameObject beam = WaveVR_GestureBeamProvider.Instance.GetGestureBeam(hand);
+		if (beam != null && beam.GetComponent<WaveVR_GestureBeam>() != null)
+			beam.GetComponent<WaveVR_GestureBeam>().ShowBeam = active;
 
+		GameObject pointer = WaveVR_GesturePointerProvider.Instance.GetGesturePointer(hand);
+		if (pointer != null && pointer.GetComponent<WaveVR_GesturePointer>() != null)
+			pointer.GetComponent<WaveVR_GesturePointer>().ShowPointer = active;
+	}
+
+	private GameObject m_TrackerObject = null;
+	private WaveVR_GesturePointerTracker gesturePointerTracker = null;
+	private GameObject beamObject = null;
+	private WaveVR_GestureBeam gestureBeam = null;
 	private GameObject pointerObject = null;
 	private WaveVR_GesturePointer gesturePointer = null;
 	private Camera eventCamera = null;
 	private PhysicsRaycaster pointerPhysicsRaycaster = null;
 	private bool ValidateParameters()
 	{
-		gestureFocusHand = WaveVR_GestureManager.GestureFocusHand;
-		GameObject new_pointer = WaveVR_GesturePointerProvider.Instance.GetGesturePointer (gestureFocusHand);
-		if (new_pointer != null && !GameObject.ReferenceEquals (pointerObject, new_pointer))
+		if (!this.EnableEvent)
+		{
+			ActivateBeamPointer(WaveVR_GestureManager.EGestureHand.RIGHT, false);
+			ActivateBeamPointer(WaveVR_GestureManager.EGestureHand.LEFT, false);
+			return false;
+		}
+
+		// Validates the pinch on/off threshold.
+		if (m_PinchOffThreshold > m_PinchOnThreshold)
+			m_PinchOffThreshold = m_PinchOnThreshold;
+
+		// Validates the beam and pointer.
+		GameObject new_beam = WaveVR_GestureBeamProvider.Instance.GetGestureBeam(WaveVR_GestureManager.GestureFocusHand);
+		if (new_beam != null && !ReferenceEquals(beamObject, new_beam))
+		{
+			beamObject = new_beam;
+			gestureBeam = beamObject.GetComponent<WaveVR_GestureBeam>();
+		}
+		if (beamObject == null)
+			gestureBeam = null;
+
+		GameObject new_pointer = WaveVR_GesturePointerProvider.Instance.GetGesturePointer(WaveVR_GestureManager.GestureFocusHand);
+		if (new_pointer != null && !GameObject.ReferenceEquals(pointerObject, new_pointer))
 		{
 			pointerObject = new_pointer;
-			gesturePointer = pointerObject.GetComponent<WaveVR_GesturePointer> ();
+			gesturePointer = pointerObject.GetComponent<WaveVR_GesturePointer>();
 		}
 		if (pointerObject == null)
 			gesturePointer = null;
 
-		if (WaveVR_GesturePointerTracker.Instance != null)
-		{
-			if (eventCamera == null)
-				eventCamera = WaveVR_GesturePointerTracker.Instance.GetPointerTrackerCamera ();
-			if (pointerPhysicsRaycaster == null)
-				pointerPhysicsRaycaster = WaveVR_GesturePointerTracker.Instance.GetPhysicsRaycaster ();
-		}
-
-		if (gesturePointer == null || eventCamera == null)
+		if (gestureBeam == null || gesturePointer == null)
 		{
 			if (Log.gpl.Print)
 			{
+				if (gestureBeam == null)
+					Log.i(LOG_TAG, "ValidateParameters() No beam of " + WaveVR_GestureManager.GestureFocusHand, true);
 				if (gesturePointer == null)
-					Log.i (LOG_TAG, "ValidateParameters() No pointer of " + gestureFocusHand, true);
-				if (eventCamera == null)
-					Log.i (LOG_TAG, "ValidateParameters() Forget to put GesturePointerTracker??");
+					Log.i(LOG_TAG, "ValidateParameters() No pointer of " + WaveVR_GestureManager.GestureFocusHand, true);
 			}
 			return false;
 		}
 
-		if (!this.EnableEvent)
+		// Validates the camera and physicsRaycaster.
+		if (gesturePointerTracker != null)
+		{
+			if (eventCamera == null)
+				eventCamera = gesturePointerTracker.GetPointerTrackerCamera();
+			if (pointerPhysicsRaycaster == null)
+				pointerPhysicsRaycaster = gesturePointerTracker.GetPhysicsRaycaster();
+		}
+
+		if (eventCamera == null)
+		{
+			if (Log.gpl.Print)
+			{
+				if (eventCamera == null)
+					Log.i(LOG_TAG, "ValidateParameters() Forget to put GesturePointerTracker??", true);
+			}
 			return false;
+		}
 
 		return true;
 	}
 
 	private PointerEventData mPointerEventData = null;
-	private readonly Vector2 centerOfScreen = new Vector2 (0.5f * Screen.width, 0.5f * Screen.height);
 	private void ResetPointerEventData()
 	{
 		if (mPointerEventData == null)
@@ -154,10 +184,21 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 			base.OnEnable ();
 			DEBUG ("OnEnable()");
 
-			// Standalone Input Module
-			StandaloneInputModule _sim = gameObject.GetComponent<StandaloneInputModule> ();
-			if (_sim != null)
-				_sim.enabled = false;
+			Destroy(GetComponent<StandaloneInputModule>());
+			if (WaveVR_GesturePointerTracker.Instance == null)
+			{
+				if (WaveVR_Render.Instance != null)
+				{
+					m_TrackerObject = new GameObject("GesturePointerTracker");
+					m_TrackerObject.transform.SetParent(WaveVR_Render.Instance.gameObject.transform, false);
+					m_TrackerObject.transform.localPosition = Vector3.zero;
+					gesturePointerTracker = m_TrackerObject.AddComponent<WaveVR_GesturePointerTracker>();
+				}
+			}
+			else
+			{
+				gesturePointerTracker = WaveVR_GesturePointerTracker.Instance;
+			}
 
 			mInputModuleEnabled = true;
 		}
@@ -174,6 +215,32 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 		}
 	}
 
+	private Quaternion toRotation = Quaternion.identity;
+	private void RotateSelector(GameObject selector, Quaternion fromRotation)
+	{
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.RIGHT)
+			toRotation = IWaveVR_BonePose.Instance.GetBoneTransform(WaveVR_BonePoseImpl.Bones.RIGHT_WRIST).rot * Quaternion.Inverse(fromRotation);
+		else
+			toRotation = IWaveVR_BonePose.Instance.GetBoneTransform(WaveVR_BonePoseImpl.Bones.LEFT_WRIST).rot * Quaternion.Inverse(fromRotation);
+
+		selector.transform.rotation *= toRotation;
+	}
+	private void MoveSelector(GameObject selector, Vector3 offset)
+	{
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.RIGHT)
+			selector.transform.position = IWaveVR_BonePose.Instance.GetBoneTransform(WaveVR_BonePoseImpl.Bones.RIGHT_WRIST).pos + offset;
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.LEFT)
+			selector.transform.position = IWaveVR_BonePose.Instance.GetBoneTransform(WaveVR_BonePoseImpl.Bones.LEFT_WRIST).pos + offset;
+	}
+
+	private bool hasHandPoseData = false;
+	private WVR_HandPoseData_t handPoseData = new WVR_HandPoseData_t();
+	private bool enableEvent = false;
+	private bool isPinch = false;
+
+	private const uint PINCH_FRAME_COUNT = 10;
+	private uint pinchFrame = 0, unpinchFrame = 0;
+	//private float positionLerp = 0.1f, rotationLerp = 0.1f;
 	public override void Process()
 	{
 		if (!ValidateParameters ())
@@ -184,112 +251,263 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 
 
 		// ------------------- Raycast Actions begins -------------------
-		ResetPointerEventData ();
-		GraphicRaycast();
-		PhysicsRaycast ();
+		if ((mPointerEventData == null) ||
+			(mPointerEventData != null && !mPointerEventData.dragging))
+		{
+			ResetPointerEventData();
+			GraphicRaycast();
+			PhysicsRaycast();
+		}
 		// ------------------- Raycast Actions ends -------------------
 
 
 		GameObject curr_raycasted_object = GetRaycastedObject ();
 
 
-		// ------------------- Check if receiving SelectGesture begins -------------------
-		previousGestureRight = currentGestureRight;
-		currentGestureRight = WaveVR_GestureManager.Instance.GetCurrentRightHandStaticGesture ();
-		previousGestureLeft = currentGestureLeft;
-		currentGestureLeft = WaveVR_GestureManager.Instance.GetCurrentLeftHandStaticGesture ();
-
-		bool gesture_received = false;
-		bool keep_dragging = false;
-		if (gestureFocusHand == WaveVR_GestureManager.EGestureHand.RIGHT)
+		// ------------------- Check if pinching begins -------------------
+		hasHandPoseData = WaveVR_GestureManager.Instance.GetHandPoseData(ref handPoseData);
+		if (hasHandPoseData)
 		{
+			currentGestureRight = handPoseData.right.state.type;
+			currentGestureLeft = handPoseData.left.state.type;
+		}
+		else
+		{
+			currentGestureRight = WVR_HandPoseType.WVR_HandPoseType_Invalid;
+			currentGestureLeft = WVR_HandPoseType.WVR_HandPoseType_Invalid;
+		}
+
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.RIGHT)
+		{
+			enableEvent = (WaveVR_Utils.GetPosition(handPoseData.right.pinch.origin) != Vector3.zero);
+
 			// Switch the focus hand to left.
-			if ((previousGestureLeft != currentGestureLeft) &&
-			    (currentGestureLeft == (WVR_HandGestureType)this.SelectGesture))
+			if ((currentGestureLeft == WVR_HandPoseType.WVR_HandPoseType_Pinch) && (handPoseData.left.pinch.strength >= m_PinchOnThreshold))
 			{
 				WaveVR_GestureManager.GestureFocusHand = WaveVR_GestureManager.EGestureHand.LEFT;
 				return;
 			}
 
-			gesture_received =
-			(
-			    currentGestureRight == (WVR_HandGestureType)this.SelectGesture &&
-			    currentGestureRight != WVR_HandGestureType.WVR_HandGestureType_Invalid
-			);
+			if (hasHandPoseData && (this.RightPinchSelector != null))
+			{
+				//this.RightPinchSelector.transform.position = Vector3.Lerp(this.RightPinchSelector.transform.position, WaveVR_Utils.GetPosition(handPoseData.right.pinch.origin), positionLerp);
+				//this.RightPinchSelector.transform.rotation = Quaternion.Lerp(this.RightPinchSelector.transform.rotation, Quaternion.LookRotation(WaveVR_Utils.GetPosition(handPoseData.right.pinch.direction)), rotationLerp);
+				this.RightPinchSelector.transform.position = WaveVR_Utils.GetPosition(handPoseData.right.pinch.origin);
+				this.RightPinchSelector.transform.rotation = Quaternion.LookRotation(WaveVR_Utils.GetPosition(handPoseData.right.pinch.direction));
+			}
 
-			keep_dragging =
-				(
-					previousGestureRight == (WVR_HandGestureType)this.SelectGesture &&
-					currentGestureRight == WVR_HandGestureType.WVR_HandGestureType_Unknown
-				);
+			if (!isPinch)
+			{
+				if ((currentGestureRight == WVR_HandPoseType.WVR_HandPoseType_Pinch) && (handPoseData.right.pinch.strength >= m_PinchOnThreshold))
+				{
+					pinchFrame++;
+					if (pinchFrame > PINCH_FRAME_COUNT)
+					{
+						isPinch = true;
+						gestureBeam.SetEffectiveBeam(true);
+						gesturePointer.SetEffectivePointer(true);
+						unpinchFrame = 0;
+					}
+				}
+			}
+			else
+			{
+				if ((currentGestureRight != WVR_HandPoseType.WVR_HandPoseType_Pinch) || (handPoseData.right.pinch.strength < m_PinchOffThreshold))
+				{
+					unpinchFrame++;
+					if (unpinchFrame > PINCH_FRAME_COUNT)
+					{
+						DEBUG("Pinch is released. currentGestureRight: " + currentGestureRight + ", strength: " + handPoseData.right.pinch.strength);
+						isPinch = false;
+						gestureBeam.SetEffectiveBeam(false);
+						gesturePointer.SetEffectivePointer(false);
+						pinchFrame = 0;
+					}
+				}
+			}
 		}
-		if (gestureFocusHand == WaveVR_GestureManager.EGestureHand.LEFT)
+		else // GestureFocusHand == LEFT
 		{
+			enableEvent = (WaveVR_Utils.GetPosition(handPoseData.left.pinch.origin) != Vector3.zero);
+
 			// Switch the focus hand to right.
-			if ((previousGestureRight != currentGestureRight) &&
-			    (currentGestureRight == (WVR_HandGestureType)this.SelectGesture))
+			if ((currentGestureRight == WVR_HandPoseType.WVR_HandPoseType_Pinch) && (handPoseData.right.pinch.strength >= m_PinchOnThreshold))
 			{
 				WaveVR_GestureManager.GestureFocusHand = WaveVR_GestureManager.EGestureHand.RIGHT;
 				return;
 			}
 
-			gesture_received =
-			(
-			    currentGestureLeft == (WVR_HandGestureType)this.SelectGesture &&
-			    currentGestureLeft != WVR_HandGestureType.WVR_HandGestureType_Invalid
-			);
+			if (hasHandPoseData && (this.LeftPinchSelector != null))
+			{
+				//this.LeftPinchSelector.transform.position = Vector3.Lerp(this.LeftPinchSelector.transform.position, WaveVR_Utils.GetPosition(handPoseData.left.pinch.origin), positionLerp);
+				//this.LeftPinchSelector.transform.rotation = Quaternion.Lerp(this.LeftPinchSelector.transform.rotation, Quaternion.LookRotation(WaveVR_Utils.GetPosition(handPoseData.left.pinch.direction)), rotationLerp);
+				this.LeftPinchSelector.transform.position = WaveVR_Utils.GetPosition(handPoseData.left.pinch.origin);
+				this.LeftPinchSelector.transform.rotation = Quaternion.LookRotation(WaveVR_Utils.GetPosition(handPoseData.left.pinch.direction));
+			}
 
-			keep_dragging =
-				(
-					previousGestureLeft == (WVR_HandGestureType)this.SelectGesture &&
-					currentGestureLeft == WVR_HandGestureType.WVR_HandGestureType_Unknown
-				);
+			if (!isPinch)
+			{
+				if ((currentGestureLeft == WVR_HandPoseType.WVR_HandPoseType_Pinch) && (handPoseData.left.pinch.strength >= m_PinchOnThreshold))
+				{
+					pinchFrame++;
+					if (pinchFrame > PINCH_FRAME_COUNT)
+					{
+						isPinch = true;
+						gestureBeam.SetEffectiveBeam(true);
+						gesturePointer.SetEffectivePointer(true);
+						unpinchFrame = 0;
+					}
+				}
+			}
+			else
+			{
+				if ((currentGestureLeft != WVR_HandPoseType.WVR_HandPoseType_Pinch) || (handPoseData.left.pinch.strength < m_PinchOffThreshold))
+				{
+					unpinchFrame++;
+					if (unpinchFrame > PINCH_FRAME_COUNT)
+					{
+						DEBUG("Pinch is released. currentGestureLeft: " + currentGestureLeft + ", strength: " + handPoseData.left.pinch.strength);
+						isPinch = false;
+						gestureBeam.SetEffectiveBeam(false);
+						gesturePointer.SetEffectivePointer(false);
+						pinchFrame = 0;
+					}
+				}
+			}
 		}
-		// ------------------- Check if receiving SelectGesture ends -------------------
+		// ------------------- Check if pinching ends -------------------
+
+
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.RIGHT)
+		{
+			ActivateBeamPointer(WaveVR_GestureManager.EGestureHand.LEFT, false);
+
+			bool valid_pose = IWaveVR_BonePose.Instance.IsHandPoseValid(WaveVR_GestureManager.EGestureHand.RIGHT);
+			ActivateBeamPointer(WaveVR_GestureManager.EGestureHand.RIGHT, valid_pose);
+		}
+		else
+		{
+			ActivateBeamPointer(WaveVR_GestureManager.EGestureHand.RIGHT, false);
+
+			bool valid_pose = IWaveVR_BonePose.Instance.IsHandPoseValid(WaveVR_GestureManager.EGestureHand.LEFT);
+			ActivateBeamPointer(WaveVR_GestureManager.EGestureHand.LEFT, valid_pose);
+		}
+
+		if (curr_raycasted_object != null)
+			gesturePointer.OnPointerEnter(curr_raycasted_object, Vector3.zero, false);
+		else
+			gesturePointer.OnPointerExit(prevRaycastedObject);
 
 
 		// ------------------- Event Handling begins -------------------
-		OnGraphicPointerEnterExit ();
-		OnPhysicsPointerEnterExit ();
+		if (enableEvent)
+		{
+			OnGraphicPointerEnterExit();
+			OnPhysicsPointerEnterExit();
 
-		if (curr_raycasted_object != null && curr_raycasted_object == prevRaycastedObject)
-		{
-			OnPointerHover ();
-			gesturePointer.OnHover (true);
-		} else
-		{
-			gesturePointer.OnHover (false);
-		}
+			OnPointerHover();
 
-		if (!mPointerEventData.eligibleForClick)
-		{
-			if (gesture_received)
-				OnPointerDown ();
-		} else if (mPointerEventData.eligibleForClick)
-		{
-			if (gesture_received || keep_dragging)
+			if (!mPointerEventData.eligibleForClick)
 			{
-				// Down before, and receives the selected gesture continuously.
-				OnPointerDrag ();
-
-			} else
+				if (isPinch)
+					OnPointerDown();
+			}
+			else if (mPointerEventData.eligibleForClick)
 			{
-				// Down before, but not receive the selected gesture.
-				OnPointerUp ();
+				if (isPinch)
+				{
+					// Down before, and receives the selected gesture continuously.
+					OnPointerDrag();
+
+				}
+				else
+				{
+					DEBUG("Focus hand: " + WaveVR_GestureManager.GestureFocusHand
+						+ ", right strength: " + handPoseData.right.pinch.strength
+						+ ", left strength: " + handPoseData.left.pinch.strength);
+					// Down before, but not receive the selected gesture.
+					OnPointerUp();
+				}
 			}
 		}
 		// ------------------- Event Handling ends -------------------
 
 
-		Vector3 intersection_position = GetIntersectionPosition (mPointerEventData.pointerCurrentRaycast);
+		/*Vector3 intersection_position = GetIntersectionPosition (mPointerEventData.pointerCurrentRaycast);
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.RIGHT)
+			WaveVR_RaycastResultProvider.Instance.SetRaycastResult(WaveVR_Controller.EDeviceType.Dominant, mPointerEventData.pointerCurrentRaycast.gameObject, intersection_position);
+		if (WaveVR_GestureManager.GestureFocusHand == WaveVR_GestureManager.EGestureHand.LEFT)
+			WaveVR_RaycastResultProvider.Instance.SetRaycastResult(WaveVR_Controller.EDeviceType.NonDominant, mPointerEventData.pointerCurrentRaycast.gameObject, intersection_position);*/
 	}
 	#endregion
 
 	#region Raycast Actions
+	private List<RaycastResult> GetResultList(List<RaycastResult> originList)
+	{
+		List<RaycastResult> result_list = new List<RaycastResult>();
+		for (int i = 0; i < originList.Count; i++)
+		{
+			if (originList[i].gameObject != null)
+				result_list.Add(originList[i]);
+		}
+		return result_list;
+	}
+
+	private RaycastResult SelectRaycastResult(RaycastResult currResult, RaycastResult nextResult)
+	{
+		if (currResult.gameObject == null)
+			return nextResult;
+		if (nextResult.gameObject == null)
+			return currResult;
+
+		if (currResult.worldPosition == Vector3.zero)
+			currResult.worldPosition = GetIntersectionPosition(currResult);
+
+		float curr_distance = (float)Math.Round(Mathf.Abs(currResult.worldPosition.z - currResult.module.eventCamera.transform.position.z), 3);
+
+		if (nextResult.worldPosition == Vector3.zero)
+			nextResult.worldPosition = GetIntersectionPosition(nextResult);
+
+		float next_distance = (float)Math.Round(Mathf.Abs(nextResult.worldPosition.z - currResult.module.eventCamera.transform.position.z), 3);
+
+		// 1. Check the distance.
+		if (next_distance > curr_distance)
+			return currResult;
+
+		if (next_distance < curr_distance)
+		{
+			DEBUG("SelectRaycastResult() "
+				+ nextResult.gameObject.name + ", position: " + nextResult.worldPosition
+				+ ", distance: " + next_distance
+				+ " is smaller than "
+				+ currResult.gameObject.name + ", position: " + currResult.worldPosition
+				+ ", distance: " + curr_distance
+				);
+
+			return nextResult;
+		}
+
+		// 2. Check the "Order in Layer" of the Canvas.
+		if (nextResult.sortingOrder > currResult.sortingOrder)
+			return nextResult;
+
+		return currResult;
+	}
+
+	private RaycastResult m_Result = new RaycastResult();
+	private RaycastResult FindFirstResult(List<RaycastResult> resultList)
+	{
+		m_Result = resultList[0];
+		for (int i = 1; i < resultList.Count; i++)
+			m_Result = SelectRaycastResult(m_Result, resultList[i]);
+		return m_Result;
+	}
+
 	private RaycastResult firstRaycastResult = new RaycastResult ();
 	private GraphicRaycaster[] graphic_raycasters;
 	private List<RaycastResult> graphicRaycastResults = new List<RaycastResult>();
 	private List<GameObject> graphicRaycastObjects = new List<GameObject>(), preGraphicRaycastObjects = new List<GameObject>();
+	private GameObject raycastTarget = null;
 
 	private void GraphicRaycast()
 	{
@@ -297,105 +515,42 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 			return;
 
 		// Find GraphicRaycaster
-		graphic_raycasters = GameObject.FindObjectsOfType<GraphicRaycaster> ();
+		graphic_raycasters = GameObject.FindObjectsOfType<GraphicRaycaster>();
 
-		graphicRaycastObjects.Clear ();
+		graphicRaycastResults.Clear();
+		graphicRaycastObjects.Clear();
 
 		for (int i = 0; i < graphic_raycasters.Length; i++)
 		{
 			// Ignore the Blocker of Dropdown.
-			if (graphic_raycasters [i].gameObject.name.Equals ("Blocker"))
+			if (graphic_raycasters[i].gameObject.name.Equals("Blocker"))
 				continue;
 
 			// Change the Canvas' event camera.
-			if (graphic_raycasters [i].gameObject.GetComponent<Canvas> () != null)
-				graphic_raycasters [i].gameObject.GetComponent<Canvas> ().worldCamera = eventCamera;
+			if (graphic_raycasters[i].gameObject.GetComponent<Canvas>() != null)
+				graphic_raycasters[i].gameObject.GetComponent<Canvas>().worldCamera = eventCamera;
 			else
 				continue;
 
-			// Raycasting.
-			graphic_raycasters [i].Raycast (mPointerEventData, graphicRaycastResults);
+			// 1. Get the raycast results list.
+			graphic_raycasters[i].Raycast(mPointerEventData, graphicRaycastResults);
+			graphicRaycastResults = GetResultList(graphicRaycastResults);
 			if (graphicRaycastResults.Count == 0)
 				continue;
 
-			for (int g = 0; g < graphicRaycastResults.Count; g++)
-				graphicRaycastObjects.Add (graphicRaycastResults [g].gameObject);
+			// 2. Get the raycast objects list.
+			firstRaycastResult = FindFirstResult(graphicRaycastResults);
 
-			firstRaycastResult = FindFirstRaycast (graphicRaycastResults);
-			graphicRaycastResults.Clear ();
+			//DEBUG ("GraphicRaycast() device: " + event_controller.device + ", camera: " + firstRaycastResult.module.eventCamera + ", first result = " + firstRaycastResult);
+			mPointerEventData.pointerCurrentRaycast = SelectRaycastResult(mPointerEventData.pointerCurrentRaycast, firstRaycastResult);
+			graphicRaycastResults.Clear();
+		} // for (int i = 0; i < graphic_raycasters.Length; i++)
 
-			// Found graphic raycasted object!
-			if (firstRaycastResult.gameObject != null)
-			{
-				if (firstRaycastResult.worldPosition == Vector3.zero)
-					firstRaycastResult.worldPosition = GetIntersectionPosition (firstRaycastResult);
-
-				float new_dist =
-					Mathf.Abs (
-						firstRaycastResult.worldPosition.z -
-						firstRaycastResult.module.eventCamera.transform.position.z);
-				float origin_dist =
-					Mathf.Abs (
-						mPointerEventData.pointerCurrentRaycast.worldPosition.z -
-						firstRaycastResult.module.eventCamera.transform.position.z);
-
-
-				bool change_current_raycast = false;
-				// Raycast to nearest (z-axis) target.
-				if (mPointerEventData.pointerCurrentRaycast.gameObject == null)
-				{
-					change_current_raycast = true;
-				} else
-				{
-					/*DEBUG ("GraphicRaycast() "
-					+ ", raycasted: " + firstRaycastResult.gameObject.name
-					+ ", raycasted position: " + firstRaycastResult.worldPosition
-					+ ", distance: " + new_dist
-					+ ", sorting order: " + firstRaycastResult.sortingOrder
-					+ ", origin target: " +
-					(mPointerEventData.pointerCurrentRaycast.gameObject == null ?
-							"null" :
-							mPointerEventData.pointerCurrentRaycast.gameObject.name)
-					+ ", origin position: " + mPointerEventData.pointerCurrentRaycast.worldPosition
-					+ ", origin distance: " + origin_dist
-					+ ", origin sorting order: " + mPointerEventData.pointerCurrentRaycast.sortingOrder);*/
-
-					if (origin_dist > new_dist)
-					{
-						DEBUG ("GraphicRaycast() "
-						+ mPointerEventData.pointerCurrentRaycast.gameObject.name
-						+ ", position: " + mPointerEventData.pointerCurrentRaycast.worldPosition
-						+ ", distance: " + origin_dist
-						+ " is farer than "
-						+ firstRaycastResult.gameObject.name
-						+ ", position: " + firstRaycastResult.worldPosition
-						+ ", new distance: " + new_dist);
-
-						change_current_raycast = true;
-					} else if (origin_dist == new_dist)
-					{
-						int _so_origin = mPointerEventData.pointerCurrentRaycast.sortingOrder;
-						int _so_result = firstRaycastResult.sortingOrder;
-
-						if (_so_origin < _so_result)
-						{
-							DEBUG ("GraphicRaycast() "
-							+ mPointerEventData.pointerCurrentRaycast.gameObject.name
-							+ " sorting order: " + _so_origin + " is smaller than "
-							+ firstRaycastResult.gameObject.name
-							+ " sorting order: " + _so_result);
-
-							change_current_raycast = true;
-						}
-					}
-				}
-
-				if (change_current_raycast)
-				{
-					mPointerEventData.pointerCurrentRaycast = firstRaycastResult;
-					mPointerEventData.position = firstRaycastResult.screenPosition;
-				}
-			}
+		raycastTarget = mPointerEventData.pointerCurrentRaycast.gameObject;
+		while (raycastTarget != null)
+		{
+			graphicRaycastObjects.Add(raycastTarget);
+			raycastTarget = (raycastTarget.transform.parent != null ? raycastTarget.transform.parent.gameObject : null);
 		}
 	}
 
@@ -426,39 +581,9 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 		}
 
 		firstRaycastResult = FindFirstRaycast (physicsRaycastResults);
-		physicsRaycastResults.Clear ();
 
-		if (firstRaycastResult.gameObject != null)
-		{
-			if (firstRaycastResult.worldPosition == Vector3.zero)
-				firstRaycastResult.worldPosition = GetIntersectionPosition (firstRaycastResult);
-
-			float new_dist =
-				Mathf.Abs (
-					firstRaycastResult.worldPosition.z -
-					firstRaycastResult.module.eventCamera.transform.position.z);
-			float origin_dist =
-				Mathf.Abs (
-					mPointerEventData.pointerCurrentRaycast.worldPosition.z -
-					firstRaycastResult.module.eventCamera.transform.position.z);
-
-			if (mPointerEventData.pointerCurrentRaycast.gameObject == null || origin_dist > new_dist)
-			{
-				/*DEBUG ("PhysicsRaycast()" +
-				", raycasted: " + firstRaycastResult.gameObject.name +
-				", raycasted position: " + firstRaycastResult.worldPosition +
-				", new_dist: " + new_dist +
-				", origin target: " +
-				(mPointerEventData.pointerCurrentRaycast.gameObject == null ?
-						"null" :
-						mPointerEventData.pointerCurrentRaycast.gameObject.name) +
-				", origin position: " + mPointerEventData.pointerCurrentRaycast.worldPosition +
-				", origin distance: " + origin_dist);*/
-
-				mPointerEventData.pointerCurrentRaycast = firstRaycastResult;
-				mPointerEventData.position = firstRaycastResult.screenPosition;
-			}
-		}
+		//DEBUG ("PhysicsRaycast() device: " + event_controller.device + ", camera: " + firstRaycastResult.module.eventCamera + ", first result = " + firstRaycastResult);
+		mPointerEventData.pointerCurrentRaycast = SelectRaycastResult(mPointerEventData.pointerCurrentRaycast, firstRaycastResult);
 	}
 	#endregion
 
@@ -524,7 +649,8 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 	private void OnPointerHover()
 	{
 		GameObject go = GetRaycastedObject ();
-		ExecuteEvents.ExecuteHierarchy(go, mPointerEventData, WaveVR_ExecuteEvents.pointerHoverHandler);
+		if (go != null && prevRaycastedObject == go)
+			ExecuteEvents.ExecuteHierarchy(go, mPointerEventData, WaveVR_ExecuteEvents.pointerHoverHandler);
 	}
 
 	private void OnPointerDown()
@@ -565,22 +691,22 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 		mPointerEventData.clickTime = Time.unscaledTime;
 	}
 
-	private const float DRAG_TIME = 0.3f;
 	private void OnPointerDrag()
 	{
-		if (Time.unscaledTime - mPointerEventData.clickTime < DRAG_TIME)
+		if (Time.unscaledTime - mPointerEventData.clickTime < m_DragInterval)
 			return;
 		if (mPointerEventData.pointerDrag == null)
 			return;
 
 		if (!mPointerEventData.dragging)
 		{
-			DEBUG ("OnPointerDrag() send BeginDrag to " + mPointerEventData.pointerDrag);
-			ExecuteEvents.Execute (mPointerEventData.pointerDrag, mPointerEventData, ExecuteEvents.beginDragHandler);
+			DEBUG("OnPointerDrag() send BeginDrag to " + mPointerEventData.pointerDrag);
+			ExecuteEvents.Execute(mPointerEventData.pointerDrag, mPointerEventData, ExecuteEvents.beginDragHandler);
 			mPointerEventData.dragging = true;
-		} else
+		}
+		else
 		{
-			ExecuteEvents.Execute (mPointerEventData.pointerDrag, mPointerEventData, ExecuteEvents.dragHandler);
+			ExecuteEvents.Execute(mPointerEventData.pointerDrag, mPointerEventData, ExecuteEvents.dragHandler);
 		}
 	}
 
@@ -604,11 +730,12 @@ public class WaveVR_GestureInputModule : BaseInputModule {
 				if (click_object == mPointerEventData.pointerPress)
 				{
 					// In the frame of button from being pressed to unpressed, send Pointer Click if Click is pending.
-					DEBUG ("OnPointerUp() send Pointer Click to " + mPointerEventData.pointerPress);
-					ExecuteEvents.Execute (mPointerEventData.pointerPress, mPointerEventData, ExecuteEvents.pointerClickHandler);
-				} else
+					DEBUG("OnPointerUp() send Pointer Click to " + mPointerEventData.pointerPress);
+					ExecuteEvents.Execute(mPointerEventData.pointerPress, mPointerEventData, ExecuteEvents.pointerClickHandler);
+				}
+				else
 				{
-					DEBUG ("OnTriggerUpMouse() pointer down object " + mPointerEventData.pointerPress + " is different with click object " + click_object);
+					DEBUG("OnTriggerUpMouse() pointer down object " + mPointerEventData.pointerPress + " is different with click object " + click_object);
 				}
 			}
 

@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -14,6 +14,7 @@ using UnityEngine;
 using wvr;
 using WVR_Log;
 
+[DisallowMultipleComponent]
 public class WaveVR_ButtonList : MonoBehaviour {
 	private static string LOG_TAG = "WaveVR_ButtonList";
 	private void INFO(string msg) { Log.i (LOG_TAG, msg, true); }
@@ -33,7 +34,9 @@ public class WaveVR_ButtonList : MonoBehaviour {
 		DPadLeft = WVR_InputId.WVR_InputId_Alias1_DPad_Left,
 		VolumeUp = WVR_InputId.WVR_InputId_Alias1_Volume_Up,
 		VolumeDown = WVR_InputId.WVR_InputId_Alias1_Volume_Down,
-		//DigitalTrigger = WVR_InputId.WVR_InputId_Alias1_Digital_Trigger,
+		Bumper = WVR_InputId.WVR_InputId_Alias1_Bumper,
+		A_X = WVR_InputId.WVR_InputId_Alias1_A,
+		B_Y = WVR_InputId.WVR_InputId_Alias1_B,
 		Back = WVR_InputId.WVR_InputId_Alias1_Back,
 		Enter = WVR_InputId.WVR_InputId_Alias1_Enter,
 		Touchpad = WVR_InputId.WVR_InputId_Alias1_Touchpad,
@@ -46,48 +49,57 @@ public class WaveVR_ButtonList : MonoBehaviour {
 		EButtons btn_type = EButtons.Unavailable;
 		switch (button)
 		{
-		case WVR_InputId.WVR_InputId_Alias1_Menu:
-			btn_type = EButtons.Menu;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Grip:
-			btn_type = EButtons.Grip;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_DPad_Up:
-			btn_type = EButtons.DPadUp;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_DPad_Right:
-			btn_type = EButtons.DPadRight;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_DPad_Down:
-			btn_type = EButtons.DPadDown;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_DPad_Left:
-			btn_type = EButtons.DPadLeft;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Volume_Up:
-			btn_type = EButtons.VolumeUp;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Volume_Down:
-			btn_type = EButtons.VolumeDown;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Back:
-			btn_type = EButtons.Back;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Enter:
-			btn_type = EButtons.Enter;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Touchpad:
-			btn_type = EButtons.Touchpad;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Trigger:
-			btn_type = EButtons.Trigger;
-			break;
-		case WVR_InputId.WVR_InputId_Alias1_Thumbstick:
-			btn_type = EButtons.Thumbstick;
-			break;
-		default:
-			btn_type = EButtons.Unavailable;
-			break;
+			case WVR_InputId.WVR_InputId_Alias1_Menu:
+				btn_type = EButtons.Menu;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Grip:
+				btn_type = EButtons.Grip;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_DPad_Up:
+				btn_type = EButtons.DPadUp;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_DPad_Right:
+				btn_type = EButtons.DPadRight;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_DPad_Down:
+				btn_type = EButtons.DPadDown;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_DPad_Left:
+				btn_type = EButtons.DPadLeft;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Volume_Up:
+				btn_type = EButtons.VolumeUp;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Volume_Down:
+				btn_type = EButtons.VolumeDown;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Bumper:
+				btn_type = EButtons.Bumper;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_A:
+				btn_type = EButtons.A_X;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_B:
+				btn_type = EButtons.B_Y;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Back:
+				btn_type = EButtons.Back;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Enter:
+				btn_type = EButtons.Enter;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Touchpad:
+				btn_type = EButtons.Touchpad;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Trigger:
+				btn_type = EButtons.Trigger;
+				break;
+			case WVR_InputId.WVR_InputId_Alias1_Thumbstick:
+				btn_type = EButtons.Thumbstick;
+				break;
+			default:
+				btn_type = EButtons.Unavailable;
+				break;
 		}
 
 		return btn_type;
@@ -128,6 +140,9 @@ public class WaveVR_ButtonList : MonoBehaviour {
 		DPadLeft = EButtons.DPadLeft,
 		VolumeUp = EButtons.VolumeUp,
 		VolumeDown = EButtons.VolumeDown,
+		Bumper = EButtons.Bumper,
+		A_X = EButtons.A_X,
+		B_Y = EButtons.B_Y,
 		Touchpad = EButtons.Touchpad,
 		Trigger = EButtons.Trigger,
 		Thumbstick = EButtons.Thumbstick
@@ -207,7 +222,7 @@ public class WaveVR_ButtonList : MonoBehaviour {
 			if (this.hmd_connected)
 			{
 				DEBUG ("Update() HMD is connected.");
-				//ResetInputRequest (WaveVR_Controller.EDeviceType.Head);
+				ResetInputRequest (WaveVR_Controller.EDeviceType.Head);
 			}
 		}
 		if (this.dominant_connected != _dominant_connected)
@@ -216,7 +231,7 @@ public class WaveVR_ButtonList : MonoBehaviour {
 			if (this.dominant_connected)
 			{
 				DEBUG ("Update() Dominant is connected.");
-				//ResetInputRequest (WaveVR_Controller.EDeviceType.Dominant);
+				ResetInputRequest (WaveVR_Controller.EDeviceType.Dominant);
 			}
 		}
 		if (this.nodomint_connected != _nodomint_connected)
@@ -225,7 +240,7 @@ public class WaveVR_ButtonList : MonoBehaviour {
 			if (this.nodomint_connected)
 			{
 				DEBUG ("Update() NonDominant is connected.");
-				//ResetInputRequest (WaveVR_Controller.EDeviceType.NonDominant);
+				ResetInputRequest (WaveVR_Controller.EDeviceType.NonDominant);
 			}
 		}
 	}
@@ -306,40 +321,43 @@ public class WaveVR_ButtonList : MonoBehaviour {
 
 		for (int _i = 0; _i < count; _i++)
 		{
-			switch (buttons [_i])
+			switch (buttons[_i])
 			{
-			case EButtons.Menu:
-			case EButtons.Grip:
-			case EButtons.DPadLeft:
-			case EButtons.DPadUp:
-			case EButtons.DPadRight:
-			case EButtons.DPadDown:
-			case EButtons.VolumeUp:
-			case EButtons.VolumeDown:
-			case EButtons.Back:
-			case EButtons.Enter:
-				inputAttributes [_i].id = (WVR_InputId)buttons [_i];
-				inputAttributes [_i].capability = (uint)WVR_InputType.WVR_InputType_Button;
-				inputAttributes [_i].axis_type = WVR_AnalogType.WVR_AnalogType_None;
-				break;
-			case EButtons.Touchpad:
-			case EButtons.Thumbstick:
-				inputAttributes [_i].id = (WVR_InputId)buttons [_i];
-				inputAttributes [_i].capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
-				inputAttributes [_i].axis_type = WVR_AnalogType.WVR_AnalogType_2D;
-				break;
-			case EButtons.Trigger:
-				inputAttributes [_i].id = (WVR_InputId)buttons [_i];
-				inputAttributes [_i].capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
-				inputAttributes [_i].axis_type = WVR_AnalogType.WVR_AnalogType_1D;
-				break;
-			default:
-				break;
+				case EButtons.Menu:
+				case EButtons.Grip:
+				case EButtons.DPadLeft:
+				case EButtons.DPadUp:
+				case EButtons.DPadRight:
+				case EButtons.DPadDown:
+				case EButtons.VolumeUp:
+				case EButtons.VolumeDown:
+				case EButtons.Bumper:
+				case EButtons.A_X:
+				case EButtons.B_Y:
+				case EButtons.Back:
+				case EButtons.Enter:
+					inputAttributes[_i].id = (WVR_InputId)buttons[_i];
+					inputAttributes[_i].capability = (uint)WVR_InputType.WVR_InputType_Button;
+					inputAttributes[_i].axis_type = WVR_AnalogType.WVR_AnalogType_None;
+					break;
+				case EButtons.Touchpad:
+				case EButtons.Thumbstick:
+					inputAttributes[_i].id = (WVR_InputId)buttons[_i];
+					inputAttributes[_i].capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
+					inputAttributes[_i].axis_type = WVR_AnalogType.WVR_AnalogType_2D;
+					break;
+				case EButtons.Trigger:
+					inputAttributes[_i].id = (WVR_InputId)buttons[_i];
+					inputAttributes[_i].capability = (uint)(WVR_InputType.WVR_InputType_Button | WVR_InputType.WVR_InputType_Touch | WVR_InputType.WVR_InputType_Analog);
+					inputAttributes[_i].axis_type = WVR_AnalogType.WVR_AnalogType_1D;
+					break;
+				default:
+					break;
 			}
 
-			DEBUG ("setupButtonAttributes() " + device + " (" + _type + ") " + buttons [_i]
-				+ ", capability: " + inputAttributes [_i].capability
-				+ ", analog type: " + inputAttributes [_i].axis_type);
+			DEBUG("setupButtonAttributes() " + device + " (" + _type + ") " + buttons[_i]
+				+ ", capability: " + inputAttributes[_i].capability
+				+ ", analog type: " + inputAttributes[_i].axis_type);
 		}
 	}
 
@@ -423,6 +441,7 @@ public class WaveVR_ButtonList : MonoBehaviour {
 					}
 				}
 			}
+			WaveVR_Controller.Input (WaveVR_Controller.EDeviceType.Head).UpdateButtonEvents ();
 		}
 	}
 
@@ -454,6 +473,7 @@ public class WaveVR_ButtonList : MonoBehaviour {
 					}
 				}
 			}
+			WaveVR_Controller.Input (WaveVR_Controller.EDeviceType.Dominant).UpdateButtonEvents ();
 		}
 	}
 
@@ -485,6 +505,7 @@ public class WaveVR_ButtonList : MonoBehaviour {
 					}
 				}
 			}
+			WaveVR_Controller.Input (WaveVR_Controller.EDeviceType.NonDominant).UpdateButtonEvents ();
 		}
 	}
 

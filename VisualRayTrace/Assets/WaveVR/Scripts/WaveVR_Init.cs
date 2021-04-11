@@ -144,7 +144,7 @@ public class WaveVR_Init : MonoBehaviour
 		case WVR_EventType.WVR_EventType_RightToLeftSwipe:
 		case WVR_EventType.WVR_EventType_DownToUpSwipe:
 		case WVR_EventType.WVR_EventType_UpToDownSwipe:
-			PrintDebugLog ("processVREvent() Swipe event: " + (WVR_EventType)vrEvent.common.type);
+			PrintDebugLog ("processVREvent() Swipe event: " + _type + ", " + (WVR_EventType)vrEvent.common.type);
 			WaveVR_Utils.Event.Send (WaveVR_Utils.Event.SWIPE_EVENT, vrEvent.common.type, _type);
 			break;
 		case WVR_EventType.WVR_EventType_DeviceRoleChanged:

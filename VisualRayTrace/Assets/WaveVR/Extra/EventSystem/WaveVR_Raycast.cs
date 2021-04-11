@@ -34,6 +34,7 @@ public class WaveVR_RaycastEditor : Editor
 /// <summary>
 /// This class mainly draws a ray cast of associated tracked object.
 /// </summary>
+[DisallowMultipleComponent]
 public class WaveVR_Raycast : MonoBehaviour {
 	private static string LOG_TAG = "WaveVR_Raycast";
 	private void PrintDebugLog(string msg)

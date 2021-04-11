@@ -1,11 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+// "WaveVR SDK 
+// © 2017 HTC Corporation. All Rights Reserved.
+//
+// Unless otherwise required by copyright law and practice,
+// upon the execution of HTC SDK license agreement,
+// HTC grants you access to and use of the WaveVR SDK(s).
+// You shall fully comply with all of HTC’s SDK license agreement terms and
+// conditions signed by you and all SDK and API requirements,
+// specifications, and documentation provided by HTC to You."
+
 using UnityEngine;
 using wvr;
 using WVR_Log;
 using System.Threading;
 using System;
 
+[DisallowMultipleComponent]
 public class WaveVR_GestureManager : MonoBehaviour {
 	private const string LOG_TAG = "WaveVR_GestureManager";
 	private void DEBUG(string msg)
@@ -13,10 +22,11 @@ public class WaveVR_GestureManager : MonoBehaviour {
 		if (Log.EnableDebugLog)
 			Log.d (LOG_TAG, msg, true);
 	}
-
 	private static WaveVR_GestureManager instance = null;
-	public static WaveVR_GestureManager Instance {
-		get {
+	public static WaveVR_GestureManager Instance
+	{
+		get
+		{
 			return instance;
 		}
 	}
@@ -38,12 +48,12 @@ public class WaveVR_GestureManager : MonoBehaviour {
 
 	public enum EStaticGestures
 	{
-		FIST = WVR_HandGestureType.WVR_HandGestureType_Fist,
-		FIVE = WVR_HandGestureType.WVR_HandGestureType_Five,
-		OK = WVR_HandGestureType.WVR_HandGestureType_OK,
-		THUMBUP = WVR_HandGestureType.WVR_HandGestureType_ThumbUp,
-		INDEXUP = WVR_HandGestureType.WVR_HandGestureType_IndexUp,
-		//PINCH = WVR_HandGestureType.WVR_HandGestureType_Pinch
+		UNKNOWN = 1 << (int)WVR_HandGestureType.WVR_HandGestureType_Unknown,
+		FIST	= 1 << (int)WVR_HandGestureType.WVR_HandGestureType_Fist,
+		FIVE	= 1 << (int)WVR_HandGestureType.WVR_HandGestureType_Five,
+		OK		= 1 << (int)WVR_HandGestureType.WVR_HandGestureType_OK,
+		THUMBUP = 1 << (int)WVR_HandGestureType.WVR_HandGestureType_ThumbUp,
+		INDEXUP = 1 << (int)WVR_HandGestureType.WVR_HandGestureType_IndexUp,
 	}
 
 	public bool EnableHandGesture = true;
@@ -53,7 +63,7 @@ public class WaveVR_GestureManager : MonoBehaviour {
 	public bool EnableHandTracking = true;
 	private bool preEnableHandTracking = true;
 
-	private bool hasHandGesture = false;
+	private bool hasHandGestureData = false;
 	private WVR_HandGestureType prevStaticGestureLeft = WVR_HandGestureType.WVR_HandGestureType_Invalid;
 	private WVR_HandGestureType currStaticGestureLeft = WVR_HandGestureType.WVR_HandGestureType_Invalid;
 	private WVR_HandGestureType prevStaticGestureRight = WVR_HandGestureType.WVR_HandGestureType_Invalid;
@@ -66,35 +76,37 @@ public class WaveVR_GestureManager : MonoBehaviour {
 			instance = this;
 	}
 
-	void Start () {
+	void Start()
+	{
 		preEnableHandGesture = this.EnableHandGesture;
 		if (this.EnableHandGesture)
 		{
-			DEBUG ("Start() Start hand gesture.");
-			StartHandGesture ();
+			DEBUG("Start() Start hand gesture.");
+			StartHandGesture();
 		}
 
 		preEnableHandTracking = this.EnableHandTracking;
 		if (this.EnableHandTracking)
 		{
-			DEBUG ("Start() Start hand tracking.");
-			StartHandTracking ();
+			DEBUG("Start() Start hand tracking.");
+			StartHandTracking();
 		}
 	}
 
-	void Update () {
+	void Update()
+	{
 		if (preEnableHandGesture != this.EnableHandGesture)
 		{
 			preEnableHandGesture = this.EnableHandGesture;
 			if (this.EnableHandGesture)
 			{
-				DEBUG ("Update() Start hand gesture.");
-				StartHandGesture ();
+				DEBUG("Update() Start hand gesture.");
+				StartHandGesture();
 			}
 			if (!this.EnableHandGesture)
 			{
-				DEBUG ("Update() Stop hand gesture.");
-				StopHandGesture ();
+				DEBUG("Update() Stop hand gesture.");
+				StopHandGesture();
 			}
 		}
 
@@ -103,23 +115,28 @@ public class WaveVR_GestureManager : MonoBehaviour {
 			preEnableHandTracking = this.EnableHandTracking;
 			if (this.EnableHandTracking)
 			{
-				DEBUG ("Update() Start hand tracking.");
-				StartHandTracking ();
+				DEBUG("Update() Start hand tracking.");
+				StartHandTracking();
 			}
 			if (!this.EnableHandTracking)
 			{
-				DEBUG ("Update() Stop hand tracking.");
-				StopHandTracking ();
+				DEBUG("Update() Stop hand tracking.");
+				StopHandTracking();
 			}
 		}
 
-		// Sending an event when gesture changes.
-		hasHandGesture = GetHandGestureData (ref handGestureData);
-		if (hasHandGesture)
+		if (this.EnableHandGesture)
 		{
-			UpdateLeftHandGestureData (handGestureData);
-			UpdateRightHandGestureData (handGestureData);
+			GetHandGestureData(ref handGestureData);
+			if (hasHandGestureData)
+			{
+				UpdateLeftHandGestureData(handGestureData);
+				UpdateRightHandGestureData(handGestureData);
+			}
 		}
+
+		if (this.EnableHandTracking)
+			GetHandTrackingData();
 	}
 
 	void OnEnable()
@@ -145,9 +162,30 @@ public class WaveVR_GestureManager : MonoBehaviour {
 		}
 	}
 
-	public WVR_HandGestureType GetCurrentLeftHandStaticGesture()
+	public ulong GetCurrentLeftHandStaticGesture()
 	{
-		return currStaticGestureLeft;
+		ulong gesture_value = 0;
+		switch (currStaticGestureLeft)
+		{
+			case WVR_HandGestureType.WVR_HandGestureType_Fist:
+				gesture_value = (ulong)EStaticGestures.FIST;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_Five:
+				gesture_value = (ulong)EStaticGestures.FIVE;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_IndexUp:
+				gesture_value = (ulong)EStaticGestures.INDEXUP;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_ThumbUp:
+				gesture_value = (ulong)EStaticGestures.THUMBUP;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_OK:
+				gesture_value = (ulong)EStaticGestures.OK;
+				break;
+			default:
+				break;
+		}
+		return gesture_value;
 	}
 
 	private void UpdateRightHandGestureData(WVR_HandGestureData_t data)
@@ -162,9 +200,30 @@ public class WaveVR_GestureManager : MonoBehaviour {
 		}
 	}
 
-	public WVR_HandGestureType GetCurrentRightHandStaticGesture()
+	public ulong GetCurrentRightHandStaticGesture()
 	{
-		return currStaticGestureRight;
+		ulong gesture_value = 0;
+		switch (currStaticGestureRight)
+		{
+			case WVR_HandGestureType.WVR_HandGestureType_Fist:
+				gesture_value = (ulong)EStaticGestures.FIST;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_Five:
+				gesture_value = (ulong)EStaticGestures.FIVE;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_IndexUp:
+				gesture_value = (ulong)EStaticGestures.INDEXUP;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_ThumbUp:
+				gesture_value = (ulong)EStaticGestures.THUMBUP;
+				break;
+			case WVR_HandGestureType.WVR_HandGestureType_OK:
+				gesture_value = (ulong)EStaticGestures.OK;
+				break;
+			default:
+				break;
+		}
+		return gesture_value;
 	}
 
 	void OnEvent(params object[] args)
@@ -190,35 +249,45 @@ public class WaveVR_GestureManager : MonoBehaviour {
 	private static ReaderWriterLockSlim handGestureStatusRWLock = new ReaderWriterLockSlim ();
 	private void SetHandGestureStatus(WaveVR_Utils.HandGestureStatus status)
 	{
-		try {
+		try
+		{
 			handGestureStatusRWLock.TryEnterWriteLock(2000);
 			handGestureStatus = status;
-		} catch (Exception e) {
-			Log.e (LOG_TAG, "SetHandGestureStatus() " + e.Message, true);
+		}
+		catch (Exception e)
+		{
+			Log.e(LOG_TAG, "SetHandGestureStatus() " + e.Message, true);
 			throw;
-		} finally {
-			handGestureStatusRWLock.ExitWriteLock ();
+		}
+		finally
+		{
+			handGestureStatusRWLock.ExitWriteLock();
 		}
 	}
 
 	public WaveVR_Utils.HandGestureStatus GetHandGestureStatus()
 	{
-		ulong feature = WaveVR.Instance.GetSupportedFeatures ();
+		ulong feature = WaveVR.Instance.GetSupportedFeatures();
 		if ((feature & (ulong)WVR_SupportedFeature.WVR_SupportedFeature_HandGesture) == 0)
 			return WaveVR_Utils.HandGestureStatus.UNSUPPORT;
 
-		try {
+		try
+		{
 			handGestureStatusRWLock.TryEnterReadLock(2000);
 			return handGestureStatus;
-		} catch (Exception e) {
-			Log.e (LOG_TAG, "GetHandGestureStatus() " + e.Message, true);
+		}
+		catch (Exception e)
+		{
+			Log.e(LOG_TAG, "GetHandGestureStatus() " + e.Message, true);
 			throw;
-		} finally {
-			handGestureStatusRWLock.ExitReadLock ();
+		}
+		finally
+		{
+			handGestureStatusRWLock.ExitReadLock();
 		}
 	}
 
-	private System.Object handGestureThreadLock = new System.Object ();
+	private object handGestureThreadLock = new object();
 	private event WaveVR_Utils.HandGestureResultDelegate handGestureResultCB = null;
 	private void StartHandGestureLock()
 	{
@@ -281,6 +350,7 @@ public class WaveVR_GestureManager : MonoBehaviour {
 			SetHandGestureStatus (WaveVR_Utils.HandGestureStatus.STOPING);
 			WaveVR.Instance.StopHandGesture ();
 			SetHandGestureStatus (WaveVR_Utils.HandGestureStatus.NOT_START);
+			hasHandGestureData = false;
 		}
 
 		status = GetHandGestureStatus ();
@@ -328,15 +398,11 @@ public class WaveVR_GestureManager : MonoBehaviour {
 		RestartHandGesture ();
 	}
 
-	private bool GetHandGestureData(ref WVR_HandGestureData_t data)
+	private void GetHandGestureData(ref WVR_HandGestureData_t data)
 	{
-		bool hasHandGestureData = false;
-
 		WaveVR_Utils.HandGestureStatus status = GetHandGestureStatus ();
 		if (status == WaveVR_Utils.HandGestureStatus.AVAILABLE)
 			hasHandGestureData = WaveVR.Instance.GetHandGestureData (ref data);
-
-		return hasHandGestureData;
 	}
 	#endregion
 
@@ -345,35 +411,45 @@ public class WaveVR_GestureManager : MonoBehaviour {
 	private static ReaderWriterLockSlim handTrackingStatusRWLock = new ReaderWriterLockSlim ();
 	private void SetHandTrackingStatus(WaveVR_Utils.HandTrackingStatus status)
 	{
-		try {
+		try
+		{
 			handTrackingStatusRWLock.TryEnterWriteLock(2000);
 			handTrackingStatus = status;
-		} catch (Exception e) {
-			Log.e (LOG_TAG, "SetHandTrackingStatus() " + e.Message, true);
+		}
+		catch (Exception e)
+		{
+			Log.e(LOG_TAG, "SetHandTrackingStatus() " + e.Message, true);
 			throw;
-		} finally {
-			handTrackingStatusRWLock.ExitWriteLock ();
+		}
+		finally
+		{
+			handTrackingStatusRWLock.ExitWriteLock();
 		}
 	}
 
 	public WaveVR_Utils.HandTrackingStatus GetHandTrackingStatus()
 	{
-		ulong feature = WaveVR.Instance.GetSupportedFeatures ();
+		ulong feature = WaveVR.Instance.GetSupportedFeatures();
 		if ((feature & (ulong)WVR_SupportedFeature.WVR_SupportedFeature_HandTracking) == 0)
 			return WaveVR_Utils.HandTrackingStatus.UNSUPPORT;
 
-		try {
+		try
+		{
 			handTrackingStatusRWLock.TryEnterReadLock(2000);
 			return handTrackingStatus;
-		} catch (Exception e) {
-			Log.e (LOG_TAG, "GetHandTrackingStatus() " + e.Message, true);
+		}
+		catch (Exception e)
+		{
+			Log.e(LOG_TAG, "GetHandTrackingStatus() " + e.Message, true);
 			throw;
-		} finally {
-			handTrackingStatusRWLock.ExitReadLock ();
+		}
+		finally
+		{
+			handTrackingStatusRWLock.ExitReadLock();
 		}
 	}
 
-	private System.Object handTrackingThreadLocker = new System.Object ();
+	private object handTrackingThreadLocker = new object();
 	private event WaveVR_Utils.HandTrackingResultDelegate handTrackingResultCB = null;
 	private void StartHandTrackingLock()
 	{
@@ -436,6 +512,7 @@ public class WaveVR_GestureManager : MonoBehaviour {
 			SetHandTrackingStatus (WaveVR_Utils.HandTrackingStatus.STOPING);
 			WaveVR.Instance.StopHandTracking ();
 			SetHandTrackingStatus (WaveVR_Utils.HandTrackingStatus.NOT_START);
+			hasHandTrackingData = false;
 		}
 
 		status = GetHandTrackingStatus ();
@@ -483,15 +560,50 @@ public class WaveVR_GestureManager : MonoBehaviour {
 		RestartHandTracking ();
 	}
 
-	public bool GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+	private bool hasHandTrackingData = false;
+	private WVR_HandSkeletonData_t handSkeletonData = new WVR_HandSkeletonData_t();
+	private WVR_HandPoseData_t handPoseData = new WVR_HandPoseData_t();
+	public void GetHandTrackingData()
 	{
-		bool hasHandTrackingData = false;
-
 		WaveVR_Utils.HandTrackingStatus status = GetHandTrackingStatus ();
 		if (status == WaveVR_Utils.HandTrackingStatus.AVAILABLE)
-			hasHandTrackingData = WaveVR.Instance.GetHandTrackingData (ref data, originModel, predictedMilliSec);
+			hasHandTrackingData = WaveVR.Instance.GetHandTrackingData (ref handSkeletonData, ref handPoseData, WaveVR_Render.Instance.origin);
+	}
 
+	public bool GetHandSkeletonData(ref WVR_HandSkeletonData_t skeleton)
+	{
+		skeleton = handSkeletonData;
 		return hasHandTrackingData;
+	}
+
+	public bool GetHandPoseData(ref WVR_HandPoseData_t pose)
+	{
+		pose = handPoseData;
+		return hasHandTrackingData;
+	}
+
+	public float GetHandConfidence(EGestureHand hand)
+	{
+		if (hasHandTrackingData)
+		{
+			if (hand == EGestureHand.LEFT)
+				return handSkeletonData.left.confidence;
+			if (hand == EGestureHand.RIGHT)
+				return handSkeletonData.right.confidence;
+		}
+		return 0;
+	}
+
+	public bool IsHandPoseValid(EGestureHand hand)
+	{
+		if (hasHandTrackingData)
+		{
+			if (hand == EGestureHand.LEFT)
+				return (handSkeletonData.left.confidence > 0.1f);
+			if (hand == EGestureHand.RIGHT)
+				return (handSkeletonData.right.confidence > 0.1f);
+		}
+		return false;
 	}
 	#endregion
 }

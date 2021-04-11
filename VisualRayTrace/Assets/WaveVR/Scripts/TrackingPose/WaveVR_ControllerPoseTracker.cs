@@ -1,14 +1,12 @@
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// "WaveVR SDK
+// © 2017 HTC Corporation. All Rights Reserved.
 //
-//	 http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Unless otherwise required by copyright law and practice,
+// upon the execution of HTC SDK license agreement,
+// HTC grants you access to and use of the WaveVR SDK(s).
+// You shall fully comply with all of HTC’s SDK license agreement terms and
+// conditions signed by you and all SDK and API requirements,
+// specifications, and documentation provided by HTC to You."
 
 using UnityEngine;
 using wvr;
@@ -48,6 +46,7 @@ public class WaveVR_ControllerPoseTrackerEditor : Editor
 }
 #endif
 
+[DisallowMultipleComponent]
 public class WaveVR_ControllerPoseTracker : MonoBehaviour
 {
 	private static string LOG_TAG = "WaveVR_ControllerPoseTracker";

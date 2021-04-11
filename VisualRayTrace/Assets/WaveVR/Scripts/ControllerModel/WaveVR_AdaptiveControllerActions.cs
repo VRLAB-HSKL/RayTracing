@@ -34,7 +34,6 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 	public bool useSystemConfig = true;
 	public Color buttonEffectColor = new Color(0, 179, 227, 255);
 	public bool collectInStart = true;
-	private int volume_index;
 
 	private void PrintDebugLog(string msg)
 	{
@@ -70,11 +69,18 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 			WVR_InputId.WVR_InputId_Alias1_DPad_Down,
 			WVR_InputId.WVR_InputId_Alias1_Volume_Up,
 			WVR_InputId.WVR_InputId_Alias1_Volume_Down,
-			WVR_InputId.WVR_InputId_Alias1_Digital_Trigger,
+			WVR_InputId.WVR_InputId_Alias1_A,
+			WVR_InputId.WVR_InputId_Alias1_A,
+			WVR_InputId.WVR_InputId_Alias1_B,
+			WVR_InputId.WVR_InputId_Alias1_B,
+			WVR_InputId.WVR_InputId_Alias1_Bumper,
 			WVR_InputId.WVR_InputId_Alias1_Touchpad,
 			WVR_InputId.WVR_InputId_Alias1_Trigger,
 			WVR_InputId.WVR_InputId_Alias1_Volume_Up,
 			WVR_InputId.WVR_InputId_Alias1_Volume_Down,
+			WVR_InputId.WVR_InputId_Alias1_Bumper,
+			WVR_InputId.WVR_InputId_Alias1_Thumbstick,
+			WVR_InputId.WVR_InputId_Alias1_Thumbstick,
 	};
 
 	private static readonly string[] PressEffectNames = new string[] {
@@ -87,21 +93,30 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 		"__CM__DPad_Down", // DPad_Down
 		"__CM__VolumeUp", // VolumeUpKey
 		"__CM__VolumeDown", // VolumeDownKey
-		"__CM__DigitalTriggerKey", // DigitalTriggerKey
+		"__CM__ButtonA", // ButtonA
+		"__CM__ButtonX", // ButtonX
+		"__CM__ButtonB", // ButtonB
+		"__CM__ButtonY", // ButtonY
+		"__CM__DigitalTriggerKey", // BumperKey in DS < 3.2
 		"__CM__TouchPad", // TouchPad_Press
 		"__CM__TriggerKey", // TriggerKey
 		"__CM__VolumeKey", // Volume
 		"__CM__VolumeKey", // Volume
+		"__CM__BumperKey", // BumperKey in DS >= 3.2
+		"__CM__Thumbstick", // Thumbstick
+		"__CM__TouchPad", // TouchPad_Press
 	};
 
 	//private WVR_InputObject[] PressInputObjectArr = new WVR_InputObject[pressIds.Length];
 	private MeshObject[] pressObjectArrays = new MeshObject[pressIds.Length];
 
 	private static readonly WVR_InputId[] touchIds = new WVR_InputId[] {
-			WVR_InputId.WVR_InputId_Alias1_Touchpad
+			WVR_InputId.WVR_InputId_Alias1_Touchpad,
+			WVR_InputId.WVR_InputId_Alias1_Thumbstick
 	};
 
 	private static readonly string[] TouchEffectNames = new string[] {
+		"__CM__TouchPad_Touch", // TouchPad_Touch
 		"__CM__TouchPad_Touch" // TouchPad_Touch
 	};
 
@@ -273,7 +288,7 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 				{
 					if (touchObjectArrays[_i].gameObject != null && touchObjectArrays[_i].originMat != null && touchObjectArrays[_i].effectMat != null)
 					{
-						var axis = WaveVR_Controller.Input(this.device).GetAxis(WVR_InputId.WVR_InputId_Alias1_Touchpad);
+						var axis = WaveVR_Controller.Input(this.device).GetAxis(touchIds[i]);
 
 						if (isTouchPadSetting)
 						{
@@ -326,7 +341,6 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 
 				if (touchObjectArrays[_i].hasEffect)
 				{
-					//int _i = GetTouchInputMapping(i, "touch up");
 					if (touchObjectArrays[_i].gameObject != null && touchObjectArrays[_i].originMat != null && touchObjectArrays[_i].effectMat != null)
 					{
 						touchObjectArrays[_i].gameObject.GetComponent<MeshRenderer>().material = touchObjectArrays[_i].originMat;
@@ -414,27 +428,22 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 	private int GetPressInputMapping(int pressIds_Index, keyMappingInputType status)
 	{
 		WVR_InputId _btn = pressIds[pressIds_Index];
-		bool _result = WaveVR_ButtonList.Instance.GetInputMappingPair(this.device, ref _btn);
+		bool _result = WaveVR_ButtonList.Instance != null ? WaveVR_ButtonList.Instance.GetInputMappingPair(this.device, ref _btn) : false;
 
 		if (!_result)
 		{
-			PrintInfoLog("GetInputMappingPair failed.");
+			PrintInfoLog("GetInputMappingPair failed[" + pressIds[pressIds_Index] + "].");
 			return -1;
 		}
 
 		int _index = -1;
 		for (int i = 0; i < pressIds.Length; i++)
 		{
-			if(_btn == pressIds[i])
+			if(pressObjectArrays[i].hasEffect &&_btn == pressIds[i])
 			{
 				_index = i;
 				break;
 			}
-		}
-
-		if (pressObjectArrays[pressIds_Index].hasEffect && pressObjectArrays[pressIds_Index].MeshName == "__CM__VolumeKey")
-		{
-			_index = volume_index;
 		}
 
 		if (_index >= 0 && _index < pressIds.Length)
@@ -442,7 +451,7 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 			PrintInfoLog(status.ToString() + " button: " + pressIds[pressIds_Index] + " is mapped to " + _btn);
 		} else
 		{
-			PrintInfoLog("Can't get index in touchIds.");
+			PrintInfoLog("Can't get index in pressIds.");
 		}
 
 		return _index;
@@ -451,17 +460,17 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 	private int GetTouchInputMapping(int touchIds_Index, keyMappingInputType status)
 	{
 		WVR_InputId _btn = touchIds[touchIds_Index];
-		bool _result = WaveVR_ButtonList.Instance.GetInputMappingPair(this.device, ref _btn);
+		bool _result = WaveVR_ButtonList.Instance != null ? WaveVR_ButtonList.Instance.GetInputMappingPair(this.device, ref _btn) : false;
 		if (!_result)
 		{
-			PrintInfoLog("GetInputMappingPair failed.");
+			PrintInfoLog("GetInputMappingPair failed[" + touchIds[touchIds_Index] + "].");
 			return -1;
 		}
 
 		int _index = -1;
 		for (int i = 0; i < touchIds.Length; i++)
 		{
-			if (_btn == touchIds[i])
+			if (touchObjectArrays[i].hasEffect && _btn == touchIds[i])
 			{
 				_index = i;
 				break;
@@ -474,6 +483,13 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 		} else
 		{
 			PrintInfoLog("Can't get index in touchIds.");
+		}
+
+		if (touchIds[touchIds_Index] == WVR_InputId.WVR_InputId_Alias1_Thumbstick // dst
+			&& _btn == WVR_InputId.WVR_InputId_Alias1_Thumbstick) // src
+		{
+			PrintInfoLog("Touch effect doesn't support Thumbstick now!");
+			_index = -1;
 		}
 
 		return _index;
@@ -516,7 +532,6 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 			pressObjectArrays[j].originMat = null;
 			pressObjectArrays[j].effectMat = null;
 
-			bool found = false;
 			for (int i = 0; i < ch; i++)
 			{
 				GameObject CM = this.transform.GetChild(i).gameObject;
@@ -524,11 +539,6 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 				var childname = t[0];
 				if (pressObjectArrays[j].MeshName == childname)
 				{
-					if (childname == "__CM__VolumeKey" || childname == "__CM__VolumeUp" || childname == "__CM__VolumeDown")
-					{
-						volume_index = j;
-					}
-					PrintInfoLog(childname + " is found, active = " + CM.activeInHierarchy);
 					pressObjectArrays[j].gameObject = CM;
 					pressObjectArrays[j].originPosition = CM.transform.localPosition;
 					pressObjectArrays[j].originMat = CM.GetComponent<MeshRenderer>().material;
@@ -544,15 +554,11 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 							PrintInfoLog("touchpad is found! ");
 						}
 					}
-					found = true;
 					break;
 				}
 			}
 
-			if (!found)
-			{
-				PrintInfoLog(pressObjectArrays[j].MeshName + " is not found");
-			}
+			PrintInfoLog("Press " + pressObjectArrays[j].MeshName + " has effect: " + pressObjectArrays[j].hasEffect);
 		}
 
 		for (var j = 0; j < TouchEffectNames.Length; j++)
@@ -565,7 +571,6 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 			touchObjectArrays[j].originMat = null;
 			touchObjectArrays[j].effectMat = null;
 
-			bool found = false;
 			for (int i = 0; i < ch; i++)
 			{
 				GameObject CM = this.transform.GetChild(i).gameObject;
@@ -574,7 +579,6 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 
 				if (touchObjectArrays[j].MeshName == childname)
 				{
-					PrintInfoLog(childname + " is found, active = " + CM.activeInHierarchy);
 					touchObjectArrays[j].gameObject = CM;
 					touchObjectArrays[j].originPosition = CM.transform.localPosition;
 					touchObjectArrays[j].originMat = CM.GetComponent<MeshRenderer>().material;
@@ -589,15 +593,11 @@ public class WaveVR_AdaptiveControllerActions : MonoBehaviour {
 							PrintInfoLog("toucheffectMesh is found! ");
 						}
 					}
-					found = true;
 					break;
 				}
 			}
 
-			if (!found)
-			{
-				PrintInfoLog(touchObjectArrays[j].MeshName + " is not found");
-			}
+			PrintInfoLog("Touch " + touchObjectArrays[j].MeshName + " has effect: " + touchObjectArrays[j].hasEffect);
 		}
 
 		resetButtonState();

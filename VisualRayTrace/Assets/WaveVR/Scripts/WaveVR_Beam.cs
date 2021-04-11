@@ -18,6 +18,7 @@ using WVR_Log;
 using System;
 using System.Text;
 
+[DisallowMultipleComponent]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class WaveVR_Beam: MonoBehaviour
 {

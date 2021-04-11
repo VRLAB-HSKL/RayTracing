@@ -178,9 +178,9 @@ public class WVR_Editor : wvr.Interop.WVR_Base
 		system.StopHandTracking ();
 	}
 
-	public override WVR_Result GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+	public override WVR_Result GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel)
 	{
-		return system.GetHandTrackingData (ref data, originModel, predictedMilliSec);
+		return system.GetHandTrackingData (ref skeleton, ref pose, originModel);
 	}
 	#endregion
 

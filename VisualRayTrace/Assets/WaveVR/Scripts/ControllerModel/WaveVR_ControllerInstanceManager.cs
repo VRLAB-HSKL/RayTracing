@@ -330,8 +330,7 @@ public class WaveVR_ControllerInstanceManager : MonoBehaviour {
 		{
 			if (this.ControllerFocus == WVR_DeviceType.WVR_DeviceType_Controller_Right)
 			{
-				if (WaveVR_Controller.Input(WVR_DeviceType.WVR_DeviceType_Controller_Left).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Digital_Trigger) ||
-					WaveVR_Controller.Input(WVR_DeviceType.WVR_DeviceType_Controller_Left).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Trigger))
+				if (WaveVR_Controller.Input(WVR_DeviceType.WVR_DeviceType_Controller_Left).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Trigger))
 				{
 					this.ControllerFocus = WVR_DeviceType.WVR_DeviceType_Controller_Left;
 					PrintDebugLog("Update() Controller focus changes from Right to Left, set to runtime.");
@@ -340,8 +339,7 @@ public class WaveVR_ControllerInstanceManager : MonoBehaviour {
 			if (this.ControllerFocus == WVR_DeviceType.WVR_DeviceType_Controller_Left)
 			{
 				// Listen to right
-				if (WaveVR_Controller.Input(WVR_DeviceType.WVR_DeviceType_Controller_Right).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Digital_Trigger) ||
-					WaveVR_Controller.Input(WVR_DeviceType.WVR_DeviceType_Controller_Right).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Trigger))
+				if (WaveVR_Controller.Input(WVR_DeviceType.WVR_DeviceType_Controller_Right).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Trigger))
 				{
 					this.ControllerFocus = WVR_DeviceType.WVR_DeviceType_Controller_Right;
 					PrintDebugLog("Update() Controller focus changes from Left to Right, set to runtime.");

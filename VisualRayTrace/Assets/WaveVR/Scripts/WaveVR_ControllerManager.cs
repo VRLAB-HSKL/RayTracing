@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -14,6 +14,7 @@ using UnityEngine;
 using wvr;
 using WVR_Log;
 
+[DisallowMultipleComponent]
 public class WaveVR_ControllerManager : MonoBehaviour
 {
 	private static string LOG_TAG = "WaveVR_ControllerManager";

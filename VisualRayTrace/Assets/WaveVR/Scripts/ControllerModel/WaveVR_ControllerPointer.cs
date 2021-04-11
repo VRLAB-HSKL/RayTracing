@@ -19,6 +19,7 @@ using WVR_Log;
 /// <summary>
 /// Draws a pointer of controller to indicate to which object is pointed.
 /// </summary>
+[DisallowMultipleComponent]
 [RequireComponent(typeof(MeshRenderer))]
 public class WaveVR_ControllerPointer : MonoBehaviour {
 	private const string LOG_TAG = "WaveVR_ControllerPointer";

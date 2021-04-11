@@ -1,11 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+// "Wave SDK 
+// © 2017 HTC Corporation. All Rights Reserved.
+//
+// Unless otherwise required by copyright law and practice,
+// upon the execution of HTC SDK license agreement,
+// HTC grants you access to and use of the Wave SDK(s).
+// You shall fully comply with all of HTC’s SDK license agreement terms and
+// conditions signed by you and all SDK and API requirements,
+// specifications, and documentation provided by HTC to You."
+
 using UnityEngine;
 using wvr;
 using WVR_Log;
 using System;
 
-public class WaveVR_BonePoseImpl {
+public class WaveVR_BonePoseImpl
+{
 	private const string LOG_TAG = "WaveVR_BonePoseImpl";
 	private void DEBUG(string msg)
 	{
@@ -16,49 +25,51 @@ public class WaveVR_BonePoseImpl {
 	{
 		ROOT = 0,
 
-		LEFT_WRIST,
+		LEFT_WRIST,			// 1: wrist
 		LEFT_THUMB_JOINT1,
 		LEFT_THUMB_JOINT2,
 		LEFT_THUMB_JOINT3,
-		LEFT_THUMB_TIP,
+		LEFT_THUMB_TIP,		// 2~5: thumb
 		LEFT_INDEX_JOINT1,
 		LEFT_INDEX_JOINT2,
 		LEFT_INDEX_JOINT3,
-		LEFT_INDEX_TIP,
+		LEFT_INDEX_TIP,		// 6~9: index
 		LEFT_MIDDLE_JOINT1,
 		LEFT_MIDDLE_JOINT2,
 		LEFT_MIDDLE_JOINT3,
-		LEFT_MIDDLE_TIP,
+		LEFT_MIDDLE_TIP,	// 10~13: middle
 		LEFT_RING_JOINT1,
 		LEFT_RING_JOINT2,
 		LEFT_RING_JOINT3,
-		LEFT_RING_TIP,
+		LEFT_RING_TIP,		// 14~17: ring
 		LEFT_PINKY_JOINT1,
 		LEFT_PINKY_JOINT2,
 		LEFT_PINKY_JOINT3,
-		LEFT_PINKY_TIP,
+		LEFT_PINKY_TIP,		// 18~21: pinky
+		// Total 21 left bones.
 
-		RIGHT_WRIST,
+		RIGHT_WRIST,		// 22: wrist
 		RIGHT_THUMB_JOINT1,
 		RIGHT_THUMB_JOINT2,
 		RIGHT_THUMB_JOINT3,
-		RIGHT_THUMB_TIP,
+		RIGHT_THUMB_TIP,	// 23~26: thumb
 		RIGHT_INDEX_JOINT1,
 		RIGHT_INDEX_JOINT2,
 		RIGHT_INDEX_JOINT3,
-		RIGHT_INDEX_TIP,
+		RIGHT_INDEX_TIP,	// 27~30: index
 		RIGHT_MIDDLE_JOINT1,
 		RIGHT_MIDDLE_JOINT2,
 		RIGHT_MIDDLE_JOINT3,
-		RIGHT_MIDDLE_TIP,
+		RIGHT_MIDDLE_TIP,	// 31~34: middle
 		RIGHT_RING_JOINT1,
 		RIGHT_RING_JOINT2,
 		RIGHT_RING_JOINT3,
-		RIGHT_RING_TIP,
+		RIGHT_RING_TIP,		// 35~38: ring
 		RIGHT_PINKY_JOINT1,
 		RIGHT_PINKY_JOINT2,
 		RIGHT_PINKY_JOINT3,
-		RIGHT_PINKY_TIP,
+		RIGHT_PINKY_TIP,	// 39~42: pinky
+		// Total 21 right bones.
 	};
 
 	private static Bones[] leftBones = new Bones[] {
@@ -112,11 +123,10 @@ public class WaveVR_BonePoseImpl {
 	private class BoneData
 	{
 		private WaveVR_Utils.RigidTransform rigidTransform = WaveVR_Utils.RigidTransform.identity;
-		private bool valid = false;
 
-		public BoneData(){
+		public BoneData()
+		{
 			rigidTransform = WaveVR_Utils.RigidTransform.identity;
-			valid = false;
 		}
 
 		public WaveVR_Utils.RigidTransform GetTransform() { return rigidTransform; }
@@ -124,8 +134,6 @@ public class WaveVR_BonePoseImpl {
 		public void SetPosition(Vector3 in_pos) { rigidTransform.pos = in_pos; }
 		public Quaternion GetRotation() { return rigidTransform.rot; }
 		public void SetRotation(Quaternion in_rot) { rigidTransform.rot = in_rot; }
-		public bool IsValidPose() { return valid; }
-		public void SetValidPose(bool in_valid) { valid = in_valid; }
 	};
 
 	private BoneData[] boneDatas;
@@ -137,7 +145,6 @@ public class WaveVR_BonePoseImpl {
 		for (int i = 0; i < Enum.GetNames (typeof(Bones)).Length; i++)
 		{
 			boneDatas [i] = new BoneData ();
-			boneDatas [i].SetValidPose (false);
 		}
 	}
 
@@ -154,23 +161,44 @@ public class WaveVR_BonePoseImpl {
 	}
 
 	private bool hasHandTrackingData = false;
-	private WVR_HandTrackingData_t handTrackingData = new WVR_HandTrackingData_t();
+	private WVR_HandSkeletonData_t handSkeletonData = new WVR_HandSkeletonData_t();
+	private bool validPoseLeft = false, validPoseRight = false;
 	public WaveVR_Utils.RigidTransform GetBoneTransform(Bones bone_type)
 	{
-		if (AllowGetTrackingData ())
+		if (AllowGetTrackingData () && WaveVR_GestureManager.Instance != null)
 		{
-			hasHandTrackingData = WaveVR_GestureManager.Instance.GetHandTrackingData (ref handTrackingData, WaveVR_Render.Instance.origin, 0);
+			validPoseLeft = handSkeletonData.left.wrist.IsValidPose;
+			validPoseRight = handSkeletonData.right.wrist.IsValidPose;
+			hasHandTrackingData = WaveVR_GestureManager.Instance.GetHandSkeletonData(ref handSkeletonData);
 			if (hasHandTrackingData)
 			{
-				if (handTrackingData.left.IsValidPose)
+				if (validPoseLeft != handSkeletonData.left.wrist.IsValidPose)
+					DEBUG("GetBoneTransform() left pose is " + (handSkeletonData.left.wrist.IsValidPose ? "valid." : "invalid."));
+
+				if (validPoseRight != handSkeletonData.right.wrist.IsValidPose)
+					DEBUG("GetBoneTransform() right pose is " + (handSkeletonData.right.wrist.IsValidPose ? "valid." : "invalid."));
+
+				if (handSkeletonData.left.wrist.IsValidPose)
 					UpdateLeftHandTrackingData ();
 
-				if (handTrackingData.right.IsValidPose)
+				if (handSkeletonData.right.wrist.IsValidPose)
 					UpdateRightHandTrackingData ();
 			}
 		}
 
 		return boneDatas[(int)bone_type].GetTransform();
+	}
+
+	public WaveVR_Utils.RigidTransform GetBoneTransform(int index, bool isLeft)
+	{
+		int bone_index = (int)Bones.ROOT;
+
+		if (isLeft)
+			bone_index = index + 1;
+		else
+			bone_index = index + 22;
+
+		return GetBoneTransform((Bones)bone_index);
 	}
 
 	public bool IsBonePoseValid(Bones bone_type)
@@ -192,360 +220,338 @@ public class WaveVR_BonePoseImpl {
 
 	public bool IsHandPoseValid(WaveVR_GestureManager.EGestureHand hand)
 	{
-		if (hasHandTrackingData)
+		if (WaveVR_GestureManager.Instance == null)
+			return false;
+
+		return WaveVR_GestureManager.Instance.IsHandPoseValid(hand);
+	}
+
+	public float GetBoneConfidence(Bones bone_type)
+	{
+		for (int i = 0; i < leftBones.Length; i++)
 		{
-			if (hand == WaveVR_GestureManager.EGestureHand.LEFT)
-				return handTrackingData.left.IsValidPose;
-			if (hand == WaveVR_GestureManager.EGestureHand.RIGHT)
-				return handTrackingData.right.IsValidPose;
+			if (leftBones[i] == bone_type)
+				return GetHandConfidence(WaveVR_GestureManager.EGestureHand.LEFT);
 		}
 
-		return false;
+		for (int i = 0; i < rightBones.Length; i++)
+		{
+			if (rightBones[i] == bone_type)
+				return GetHandConfidence(WaveVR_GestureManager.EGestureHand.RIGHT);
+		}
+
+		return 0;
+	}
+
+	public float GetHandConfidence(WaveVR_GestureManager.EGestureHand hand)
+	{
+		if (WaveVR_GestureManager.Instance == null)
+			return 0;
+
+		return WaveVR_GestureManager.Instance.GetHandConfidence(hand);
 	}
 
 	private WaveVR_Utils.RigidTransform rtWristLeft = WaveVR_Utils.RigidTransform.identity;
 	private void UpdateLeftHandTrackingData()
 	{
 		// Left wrist - LEFT_WRIST
-		rtWristLeft.update (handTrackingData.left.PoseMatrix);
+		rtWristLeft.update (handSkeletonData.left.wrist.PoseMatrix);
 		Vector3 LEFT_WRIST_Pos = rtWristLeft.pos;
 		Quaternion LEFT_WRIST_Rot = rtWristLeft.rot;
 
 		boneDatas [(int)Bones.LEFT_WRIST].SetPosition (LEFT_WRIST_Pos);
 		boneDatas [(int)Bones.LEFT_WRIST].SetRotation (LEFT_WRIST_Rot);
-		boneDatas [(int)Bones.LEFT_WRIST].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left thumb joint1 - LEFT_THUMB_JOINT1
-		Vector3 LEFT_THUMB_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.thumb.joint1);
+		Vector3 LEFT_THUMB_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.thumb.joint1);
 		Quaternion LEFT_THUMB_JOINT1_Rot = Quaternion.LookRotation (LEFT_THUMB_JOINT1_Pos - LEFT_WRIST_Pos);
 
 		boneDatas [(int)Bones.LEFT_THUMB_JOINT1].SetPosition (LEFT_THUMB_JOINT1_Pos);
 		boneDatas [(int)Bones.LEFT_THUMB_JOINT1].SetRotation (LEFT_THUMB_JOINT1_Rot);
-		boneDatas [(int)Bones.LEFT_THUMB_JOINT1].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left thumb joint2 - LEFT_THUMB_JOINT2
-		Vector3 LEFT_THUMB_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.thumb.joint2);
+		Vector3 LEFT_THUMB_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.thumb.joint2);
 		Quaternion LEFT_THUMB_JOINT2_Rot = Quaternion.LookRotation (LEFT_THUMB_JOINT2_Pos - LEFT_THUMB_JOINT1_Pos);
 
 		boneDatas [(int)Bones.LEFT_THUMB_JOINT2].SetPosition (LEFT_THUMB_JOINT2_Pos);
 		boneDatas [(int)Bones.LEFT_THUMB_JOINT2].SetRotation (LEFT_THUMB_JOINT2_Rot);
-		boneDatas [(int)Bones.LEFT_THUMB_JOINT2].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left thumb joint3 - LEFT_THUMB_JOINT3
-		Vector3 LEFT_THUMB_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.thumb.joint3);
+		Vector3 LEFT_THUMB_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.thumb.joint3);
 		Quaternion LEFT_THUMB_JOINT3_Rot = Quaternion.LookRotation (LEFT_THUMB_JOINT3_Pos - LEFT_THUMB_JOINT2_Pos);
 
 		boneDatas [(int)Bones.LEFT_THUMB_JOINT3].SetPosition (LEFT_THUMB_JOINT3_Pos);
 		boneDatas [(int)Bones.LEFT_THUMB_JOINT3].SetRotation (LEFT_THUMB_JOINT3_Rot);
-		boneDatas [(int)Bones.LEFT_THUMB_JOINT3].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left thumb tip - LEFT_THUMB_TIP
-		Vector3 LEFT_THUMB_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.thumb.tip);
+		Vector3 LEFT_THUMB_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.thumb.tip);
 		Quaternion LEFT_THUMB_TIP_Rot = Quaternion.LookRotation (LEFT_THUMB_TIP_Pos - LEFT_THUMB_JOINT3_Pos);
 
 		boneDatas [(int)Bones.LEFT_THUMB_TIP].SetPosition (LEFT_THUMB_TIP_Pos);
 		boneDatas [(int)Bones.LEFT_THUMB_TIP].SetRotation (LEFT_THUMB_TIP_Rot);
-		boneDatas [(int)Bones.LEFT_THUMB_TIP].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left index joint1 - LEFT_INDEX_JOINT1
-		Vector3 LEFT_INDEX_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.index.joint1);
+		Vector3 LEFT_INDEX_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.index.joint1);
 		Quaternion LEFT_INDEX_JOINT1_Rot = Quaternion.LookRotation (LEFT_INDEX_JOINT1_Pos - LEFT_WRIST_Pos);
 
 		boneDatas [(int)Bones.LEFT_INDEX_JOINT1].SetPosition (LEFT_INDEX_JOINT1_Pos);
 		boneDatas [(int)Bones.LEFT_INDEX_JOINT1].SetRotation (LEFT_INDEX_JOINT1_Rot);
-		boneDatas [(int)Bones.LEFT_INDEX_JOINT1].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left index joint2 - LEFT_INDEX_JOINT2
-		Vector3 LEFT_INDEX_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.index.joint2);
+		Vector3 LEFT_INDEX_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.index.joint2);
 		Quaternion LEFT_INDEX_JOINT2_Rot = Quaternion.LookRotation (LEFT_INDEX_JOINT2_Pos - LEFT_INDEX_JOINT1_Pos);
 
 		boneDatas [(int)Bones.LEFT_INDEX_JOINT2].SetPosition (LEFT_INDEX_JOINT2_Pos);
 		boneDatas [(int)Bones.LEFT_INDEX_JOINT2].SetRotation (LEFT_INDEX_JOINT2_Rot);
-		boneDatas [(int)Bones.LEFT_INDEX_JOINT2].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left index joint3 - LEFT_INDEX_JOINT3
-		Vector3 LEFT_INDEX_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.index.joint3);
+		Vector3 LEFT_INDEX_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.index.joint3);
 		Quaternion LEFT_INDEX_JOINT3_Rot = Quaternion.LookRotation (LEFT_INDEX_JOINT3_Pos, LEFT_INDEX_JOINT2_Pos);
 
 		boneDatas [(int)Bones.LEFT_INDEX_JOINT3].SetPosition (LEFT_INDEX_JOINT3_Pos);
 		boneDatas [(int)Bones.LEFT_INDEX_JOINT3].SetRotation (LEFT_INDEX_JOINT3_Rot);
-		boneDatas [(int)Bones.LEFT_INDEX_JOINT3].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left index tip - LEFT_INDEX_TIP
-		Vector3 LEFT_INDEX_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.index.tip);
+		Vector3 LEFT_INDEX_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.index.tip);
 		Quaternion LEFT_INDEX_TIP_Rot = Quaternion.LookRotation (LEFT_INDEX_TIP_Pos - LEFT_INDEX_JOINT3_Pos);
 
 		boneDatas [(int)Bones.LEFT_INDEX_TIP].SetPosition (LEFT_INDEX_TIP_Pos);
 		boneDatas [(int)Bones.LEFT_INDEX_TIP].SetRotation (LEFT_INDEX_TIP_Rot);
-		boneDatas [(int)Bones.LEFT_INDEX_TIP].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left middle joint1 - LEFT_MIDDLE_JOINT1
-		Vector3 LEFT_MIDDLE_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.middle.joint1);
+		Vector3 LEFT_MIDDLE_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.middle.joint1);
 		Quaternion LEFT_MIDDLE_JOINT1_Rot = Quaternion.LookRotation (LEFT_MIDDLE_JOINT1_Pos - LEFT_WRIST_Pos);
 
 		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT1].SetPosition (LEFT_MIDDLE_JOINT1_Pos);
 		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT1].SetRotation (LEFT_MIDDLE_JOINT1_Rot);
-		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT1].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left middle joint2 - LEFT_MIDDLE_JOINT2
-		Vector3 LEFT_MIDDLE_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.middle.joint2);
+		Vector3 LEFT_MIDDLE_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.middle.joint2);
 		Quaternion LEFT_MIDDLE_JOINT2_Rot = Quaternion.LookRotation (LEFT_MIDDLE_JOINT2_Pos - LEFT_MIDDLE_JOINT1_Pos);
 
 		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT2].SetPosition (LEFT_MIDDLE_JOINT2_Pos);
 		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT2].SetRotation (LEFT_MIDDLE_JOINT2_Rot);
-		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT2].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left middle joint3 - LEFT_MIDDLE_JOINT3
-		Vector3 LEFT_MIDDLE_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.middle.joint3);
+		Vector3 LEFT_MIDDLE_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.middle.joint3);
 		Quaternion LEFT_MIDDLE_JOINT3_Rot = Quaternion.LookRotation (LEFT_MIDDLE_JOINT3_Pos - LEFT_MIDDLE_JOINT2_Pos);
 
 		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT3].SetPosition (LEFT_MIDDLE_JOINT3_Pos);
 		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT3].SetRotation (LEFT_MIDDLE_JOINT3_Rot);
-		boneDatas [(int)Bones.LEFT_MIDDLE_JOINT3].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left middle tip - LEFT_MIDDLE_TIP
-		Vector3 LEFT_MIDDLE_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.middle.tip);
+		Vector3 LEFT_MIDDLE_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.middle.tip);
 		Quaternion LEFT_MIDDLE_TIP_Rot = Quaternion.LookRotation (LEFT_MIDDLE_TIP_Pos - LEFT_MIDDLE_JOINT3_Pos);
 
 		boneDatas [(int)Bones.LEFT_MIDDLE_TIP].SetPosition (LEFT_MIDDLE_TIP_Pos);
 		boneDatas [(int)Bones.LEFT_MIDDLE_TIP].SetRotation (LEFT_MIDDLE_TIP_Rot);
-		boneDatas [(int)Bones.LEFT_MIDDLE_TIP].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left ring joint1 - LEFT_RING_JOINT1
-		Vector3 LEFT_RING_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.ring.joint1);
+		Vector3 LEFT_RING_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.ring.joint1);
 		Quaternion LEFT_RING_JOINT1_Rot = Quaternion.LookRotation (LEFT_RING_JOINT1_Pos - LEFT_WRIST_Pos);
 
 		boneDatas [(int)Bones.LEFT_RING_JOINT1].SetPosition (LEFT_RING_JOINT1_Pos);
 		boneDatas [(int)Bones.LEFT_RING_JOINT1].SetRotation (LEFT_RING_JOINT1_Rot);
-		boneDatas [(int)Bones.LEFT_RING_JOINT1].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left ring joint2 - LEFT_RING_JOINT2
-		Vector3 LEFT_RING_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.ring.joint2);
+		Vector3 LEFT_RING_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.ring.joint2);
 		Quaternion LEFT_RING_JOINT2_Rot = Quaternion.LookRotation (LEFT_RING_JOINT2_Pos - LEFT_RING_JOINT1_Pos);
 
 		boneDatas [(int)Bones.LEFT_RING_JOINT2].SetPosition (LEFT_RING_JOINT2_Pos);
 		boneDatas [(int)Bones.LEFT_RING_JOINT2].SetRotation (LEFT_RING_JOINT2_Rot);
-		boneDatas [(int)Bones.LEFT_RING_JOINT2].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left ring joint3 - LEFT_RING_JOINT3
-		Vector3 LEFT_RING_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.ring.joint3);
+		Vector3 LEFT_RING_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.ring.joint3);
 		Quaternion LEFT_RING_JOINT3_Rot = Quaternion.LookRotation (LEFT_RING_JOINT3_Pos - LEFT_RING_JOINT2_Pos);
 
 		boneDatas [(int)Bones.LEFT_RING_JOINT3].SetPosition (LEFT_RING_JOINT3_Pos);
 		boneDatas [(int)Bones.LEFT_RING_JOINT3].SetRotation (LEFT_RING_JOINT3_Rot);
-		boneDatas [(int)Bones.LEFT_RING_JOINT3].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left ring tip - LEFT_RING_TIP
-		Vector3 LEFT_RING_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.ring.tip);
+		Vector3 LEFT_RING_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.ring.tip);
 		Quaternion LEFT_RING_TIP_Rot = Quaternion.LookRotation (LEFT_RING_TIP_Pos - LEFT_RING_JOINT3_Pos);
 
 		boneDatas [(int)Bones.LEFT_RING_TIP].SetPosition (LEFT_RING_TIP_Pos);
 		boneDatas [(int)Bones.LEFT_RING_TIP].SetRotation (LEFT_RING_TIP_Rot);
-		boneDatas [(int)Bones.LEFT_RING_TIP].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left pinky joint1 - LEFT_PINKY_JOINT1
-		Vector3 LEFT_PINKY_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.pinky.joint1);
+		Vector3 LEFT_PINKY_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.pinky.joint1);
 		Quaternion LEFT_PINKY_JOINT1_Rot = Quaternion.LookRotation (LEFT_PINKY_JOINT1_Pos - LEFT_WRIST_Pos);
 
 		boneDatas [(int)Bones.LEFT_PINKY_JOINT1].SetPosition (LEFT_PINKY_JOINT1_Pos);
 		boneDatas [(int)Bones.LEFT_PINKY_JOINT1].SetRotation (LEFT_PINKY_JOINT1_Rot);
-		boneDatas [(int)Bones.LEFT_PINKY_JOINT1].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left pinky joint2 - LEFT_PINKY_JOINT2
-		Vector3 LEFT_PINKY_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.pinky.joint2);
+		Vector3 LEFT_PINKY_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.pinky.joint2);
 		Quaternion LEFT_PINKY_JOINT2_Rot = Quaternion.LookRotation (LEFT_PINKY_JOINT2_Pos - LEFT_PINKY_JOINT1_Pos);
 
 		boneDatas [(int)Bones.LEFT_PINKY_JOINT2].SetPosition (LEFT_PINKY_JOINT2_Pos);
 		boneDatas [(int)Bones.LEFT_PINKY_JOINT2].SetRotation (LEFT_PINKY_JOINT2_Rot);
-		boneDatas [(int)Bones.LEFT_PINKY_JOINT2].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left pinky joint3 - LEFT_PINKY_JOINT3
-		Vector3 LEFT_PINKY_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.pinky.joint3);
+		Vector3 LEFT_PINKY_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.pinky.joint3);
 		Quaternion LEFT_PINKY_JOINT3_Rot = Quaternion.LookRotation (LEFT_PINKY_JOINT3_Pos - LEFT_PINKY_JOINT2_Pos);
 
 		boneDatas [(int)Bones.LEFT_PINKY_JOINT3].SetPosition (LEFT_PINKY_JOINT3_Pos);
 		boneDatas [(int)Bones.LEFT_PINKY_JOINT3].SetRotation (LEFT_PINKY_JOINT3_Rot);
-		boneDatas [(int)Bones.LEFT_PINKY_JOINT3].SetValidPose (handTrackingData.left.IsValidPose);
 
 		// Left pinky tip - LEFT_PINKY_TIP
-		Vector3 LEFT_PINKY_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.leftFinger.pinky.tip);
+		Vector3 LEFT_PINKY_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.left.pinky.tip);
 		Quaternion LEFT_PINKY_TIP_Rot = Quaternion.LookRotation (LEFT_PINKY_TIP_Pos - LEFT_PINKY_JOINT3_Pos);
 
 		boneDatas [(int)Bones.LEFT_PINKY_TIP].SetPosition (LEFT_PINKY_TIP_Pos);
 		boneDatas [(int)Bones.LEFT_PINKY_TIP].SetRotation (LEFT_PINKY_TIP_Rot);
-		boneDatas [(int)Bones.LEFT_PINKY_TIP].SetValidPose (handTrackingData.left.IsValidPose);
 	}
 
 	private WaveVR_Utils.RigidTransform rtWristRight = WaveVR_Utils.RigidTransform.identity;
 	private void UpdateRightHandTrackingData()
 	{
 		// Right wrist - RIGHT_WRIST
-		rtWristRight.update(handTrackingData.right.PoseMatrix);
+		rtWristRight.update(handSkeletonData.right.wrist.PoseMatrix);
 		Vector3 RIGHT_WRIST_Pos = rtWristRight.pos;
 		Quaternion RIGHT_WRIST_Rot = rtWristRight.rot;
 
 		boneDatas [(int)Bones.RIGHT_WRIST].SetPosition (RIGHT_WRIST_Pos);
 		boneDatas [(int)Bones.RIGHT_WRIST].SetRotation (RIGHT_WRIST_Rot);
-		boneDatas [(int)Bones.RIGHT_WRIST].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right thumb joint1 - RIGHT_THUMB_JOINT1
-		Vector3 RIGHT_THUMB_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.thumb.joint1);
+		Vector3 RIGHT_THUMB_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.thumb.joint1);
 		Quaternion RIGHT_THUMB_JOINT1_Rot = Quaternion.LookRotation (RIGHT_THUMB_JOINT1_Pos - RIGHT_WRIST_Pos);
 
 		boneDatas [(int)Bones.RIGHT_THUMB_JOINT1].SetPosition (RIGHT_THUMB_JOINT1_Pos);
 		boneDatas [(int)Bones.RIGHT_THUMB_JOINT1].SetRotation (RIGHT_THUMB_JOINT1_Rot);
-		boneDatas [(int)Bones.RIGHT_THUMB_JOINT1].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right thumb joint2 - RIGHT_THUMB_JOINT2
-		Vector3 RIGHT_THUMB_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.thumb.joint2);
+		Vector3 RIGHT_THUMB_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.thumb.joint2);
 		Quaternion RIGHT_THUMB_JOINT2_Rot = Quaternion.LookRotation (RIGHT_THUMB_JOINT2_Pos - RIGHT_THUMB_JOINT1_Pos);
 
 		boneDatas [(int)Bones.RIGHT_THUMB_JOINT2].SetPosition (RIGHT_THUMB_JOINT2_Pos);
 		boneDatas [(int)Bones.RIGHT_THUMB_JOINT2].SetRotation (RIGHT_THUMB_JOINT2_Rot);
-		boneDatas [(int)Bones.RIGHT_THUMB_JOINT2].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right thumb joint3 - RIGHT_THUMB_JOINT3
-		Vector3 RIGHT_THUMB_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.thumb.joint3);
+		Vector3 RIGHT_THUMB_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.thumb.joint3);
 		Quaternion RIGHT_THUMB_JOINT3_Rot = Quaternion.LookRotation (RIGHT_THUMB_JOINT3_Pos - RIGHT_THUMB_JOINT2_Pos);
 
 		boneDatas [(int)Bones.RIGHT_THUMB_JOINT3].SetPosition (RIGHT_THUMB_JOINT3_Pos);
 		boneDatas [(int)Bones.RIGHT_THUMB_JOINT3].SetRotation (RIGHT_THUMB_JOINT3_Rot);
-		boneDatas [(int)Bones.RIGHT_THUMB_JOINT3].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right thumb tip - RIGHT_THUMB_TIP
-		Vector3 RIGHT_THUMB_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.thumb.tip);
+		Vector3 RIGHT_THUMB_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.thumb.tip);
 		Quaternion RIGHT_THUMB_TIP_Rot = Quaternion.LookRotation (RIGHT_THUMB_TIP_Pos - RIGHT_THUMB_JOINT3_Pos);
 
 		boneDatas [(int)Bones.RIGHT_THUMB_TIP].SetPosition (RIGHT_THUMB_TIP_Pos);
 		boneDatas [(int)Bones.RIGHT_THUMB_TIP].SetRotation (RIGHT_THUMB_TIP_Rot);
-		boneDatas [(int)Bones.RIGHT_THUMB_TIP].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right index joint1 - RIGHT_INDEX_JOINT1
-		Vector3 RIGHT_INDEX_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.index.joint1);
+		Vector3 RIGHT_INDEX_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.index.joint1);
 		Quaternion RIGHT_INDEX_JOINT1_Rot = Quaternion.LookRotation (RIGHT_INDEX_JOINT1_Pos - RIGHT_WRIST_Pos);
 
 		boneDatas [(int)Bones.RIGHT_INDEX_JOINT1].SetPosition (RIGHT_INDEX_JOINT1_Pos);
 		boneDatas [(int)Bones.RIGHT_INDEX_JOINT1].SetRotation (RIGHT_INDEX_JOINT1_Rot);
-		boneDatas [(int)Bones.RIGHT_INDEX_JOINT1].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right index joint2 - RIGHT_INDEX_JOINT2
-		Vector3 RIGHT_INDEX_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.index.joint2);
+		Vector3 RIGHT_INDEX_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.index.joint2);
 		Quaternion RIGHT_INDEX_JOINT2_Rot = Quaternion.LookRotation (RIGHT_INDEX_JOINT2_Pos - RIGHT_INDEX_JOINT1_Pos);
 
 		boneDatas [(int)Bones.RIGHT_INDEX_JOINT2].SetPosition (RIGHT_INDEX_JOINT2_Pos);
 		boneDatas [(int)Bones.RIGHT_INDEX_JOINT2].SetRotation (RIGHT_INDEX_JOINT2_Rot);
-		boneDatas [(int)Bones.RIGHT_INDEX_JOINT2].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right index joint3 - RIGHT_INDEX_JOINT3
-		Vector3 RIGHT_INDEX_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.index.joint3);
+		Vector3 RIGHT_INDEX_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.index.joint3);
 		Quaternion RIGHT_INDEX_JOINT3_Rot = Quaternion.LookRotation (RIGHT_INDEX_JOINT3_Pos, RIGHT_INDEX_JOINT2_Pos);
 
 		boneDatas [(int)Bones.RIGHT_INDEX_JOINT3].SetPosition (RIGHT_INDEX_JOINT3_Pos);
 		boneDatas [(int)Bones.RIGHT_INDEX_JOINT3].SetRotation (RIGHT_INDEX_JOINT3_Rot);
-		boneDatas [(int)Bones.RIGHT_INDEX_JOINT3].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right index tip - RIGHT_INDEX_TIP
-		Vector3 RIGHT_INDEX_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.index.tip);
+		Vector3 RIGHT_INDEX_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.index.tip);
 		Quaternion RIGHT_INDEX_TIP_Rot = Quaternion.LookRotation (RIGHT_INDEX_TIP_Pos - RIGHT_INDEX_JOINT3_Pos);
 
 		boneDatas [(int)Bones.RIGHT_INDEX_TIP].SetPosition (RIGHT_INDEX_TIP_Pos);
 		boneDatas [(int)Bones.RIGHT_INDEX_TIP].SetRotation (RIGHT_INDEX_TIP_Rot);
-		boneDatas [(int)Bones.RIGHT_INDEX_TIP].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right middle joint1 - RIGHT_MIDDLE_JOINT1
-		Vector3 RIGHT_MIDDLE_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.middle.joint1);
+		Vector3 RIGHT_MIDDLE_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.middle.joint1);
 		Quaternion RIGHT_MIDDLE_JOINT1_Rot = Quaternion.LookRotation (RIGHT_MIDDLE_JOINT1_Pos - RIGHT_WRIST_Pos);
 
 		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT1].SetPosition (RIGHT_MIDDLE_JOINT1_Pos);
 		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT1].SetRotation (RIGHT_MIDDLE_JOINT1_Rot);
-		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT1].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right middle joint2 - RIGHT_MIDDLE_JOINT2
-		Vector3 RIGHT_MIDDLE_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.middle.joint2);
+		Vector3 RIGHT_MIDDLE_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.middle.joint2);
 		Quaternion RIGHT_MIDDLE_JOINT2_Rot = Quaternion.LookRotation (RIGHT_MIDDLE_JOINT2_Pos - RIGHT_MIDDLE_JOINT1_Pos);
 
 		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT2].SetPosition (RIGHT_MIDDLE_JOINT2_Pos);
 		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT2].SetRotation (RIGHT_MIDDLE_JOINT2_Rot);
-		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT2].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right middle joint3 - RIGHT_MIDDLE_JOINT3
-		Vector3 RIGHT_MIDDLE_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.middle.joint3);
+		Vector3 RIGHT_MIDDLE_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.middle.joint3);
 		Quaternion RIGHT_MIDDLE_JOINT3_Rot = Quaternion.LookRotation (RIGHT_MIDDLE_JOINT3_Pos - RIGHT_MIDDLE_JOINT2_Pos);
 
 		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT3].SetPosition (RIGHT_MIDDLE_JOINT3_Pos);
 		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT3].SetRotation (RIGHT_MIDDLE_JOINT3_Rot);
-		boneDatas [(int)Bones.RIGHT_MIDDLE_JOINT3].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right middle tip - RIGHT_MIDDLE_TIP
-		Vector3 RIGHT_MIDDLE_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.middle.tip);
+		Vector3 RIGHT_MIDDLE_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.middle.tip);
 		Quaternion RIGHT_MIDDLE_TIP_Rot = Quaternion.LookRotation (RIGHT_MIDDLE_TIP_Pos - RIGHT_MIDDLE_JOINT3_Pos);
 
 		boneDatas [(int)Bones.RIGHT_MIDDLE_TIP].SetPosition (RIGHT_MIDDLE_TIP_Pos);
 		boneDatas [(int)Bones.RIGHT_MIDDLE_TIP].SetRotation (RIGHT_MIDDLE_TIP_Rot);
-		boneDatas [(int)Bones.RIGHT_MIDDLE_TIP].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right ring joint1 - RIGHT_RING_JOINT1
-		Vector3 RIGHT_RING_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.ring.joint1);
+		Vector3 RIGHT_RING_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.ring.joint1);
 		Quaternion RIGHT_RING_JOINT1_Rot = Quaternion.LookRotation (RIGHT_RING_JOINT1_Pos - RIGHT_WRIST_Pos);
 
 		boneDatas [(int)Bones.RIGHT_RING_JOINT1].SetPosition (RIGHT_RING_JOINT1_Pos);
 		boneDatas [(int)Bones.RIGHT_RING_JOINT1].SetRotation (RIGHT_RING_JOINT1_Rot);
-		boneDatas [(int)Bones.RIGHT_RING_JOINT1].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right ring joint2 - RIGHT_RING_JOINT2
-		Vector3 RIGHT_RING_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.ring.joint2);
+		Vector3 RIGHT_RING_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.ring.joint2);
 		Quaternion RIGHT_RING_JOINT2_Rot = Quaternion.LookRotation (RIGHT_RING_JOINT2_Pos - RIGHT_RING_JOINT1_Pos);
 
 		boneDatas [(int)Bones.RIGHT_RING_JOINT2].SetPosition (RIGHT_RING_JOINT2_Pos);
 		boneDatas [(int)Bones.RIGHT_RING_JOINT2].SetRotation (RIGHT_RING_JOINT2_Rot);
-		boneDatas [(int)Bones.RIGHT_RING_JOINT2].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right ring joint3 - RIGHT_RING_JOINT3
-		Vector3 RIGHT_RING_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.ring.joint3);
+		Vector3 RIGHT_RING_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.ring.joint3);
 		Quaternion RIGHT_RING_JOINT3_Rot = Quaternion.LookRotation (RIGHT_RING_JOINT3_Pos - RIGHT_RING_JOINT2_Pos);
 
 		boneDatas [(int)Bones.RIGHT_RING_JOINT3].SetPosition (RIGHT_RING_JOINT3_Pos);
 		boneDatas [(int)Bones.RIGHT_RING_JOINT3].SetRotation (RIGHT_RING_JOINT3_Rot);
-		boneDatas [(int)Bones.RIGHT_RING_JOINT3].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right ring tip - RIGHT_RING_TIP
-		Vector3 RIGHT_RING_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.ring.tip);
+		Vector3 RIGHT_RING_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.ring.tip);
 		Quaternion RIGHT_RING_TIP_Rot = Quaternion.LookRotation (RIGHT_RING_TIP_Pos - RIGHT_RING_JOINT3_Pos);
 
 		boneDatas [(int)Bones.RIGHT_RING_TIP].SetPosition (RIGHT_RING_TIP_Pos);
 		boneDatas [(int)Bones.RIGHT_RING_TIP].SetRotation (RIGHT_RING_TIP_Rot);
-		boneDatas [(int)Bones.RIGHT_RING_TIP].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right pinky joint1 - RIGHT_PINKY_JOINT1
-		Vector3 RIGHT_PINKY_JOINT1_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.pinky.joint1);
+		Vector3 RIGHT_PINKY_JOINT1_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.pinky.joint1);
 		Quaternion RIGHT_PINKY_JOINT1_Rot = Quaternion.LookRotation (RIGHT_PINKY_JOINT1_Pos - RIGHT_WRIST_Pos);
 
 		boneDatas [(int)Bones.RIGHT_PINKY_JOINT1].SetPosition (RIGHT_PINKY_JOINT1_Pos);
 		boneDatas [(int)Bones.RIGHT_PINKY_JOINT1].SetRotation (RIGHT_PINKY_JOINT1_Rot);
-		boneDatas [(int)Bones.RIGHT_PINKY_JOINT1].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right pinky joint2 - RIGHT_PINKY_JOINT2
-		Vector3 RIGHT_PINKY_JOINT2_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.pinky.joint2);
+		Vector3 RIGHT_PINKY_JOINT2_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.pinky.joint2);
 		Quaternion RIGHT_PINKY_JOINT2_Rot = Quaternion.LookRotation (RIGHT_PINKY_JOINT2_Pos - RIGHT_PINKY_JOINT1_Pos);
 
 		boneDatas [(int)Bones.RIGHT_PINKY_JOINT2].SetPosition (RIGHT_PINKY_JOINT2_Pos);
 		boneDatas [(int)Bones.RIGHT_PINKY_JOINT2].SetRotation (RIGHT_PINKY_JOINT2_Rot);
-		boneDatas [(int)Bones.RIGHT_PINKY_JOINT2].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right pinky joint3 - RIGHT_PINKY_JOINT3
-		Vector3 RIGHT_PINKY_JOINT3_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.pinky.joint3);
+		Vector3 RIGHT_PINKY_JOINT3_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.pinky.joint3);
 		Quaternion RIGHT_PINKY_JOINT3_Rot = Quaternion.LookRotation (RIGHT_PINKY_JOINT3_Pos - RIGHT_PINKY_JOINT2_Pos);
 
 		boneDatas [(int)Bones.RIGHT_PINKY_JOINT3].SetPosition (RIGHT_PINKY_JOINT3_Pos);
 		boneDatas [(int)Bones.RIGHT_PINKY_JOINT3].SetRotation (RIGHT_PINKY_JOINT3_Rot);
-		boneDatas [(int)Bones.RIGHT_PINKY_JOINT3].SetValidPose (handTrackingData.right.IsValidPose);
 
 		// Right pinky tip - RIGHT_PINKY_TIP
-		Vector3 RIGHT_PINKY_TIP_Pos = WaveVR_Utils.GetPosition (handTrackingData.rightFinger.pinky.tip);
+		Vector3 RIGHT_PINKY_TIP_Pos = WaveVR_Utils.GetPosition (handSkeletonData.right.pinky.tip);
 		Quaternion RIGHT_PINKY_TIP_Rot = Quaternion.LookRotation (RIGHT_PINKY_TIP_Pos - RIGHT_PINKY_JOINT3_Pos);
 
 		boneDatas [(int)Bones.RIGHT_PINKY_TIP].SetPosition (RIGHT_PINKY_TIP_Pos);
 		boneDatas [(int)Bones.RIGHT_PINKY_TIP].SetRotation (RIGHT_PINKY_TIP_Rot);
-		boneDatas [(int)Bones.RIGHT_PINKY_TIP].SetValidPose (handTrackingData.right.IsValidPose);
 	}
 }

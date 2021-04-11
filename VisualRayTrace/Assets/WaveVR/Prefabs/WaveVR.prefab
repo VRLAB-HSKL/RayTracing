@@ -271,6 +271,7 @@ MonoBehaviour:
   - 0.7
   - 0.6
   defaultIndex: 0
+  textSize: 20
 --- !u!114 &114262981526901028
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -282,17 +283,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eac33a902e72b404893737cee10498de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_RenderingPerformanceImproveStrategy:
+    SendQualityEvent: 1
+    AutoFoveation: 0
 --- !u!114 &114366167166883418
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1746719709132206}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8867105aa6bca9f4b9117c3abcaf61b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  foveationMode: 2
   leftClearVisionFOV: 38
   rightClearVisionFOV: 38
   leftPeripheralQuality: 2

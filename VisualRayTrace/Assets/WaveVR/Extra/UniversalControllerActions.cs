@@ -49,12 +49,17 @@ public class UniversalControllerActions : MonoBehaviour {
 	public GameObject DigitalTrigger_Press = null;
 	public GameObject Menu_Press = null;
 	public GameObject Home_Press = null;
+	public GameObject Thumbstick_Press = null;
+	public GameObject ButtonA_Press = null;
+	public GameObject ButtonB_Press = null;
+	public GameObject ButtonX_Press = null;
+	public GameObject ButtonY_Press = null;
 	public GameObject Battery_Change = null;
 	public List<BatteryPercentage> batteryPercentages = new List<BatteryPercentage>();
 
 	private Vector3 originPosition;
 	private MeshRenderer batteryMeshRenderer = null;
-	//private bool getValidBattery = false;
+	private bool getValidBattery = false;
 	private Mesh toucheffectMesh = null;
 	private Mesh touchpadMesh = null;
 	private bool isTouchPressed = false;
@@ -279,7 +284,7 @@ public class UniversalControllerActions : MonoBehaviour {
 		Log.d(LOG_TAG, "receive battery status update event");
 		if (Battery_Change != null)
 		{
-			//getValidBattery = updateBatteryInfo();
+			getValidBattery = updateBatteryInfo();
 		}
 	}
 
@@ -372,9 +377,29 @@ public class UniversalControllerActions : MonoBehaviour {
 			Menu_Press.SetActive(false);
 		}
 
-		if (Home_Press != null)
+		if (Thumbstick_Press != null)
 		{
-			Home_Press.SetActive(false);
+			Thumbstick_Press.SetActive(false);
+		}
+
+		if (ButtonA_Press != null)
+		{
+			ButtonA_Press.SetActive(false);
+		}
+
+		if (ButtonB_Press != null)
+		{
+			ButtonB_Press.SetActive(false);
+		}
+
+		if (ButtonX_Press != null)
+		{
+			ButtonX_Press.SetActive(false);
+		}
+
+		if (ButtonY_Press != null)
+		{
+			ButtonY_Press.SetActive(false);
 		}
 	}
 
@@ -394,7 +419,7 @@ public class UniversalControllerActions : MonoBehaviour {
 		{
 			if (t++ > 150)
 			{
-				//getValidBattery = updateBatteryInfo();
+				getValidBattery = updateBatteryInfo();
 
 				t = 0;
 			}
@@ -424,6 +449,117 @@ public class UniversalControllerActions : MonoBehaviour {
 			if (Trigger_Press != null)
 			{
 				Trigger_Press.SetActive(false);
+			}
+		}
+
+		//WVR_InputId_Alias1_Thumbstick
+		if (WaveVR_Controller.Input(this.device).GetPressDown(WVR_InputId.WVR_InputId_Alias1_Thumbstick))
+		{
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_Thumbstick press down");
+			if (Thumbstick_Press != null)
+			{
+				Thumbstick_Press.SetActive(true);
+			}
+		}
+
+		if (WaveVR_Controller.Input(this.device).GetPress(WVR_InputId.WVR_InputId_Alias1_Thumbstick))
+		{
+			if (Thumbstick_Press != null)
+			{
+				Thumbstick_Press.SetActive(true);
+			}
+		}
+
+		if (WaveVR_Controller.Input(this.device).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Thumbstick))
+		{
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_Thumbstick press up");
+			if (Thumbstick_Press != null)
+			{
+				Thumbstick_Press.SetActive(false);
+			}
+		}
+
+		//WVR_InputId_Alias1_A
+		if (WaveVR_Controller.Input(this.device).GetPressDown(WVR_InputId.WVR_InputId_Alias1_A))
+		{
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_A press down");
+			if (ButtonA_Press != null)
+			{
+				ButtonA_Press.SetActive(true);
+			}
+
+			if (ButtonX_Press != null)
+			{
+				ButtonX_Press.SetActive(true);
+			}
+		}
+
+		if (WaveVR_Controller.Input(this.device).GetPress(WVR_InputId.WVR_InputId_Alias1_A))
+		{
+			if (ButtonA_Press != null)
+			{
+				ButtonA_Press.SetActive(true);
+			}
+
+			if (ButtonX_Press != null)
+			{
+				ButtonX_Press.SetActive(true);
+			}
+		}
+
+		if (WaveVR_Controller.Input(this.device).GetPressUp(WVR_InputId.WVR_InputId_Alias1_A))
+		{
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_A press up");
+			if (ButtonA_Press != null)
+			{
+				ButtonA_Press.SetActive(false);
+			}
+
+			if (ButtonX_Press != null)
+			{
+				ButtonX_Press.SetActive(false);
+			}
+		}
+
+		//WVR_InputId_Alias1_B
+		if (WaveVR_Controller.Input(this.device).GetPressDown(WVR_InputId.WVR_InputId_Alias1_B))
+		{
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_B press down");
+			if (ButtonB_Press != null)
+			{
+				ButtonB_Press.SetActive(true);
+			}
+
+			if (ButtonY_Press != null)
+			{
+				ButtonY_Press.SetActive(true);
+			}
+		}
+
+		if (WaveVR_Controller.Input(this.device).GetPress(WVR_InputId.WVR_InputId_Alias1_B))
+		{
+			if (ButtonB_Press != null)
+			{
+				ButtonB_Press.SetActive(true);
+			}
+
+			if (ButtonY_Press != null)
+			{
+				ButtonY_Press.SetActive(true);
+			}
+		}
+
+		if (WaveVR_Controller.Input(this.device).GetPressUp(WVR_InputId.WVR_InputId_Alias1_B))
+		{
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_B press up");
+			if (ButtonB_Press != null)
+			{
+				ButtonB_Press.SetActive(false);
+			}
+
+			if (ButtonY_Press != null)
+			{
+				ButtonY_Press.SetActive(false);
 			}
 		}
 
@@ -508,17 +644,17 @@ public class UniversalControllerActions : MonoBehaviour {
 			}
 		}
 
-		//WVR_InputId_Alias1_Digital_Trigger
-		if (WaveVR_Controller.Input(this.device).GetPressDown(WVR_InputId.WVR_InputId_Alias1_Digital_Trigger))
+		//WVR_InputId_Alias1_Bumper
+		if (WaveVR_Controller.Input(this.device).GetPressDown(WVR_InputId.WVR_InputId_Alias1_Bumper))
 		{
-			Log.d(LOG_TAG, "WVR_InputId_Alias1_Digital_Trigger press down");
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_Bumper press down");
 			if (DigitalTrigger_Press != null)
 			{
 				DigitalTrigger_Press.SetActive(true);
 			}
 		}
 
-		if (WaveVR_Controller.Input(this.device).GetPress(WVR_InputId.WVR_InputId_Alias1_Digital_Trigger))
+		if (WaveVR_Controller.Input(this.device).GetPress(WVR_InputId.WVR_InputId_Alias1_Bumper))
 		{
 			if (DigitalTrigger_Press != null)
 			{
@@ -526,9 +662,9 @@ public class UniversalControllerActions : MonoBehaviour {
 			}
 		}
 
-		if (WaveVR_Controller.Input(this.device).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Digital_Trigger))
+		if (WaveVR_Controller.Input(this.device).GetPressUp(WVR_InputId.WVR_InputId_Alias1_Bumper))
 		{
-			Log.d(LOG_TAG, "WVR_InputId_Alias1_Digital_Trigger press up");
+			Log.d(LOG_TAG, "WVR_InputId_Alias1_Bumper press up");
 			if (DigitalTrigger_Press != null)
 			{
 				DigitalTrigger_Press.SetActive(false);

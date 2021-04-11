@@ -654,12 +654,12 @@ public class WaveVR : System.IDisposable
 		return handTrackingEnabled;
 	}
 
-	public bool GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+	public bool GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel)
 	{
 		bool hasHandTrackingData = false;
 
 		if (handTrackingEnabled)
-			hasHandTrackingData = Interop.WVR_GetHandTrackingData (ref data, originModel, predictedMilliSec) == WVR_Result.WVR_Success ? true : false;
+			hasHandTrackingData = Interop.WVR_GetHandTrackingData (ref skeleton, ref pose, originModel) == WVR_Result.WVR_Success ? true : false;
 
 		return hasHandTrackingData;
 	}

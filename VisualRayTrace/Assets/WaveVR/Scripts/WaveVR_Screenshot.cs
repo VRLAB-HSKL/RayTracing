@@ -28,10 +28,12 @@ public class WaveVR_Screenshot {
 	{
 		uint width = 0;
 		uint height = 0;
-		IntPtr fnPtr = Marshal.StringToHGlobalAnsi(filename);
+		IntPtr fnPtr = (IntPtr)Marshal.StringToHGlobalAnsi(filename);
 
 		Interop.WVR_GetRenderTargetSize(ref width, ref height);
 		PrintDebugLog("Width = " + width + ", Height = " + height + ", Mode = " + mode + ", File name = " + filename);
-		return Interop.WVR_RequestScreenshot(width, height, mode, fnPtr);
+		bool isRequestScreenshot = Interop.WVR_RequestScreenshot(width, height, mode, fnPtr);
+		Marshal.FreeHGlobal(fnPtr);
+		return isRequestScreenshot;
 	}
 }

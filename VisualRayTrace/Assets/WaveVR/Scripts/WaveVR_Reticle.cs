@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -35,6 +35,7 @@ using UnityEngine.Profiling;
 /// Draws a circular reticle in front of any object that the user gazes at.
 /// The circle dilates if the object is clickable.
 /// </summary>
+[DisallowMultipleComponent]
 [RequireComponent(typeof(Renderer))]
 public class WaveVR_Reticle : MonoBehaviour {
 	public bool ListenToDevice = false;

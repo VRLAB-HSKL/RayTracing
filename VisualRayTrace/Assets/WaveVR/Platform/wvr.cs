@@ -82,6 +82,13 @@ namespace wvr
 		High,
 	}
 
+	public enum WVR_FoveationMode
+	{
+		Disable,
+		Enable,		
+		Default,
+	}
+
 	public enum WVR_DeviceType
 	{
 		WVR_DeviceType_Invalid = 0,
@@ -156,38 +163,42 @@ namespace wvr
 
 	public enum WVR_InputId
 	{
-		WVR_InputId_0 = 0,
-		WVR_InputId_1 = 1,
-		WVR_InputId_2 = 2,
-		WVR_InputId_3 = 3,
-		WVR_InputId_4 = 4,
-		WVR_InputId_5 = 5,
-		WVR_InputId_6 = 6,
-		WVR_InputId_7 = 7,
-		WVR_InputId_8 = 8,
-		WVR_InputId_9 = 9,
-		WVR_InputId_14 = 14,
-		WVR_InputId_15 = 15,
-		WVR_InputId_16 = 16,
-		WVR_InputId_17 = 17,
-		WVR_InputId_18 = 18,
+		WVR_InputId_0     = 0,
+		WVR_InputId_1     = 1,
+		WVR_InputId_2     = 2,
+		WVR_InputId_3     = 3,
+		WVR_InputId_4     = 4,
+		WVR_InputId_5     = 5,
+		WVR_InputId_6     = 6,
+		WVR_InputId_7     = 7,
+		WVR_InputId_8     = 8,
+		WVR_InputId_9     = 9,
+		WVR_InputId_10    = 10,
+		WVR_InputId_11    = 11,
+		WVR_InputId_14    = 14,
+		WVR_InputId_15    = 15,
+		WVR_InputId_16    = 16,
+		WVR_InputId_17    = 17,
+		WVR_InputId_18    = 18,
 
 		//alias group mapping
-		WVR_InputId_Alias1_System	   = WVR_InputId_0,
-		WVR_InputId_Alias1_Menu		 = WVR_InputId_1,
-		WVR_InputId_Alias1_Grip		 = WVR_InputId_2,
-		WVR_InputId_Alias1_DPad_Left	= WVR_InputId_3,
-		WVR_InputId_Alias1_DPad_Up	  = WVR_InputId_4,
-		WVR_InputId_Alias1_DPad_Right   = WVR_InputId_5,
-		WVR_InputId_Alias1_DPad_Down	= WVR_InputId_6,
-		WVR_InputId_Alias1_Volume_Up	= WVR_InputId_7,
-		WVR_InputId_Alias1_Volume_Down  = WVR_InputId_8,
-		WVR_InputId_Alias1_Digital_Trigger = WVR_InputId_9,
-		WVR_InputId_Alias1_Back		 = WVR_InputId_14,   // HMD Back Button
-		WVR_InputId_Alias1_Enter		= WVR_InputId_15,   // HMD Enter Button
-		WVR_InputId_Alias1_Touchpad	 = WVR_InputId_16,
-		WVR_InputId_Alias1_Trigger	  = WVR_InputId_17,
-		WVR_InputId_Alias1_Thumbstick   = WVR_InputId_18,
+		WVR_InputId_Alias1_System          = WVR_InputId_0,  /**< System Button. */
+		WVR_InputId_Alias1_Menu            = WVR_InputId_1,  /**< Menu Button. */
+		WVR_InputId_Alias1_Grip            = WVR_InputId_2,  /**< Grip Button. */
+		WVR_InputId_Alias1_DPad_Left       = WVR_InputId_3,  /**< DPad_Left Button in physical, or simulated by Touchpad Left pressed event. */
+		WVR_InputId_Alias1_DPad_Up         = WVR_InputId_4,  /**< DPad_Up Button in physical, or  simulated by Touchpad Up pressed event. */
+		WVR_InputId_Alias1_DPad_Right      = WVR_InputId_5,  /**< DPad_Right Button in physical, or simulated by Touchpad Right pressed event. */
+		WVR_InputId_Alias1_DPad_Down       = WVR_InputId_6,  /**< DPad_Down Button in physical, or simulated by Touchpad Down pressed event. */
+		WVR_InputId_Alias1_Volume_Up       = WVR_InputId_7,  /**< Volume_Up Button. */
+		WVR_InputId_Alias1_Volume_Down     = WVR_InputId_8,  /**< Volume_Down Button. */
+		WVR_InputId_Alias1_Bumper          = WVR_InputId_9,  /**< Bumper Button. */
+		WVR_InputId_Alias1_A               = WVR_InputId_10, /**< Button A. */
+		WVR_InputId_Alias1_B               = WVR_InputId_11, /**< Button B. */
+		WVR_InputId_Alias1_Back            = WVR_InputId_14, /**< Hmd Back Button */
+		WVR_InputId_Alias1_Enter           = WVR_InputId_15, /**< Hmd Enter Button */
+		WVR_InputId_Alias1_Touchpad        = WVR_InputId_16, /**< Touchpad input device. */
+		WVR_InputId_Alias1_Trigger         = WVR_InputId_17, /**< Trigger input device. */
+		WVR_InputId_Alias1_Thumbstick      = WVR_InputId_18, /**< Thumbstick input device. */
 
 		WVR_InputId_Max = 32,
 	}
@@ -748,14 +759,13 @@ namespace wvr
 	#region Gesture
 	public enum WVR_HandGestureType
 	{
-		WVR_HandGestureType_Invalid         = 0,    /**< The gesture is invalid. */
-		WVR_HandGestureType_Unknown         = 1,    /**< Unknow gesture type. */
-		WVR_HandGestureType_Fist            = 2,    /**< Represent fist gesture. */
-		WVR_HandGestureType_Five            = 3,    /**< Represent five gesture. */
-		WVR_HandGestureType_OK              = 4,    /**< Represent ok gesture. */
-		WVR_HandGestureType_ThumbUp         = 5,    /**< Represent thumb up gesture. */
-		WVR_HandGestureType_IndexUp         = 6,    /**< Represent index up gesture. */
-		WVR_HandGestureType_Pinch           = 7,    /**< Represent pinch gesture. */
+		WVR_HandGestureType_Invalid = 0,    /**< The gesture is invalid. */
+		WVR_HandGestureType_Unknown = 1,    /**< Unknow gesture type. */
+		WVR_HandGestureType_Fist	= 2,    /**< Represent fist gesture. */
+		WVR_HandGestureType_Five	= 3,    /**< Represent five gesture. */
+		WVR_HandGestureType_OK		= 4,    /**< Represent OK gesture. */
+		WVR_HandGestureType_ThumbUp = 5,    /**< Represent thumb up gesture. */
+		WVR_HandGestureType_IndexUp = 6,    /**< Represent index up gesture. */
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -766,32 +776,78 @@ namespace wvr
 		public WVR_HandGestureType left;
 	}
 
-	[StructLayout(LayoutKind.Sequential)]
-	public struct WVR_SingleFinger_t
+	public enum WVR_FingerType
 	{
-		public WVR_Vector3f_t joint1;
-		public WVR_Vector3f_t joint2;
-		public WVR_Vector3f_t joint3;
-		public WVR_Vector3f_t tip;
+		WVR_FingerType_Thumb	= 1,    /**< Represent thumb finger. */
+		WVR_FingerType_Index	= 2,    /**< Represent index finger. */
+		WVR_FingerType_Middle	= 3,    /**< Represent middle finger. */
+		WVR_FingerType_Ring		= 4,    /**< Represent ring finger. */
+		WVR_FingerType_Pinky	= 5     /**< Represent pinky finger. */
+	}
+
+	public enum WVR_HandPoseType
+	{
+		WVR_HandPoseType_Invalid	= 0,  /**< The hand pose type is invalid. */
+		WVR_HandPoseType_Pinch		= 1,  /**< The hand pose type is pinch. */
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct WVR_Fingers_t
+	public struct WVR_HandPoseStateBase_t
 	{
-		public WVR_SingleFinger_t    thumb;
-		public WVR_SingleFinger_t    index;
-		public WVR_SingleFinger_t    middle;
-		public WVR_SingleFinger_t    ring;
-		public WVR_SingleFinger_t    pinky;
+		public WVR_HandPoseType type;         /**< The current hand pose type. */
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct WVR_HandTrackingData_t
+	public struct WVR_HandPosePinchState_t
 	{
-		public WVR_PoseState_t         right;                      /**< tracking data of right hand */
-		public WVR_Fingers_t           rightFinger;
-		public WVR_PoseState_t         left;                       /**< tracking data of left hand */
-		public WVR_Fingers_t           leftFinger;
+		public WVR_HandPoseStateBase_t	state;      /**< refer to @ref WVR_HandPoseStateBase */
+		public WVR_FingerType			finger;     /**< Move someone finger and thumb apart or bring them together.*/
+		public float					strength;   /**< The value of ranges between 0 to 1 for each finger pich, 1 means pinch with the finger touching the thumb fully. */
+		public WVR_Vector3f_t			origin;     /**< */
+		public WVR_Vector3f_t			direction;  /**< */
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public struct WVR_HandPoseState_t
+	{
+		[FieldOffset(0)] public WVR_HandPoseStateBase_t  state;  /**< @ref WVR_HandPoseStateBase */
+		[FieldOffset(0)] public WVR_HandPosePinchState_t pinch;  /**< @ref WVR_HandPosePinchState */
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct WVR_HandPoseData_t
+	{
+		public long					timestamp;  /**< The current time in milliseconds. */
+		public WVR_HandPoseState_t	right;      /**< The pose state of right hand, refer to @ref WVR_HandPoseState. */
+		public WVR_HandPoseState_t	left;       /**< The pose state of left hand, refer to @ref WVR_HandPoseState. */
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct WVR_FingerState_t
+	{
+		public WVR_Vector3f_t joint1;  /**< The position data of joint between trapezium and metracarpal in thumb, the position data of joint between metracarpal and proximal in other fingers */
+		public WVR_Vector3f_t joint2;  /**< The position data of joint between metracarpal and proximal in thumb, the position data of joint between proximal and intermediate in other fingers */
+		public WVR_Vector3f_t joint3;  /**< The position data of joint between proximal and distal in thumb, the position data of joint between intermediate and distal in other fingers */
+		public WVR_Vector3f_t tip;     /**< The position data of finger tip */
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct WVR_HandSkeletonState_t
+	{
+		public WVR_PoseState_t		wrist;		/**< Tracking data of the wrist */
+		public WVR_FingerState_t	thumb;		/**< Finger data of the thumb */
+		public WVR_FingerState_t	index;		/**< Finger data of the index */
+		public WVR_FingerState_t	middle;		/**< Finger data of the middle */
+		public WVR_FingerState_t	ring;	    /**< Finger data of the ring */
+		public WVR_FingerState_t	pinky;		/**< Finger data of the pinky */
+		public float				confidence;	/**< The hand confidence value (0~1) */
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct WVR_HandSkeletonData_t
+	{
+		public WVR_HandSkeletonState_t right;      /**< Tracking data of right hand */
+		public WVR_HandSkeletonState_t left;       /**< Tracking data of left hand */
 	}
 	#endregion
 
@@ -1005,9 +1061,9 @@ namespace wvr
 			WVR_Base.Instance.StopHandTracking ();
 		}
 
-		public static WVR_Result WVR_GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+		public static WVR_Result WVR_GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel)
 		{
-			return WVR_Base.Instance.GetHandTrackingData (ref data, originModel, predictedMilliSec);
+			return WVR_Base.Instance.GetHandTrackingData (ref skeleton, ref pose, originModel);
 		}
 		#endregion
 
@@ -1255,6 +1311,31 @@ namespace wvr
 		public static void WVR_RenderFoveation(bool enable)
 		{
 			WVR_Base.Instance.RenderFoveation(enable);
+		}
+
+		public static WVR_Result WVR_RenderFoveationMode(WVR_FoveationMode mode)
+		{
+			return WVR_Base.Instance.RenderFoveationMode(mode);
+		}
+
+		public static WVR_Result WVR_SetFoveationConfig(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams)
+		{
+			return WVR_Base.Instance.SetFoveationConfig(eye, ref foveationParams);
+		}
+
+		public static WVR_Result WVR_GetFoveationConfig(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams)
+		{
+			return WVR_Base.Instance.GetFoveationConfig(eye, ref foveationParams);
+		}
+
+		public static bool WVR_IsRenderFoveationEnabled()
+		{
+			return WVR_Base.Instance.IsRenderFoveationEnabled();
+		}
+
+		public static bool WVR_IsRenderFoveationDefaultOn()
+		{
+			return WVR_Base.Instance.IsRenderFoveationDefaultOn();
 		}
 
 		public static bool WVR_IsPermissionInitialed()
@@ -1633,7 +1714,7 @@ namespace wvr
 			{
 			}
 
-			public virtual WVR_Result GetHandTrackingData(ref WVR_HandTrackingData_t data, WVR_PoseOriginModel originModel, uint predictedMilliSec)
+			public virtual WVR_Result GetHandTrackingData(ref WVR_HandSkeletonData_t skeleton, ref WVR_HandPoseData_t pose, WVR_PoseOriginModel originModel)
 			{
 				return WVR_Result.WVR_Error_FeatureNotSupport;
 			}
@@ -1885,6 +1966,31 @@ namespace wvr
 
 			public virtual void RenderFoveation(bool enable)
 			{
+			}
+
+			public virtual WVR_Result RenderFoveationMode(WVR_FoveationMode mode)
+			{
+				return WVR_Result.WVR_Error_FeatureNotSupport;
+			}
+
+			public virtual WVR_Result SetFoveationConfig(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams)
+			{
+				return WVR_Result.WVR_Error_FeatureNotSupport;
+			}
+
+			public virtual WVR_Result GetFoveationConfig(WVR_Eye eye, ref WVR_RenderFoveationParams foveationParams)
+			{
+				return WVR_Result.WVR_Error_FeatureNotSupport;
+			}
+
+			public virtual bool IsRenderFoveationEnabled()
+			{
+				return false;
+			}
+
+			public virtual bool IsRenderFoveationDefaultOn()
+			{
+				return false;
 			}
 
 			public virtual void SetPosePredictEnabled(WVR_DeviceType type, bool enabled_position_predict, bool enable_rotation_predict)

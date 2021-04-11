@@ -24,6 +24,10 @@ using UnityEditor;
 [CustomEditor(typeof(WaveVR_ControllerLoader))]
 public class WaveVR_ControllerLoaderEditor : Editor
 {
+	//For ShowIndicator
+	private bool _buttonList = false;
+	private bool _element = false;
+
 	public override void OnInspectorGUI()
 	{
 		WaveVR_ControllerLoader myScript = target as WaveVR_ControllerLoader;
@@ -44,6 +48,14 @@ public class WaveVR_ControllerLoaderEditor : Editor
 		myScript.TrackRotation = EditorGUILayout.Toggle ("Track Rotation", myScript.TrackRotation);
 		EditorGUILayout.Space();
 		EditorGUILayout.LabelField("Controller model");
+		EditorGUI.BeginDisabledGroup(true);
+		myScript.loadfromAsset = EditorGUILayout.Toggle("  Loading asset from package for CAR model", myScript.loadfromAsset);
+		EditorGUILayout.HelpBox(
+			"Force controller loader loads CR model from package, it will not load from runtime",
+			MessageType.Info);
+		EditorGUI.EndDisabledGroup();
+		EditorGUILayout.Space();
+
 		myScript.adaptiveLoading = EditorGUILayout.Toggle("  Adaptive loading", myScript.adaptiveLoading);
 		if (true == myScript.adaptiveLoading)
 		{
@@ -126,55 +138,121 @@ public class WaveVR_ControllerLoaderEditor : Editor
 			EditorGUILayout.LabelField("  Indication feature");
 			myScript.overwriteIndicatorSettings = true;
 			myScript.showIndicator = EditorGUILayout.Toggle("    Show Indicator", myScript.showIndicator);
-			if (true == myScript.showIndicator)
+			if (myScript.showIndicator)
 			{
-				myScript.useIndicatorSystemConfig = EditorGUILayout.Toggle("    Use system config", myScript.useIndicatorSystemConfig);
+				myScript.autoLayout = EditorGUILayout.Toggle("    Auto Layout", myScript.autoLayout);
+				if (!myScript.autoLayout)
+				{
+					myScript.showIndicatorAngle = EditorGUILayout.Slider("    Show Indicator Angle", myScript.showIndicatorAngle, 0.0f, 90.0f);
+					myScript.hideIndicatorByRoll = EditorGUILayout.Toggle("    Hide Indicator By Roll", myScript.hideIndicatorByRoll);
+					myScript.basedOnEmitter = EditorGUILayout.Toggle("    Based On Emitter", myScript.basedOnEmitter);
+					EditorGUILayout.Space();
+
+					EditorGUILayout.LabelField("  Line customization");
+					myScript.lineLength = EditorGUILayout.Slider("    Line Length", myScript.lineLength, 0.01f, 0.1f);
+					myScript.lineStartWidth = EditorGUILayout.Slider("    Line Start Width", myScript.lineStartWidth, 0.0001f, 0.1f);
+					myScript.lineEndWidth = EditorGUILayout.Slider("    Line End Width", myScript.lineEndWidth, 0.0001f, 0.1f);
+					myScript.lineColor = EditorGUILayout.ColorField("    Line Color", myScript.lineColor);
+					EditorGUILayout.Space();
+
+					EditorGUILayout.LabelField("  Text customization");
+					myScript.textCharacterSize = EditorGUILayout.Slider("    Text Character Size", myScript.textCharacterSize, 0.01f, 0.2f);
+					myScript.zhCharactarSize = EditorGUILayout.Slider("    Zh Charactar Size", myScript.zhCharactarSize, 0.01f, 0.2f);
+					myScript.textFontSize = EditorGUILayout.IntSlider("    Text Font Size", myScript.textFontSize, 50, 200);
+					myScript.textColor = EditorGUILayout.ColorField("    Text Color", myScript.textColor);
+					EditorGUILayout.Space();
+				}
+				else
+				{
+					myScript.showIndicatorAngle = EditorGUILayout.Slider("    Show Indicator Angle", myScript.showIndicatorAngle, 0.0f, 90.0f);
+					myScript.hideIndicatorByRoll = EditorGUILayout.Toggle("    Hide Indicator By Roll", myScript.hideIndicatorByRoll);
+					myScript.basedOnEmitter = EditorGUILayout.Toggle("    Based On Emitter", myScript.basedOnEmitter);
+					myScript._displayPlane = (DisplayPlane)EditorGUILayout.EnumPopup("    Display Plane", myScript._displayPlane);
+					EditorGUILayout.Space();
+
+					EditorGUILayout.LabelField("  Line customization");
+					myScript.lineStartWidth = EditorGUILayout.Slider("    Line Start Width", myScript.lineStartWidth, 0.0001f, 0.1f);
+					myScript.lineEndWidth = EditorGUILayout.Slider("    Line End Width", myScript.lineEndWidth, 0.0001f, 0.1f);
+					myScript.lineColor = EditorGUILayout.ColorField("    Line Color", myScript.lineColor);
+					EditorGUILayout.Space();
+
+					EditorGUILayout.LabelField("  Text customization");
+					myScript.textCharacterSize = EditorGUILayout.Slider("    Text Character Size", myScript.textCharacterSize, 0.01f, 0.2f);
+					myScript.zhCharactarSize = EditorGUILayout.Slider("    Zh Charactar Size", myScript.zhCharactarSize, 0.01f, 0.2f);
+					myScript.textFontSize = EditorGUILayout.IntSlider("    Text Font Size", myScript.textFontSize, 50, 200);
+					myScript.textColor = EditorGUILayout.ColorField("    Text Color", myScript.textColor);
+					EditorGUILayout.Space();
+				}
+
+				myScript.useIndicatorSystemConfig = EditorGUILayout.Toggle("  Use system config", myScript.useIndicatorSystemConfig);
 				if (false == myScript.useIndicatorSystemConfig)
 				{
-					myScript.basedOnEmitter = EditorGUILayout.Toggle("      Indicator based on emitter ", myScript.basedOnEmitter);
-					myScript.hideIndicatorByRoll = EditorGUILayout.Toggle("      Hide Indicator when roll angle > 90 ", myScript.hideIndicatorByRoll);
-					myScript.showIndicatorAngle = EditorGUILayout.FloatField("      Show When Angle > ", myScript.showIndicatorAngle);
-					EditorGUILayout.Space();
-
-					EditorGUILayout.LabelField("      Line customization");
-					myScript.lineLength = EditorGUILayout.FloatField("        Line Length", myScript.lineLength);
-					myScript.lineStartWidth = EditorGUILayout.FloatField("        Line Start Width", myScript.lineStartWidth);
-					myScript.lineEndWidth = EditorGUILayout.FloatField("        Line End Width", myScript.lineEndWidth);
-					myScript.lineColor = EditorGUILayout.ColorField("        Line Color", myScript.lineColor);
-					EditorGUILayout.Space();
-
-					EditorGUILayout.LabelField("      Text customization");
-					myScript.textCharacterSize = EditorGUILayout.FloatField("        Text Character Size", myScript.textCharacterSize);
-					myScript.zhCharactarSize = EditorGUILayout.FloatField("        Chinese Character Size", myScript.zhCharactarSize);
-					myScript.textFontSize = EditorGUILayout.IntField("        Text Font Size", myScript.textFontSize);
-					myScript.textColor = EditorGUILayout.ColorField("        Text Color", myScript.textColor);
-					EditorGUILayout.Space();
-
-					EditorGUILayout.LabelField("      Key indication");
-					var list = myScript.buttonIndicationList;
-
-					int newCount = Mathf.Max(0, EditorGUILayout.IntField("         Button indicator size", list.Count));
-
-					while (newCount < list.Count)
-						list.RemoveAt(list.Count - 1);
-					while (newCount > list.Count)
-						list.Add(new ButtonIndication());
-
-					for (int i = 0; i < list.Count; i++)
+					if (!myScript.autoLayout)
 					{
-						EditorGUILayout.LabelField("         Button indication " + i);
-						myScript.buttonIndicationList[i].keyType = (ButtonIndication.KeyIndicator)EditorGUILayout.EnumPopup("         Key Type", myScript.buttonIndicationList[i].keyType);
-						myScript.buttonIndicationList[i].alignment = (ButtonIndication.Alignment)EditorGUILayout.EnumPopup("         Alignment", myScript.buttonIndicationList[i].alignment);
-						myScript.buttonIndicationList[i].indicationOffset = EditorGUILayout.Vector3Field("         Indication offset", myScript.buttonIndicationList[i].indicationOffset);
-						myScript.buttonIndicationList[i].useMultiLanguage = EditorGUILayout.Toggle("         Use multi-language", myScript.buttonIndicationList[i].useMultiLanguage);
-						if (myScript.buttonIndicationList[i].useMultiLanguage)
-							myScript.buttonIndicationList[i].indicationText = EditorGUILayout.TextField("         Indication key", myScript.buttonIndicationList[i].indicationText);
-						else
-							myScript.buttonIndicationList[i].indicationText = EditorGUILayout.TextField("         Indication text", myScript.buttonIndicationList[i].indicationText);
-						myScript.buttonIndicationList[i].followButtonRotation = EditorGUILayout.Toggle("         Follow button rotation", myScript.buttonIndicationList[i].followButtonRotation);
-						EditorGUILayout.Space();
+						EditorGUILayout.LabelField("  Indications");
+						_buttonList = EditorGUILayout.Foldout(_buttonList, "    Button Indication List");
+						if (_buttonList)
+						{
+							var list = myScript.buttonIndicationList;
+
+							int newCount = Mathf.Max(0, EditorGUILayout.IntField("      Size", list.Count));
+
+							while (newCount < list.Count)
+								list.RemoveAt(list.Count - 1);
+							while (newCount > list.Count)
+								list.Add(new ButtonIndication());
+
+							for (int i = 0; i < list.Count; i++)
+							{
+								_element = EditorGUILayout.Foldout(_element, "      Element " + i);
+								if (_element)
+								{
+									myScript.buttonIndicationList[i].keyType = (ButtonIndication.KeyIndicator)EditorGUILayout.EnumPopup("  Key Type", myScript.buttonIndicationList[i].keyType);
+									myScript.buttonIndicationList[i].alignment = (ButtonIndication.Alignment)EditorGUILayout.EnumPopup("  Alignment", myScript.buttonIndicationList[i].alignment);
+									myScript.buttonIndicationList[i].indicationOffset = EditorGUILayout.Vector3Field("  Indication offset", myScript.buttonIndicationList[i].indicationOffset);
+									myScript.buttonIndicationList[i].useMultiLanguage = EditorGUILayout.Toggle("  Use multi-language", myScript.buttonIndicationList[i].useMultiLanguage);
+									myScript.buttonIndicationList[i].indicationText = EditorGUILayout.TextField("  Indication text", myScript.buttonIndicationList[i].indicationText);
+									myScript.buttonIndicationList[i].followButtonRotation = EditorGUILayout.Toggle("  Follow button rotation", myScript.buttonIndicationList[i].followButtonRotation);
+									EditorGUILayout.Space();
+								}
+							}
+						}
+					}
+
+					else
+					{
+						EditorGUILayout.LabelField("  Indications");
+						_buttonList = EditorGUILayout.Foldout(_buttonList, "    Button Indication List");
+						if (_buttonList)
+						{
+							var list = myScript.autoButtonIndicationList;
+
+							int newCount = Mathf.Max(0, EditorGUILayout.IntField("      Size", list.Count));
+
+							while (newCount < list.Count)
+								list.RemoveAt(list.Count - 1);
+							while (newCount > list.Count)
+								list.Add(new AutoButtonIndication());
+
+							for (int i = 0; i < list.Count; i++)
+							{
+								_element = EditorGUILayout.Foldout(_element, "      Element " + i);
+								if (_element)
+								{
+									myScript.autoButtonIndicationList[i].keyType = (AutoButtonIndication.KeyIndicator)EditorGUILayout.EnumPopup("        Key Type", myScript.autoButtonIndicationList[i].keyType);
+									myScript.autoButtonIndicationList[i].alignment = (AutoButtonIndication.Alignment)EditorGUILayout.EnumPopup("        Alignment", myScript.autoButtonIndicationList[i].alignment);
+									myScript.autoButtonIndicationList[i].distanceBetweenButtonAndText = EditorGUILayout.Slider("        Distance Between Button And Text", myScript.autoButtonIndicationList[i].distanceBetweenButtonAndText, 0.0f, 0.1f);
+									myScript.autoButtonIndicationList[i].distanceBetweenButtonAndLine = EditorGUILayout.Slider("        Distance Between Button And Line", myScript.autoButtonIndicationList[i].distanceBetweenButtonAndLine, 0.0f, 0.1f);
+									myScript.autoButtonIndicationList[i].lineLengthAdjustment = EditorGUILayout.Slider("        Line Length Adjustment", myScript.autoButtonIndicationList[i].lineLengthAdjustment, -0.1f, 0.1f);
+									myScript.autoButtonIndicationList[i].useMultiLanguage = EditorGUILayout.Toggle("        Use multi-language", myScript.autoButtonIndicationList[i].useMultiLanguage);
+									myScript.autoButtonIndicationList[i].indicationText = EditorGUILayout.TextField("        Indication text", myScript.autoButtonIndicationList[i].indicationText);
+									EditorGUILayout.Space();
+								}
+							}
+						}
 					}
 				}
+
 			}
 		}
 		else
@@ -185,53 +263,118 @@ public class WaveVR_ControllerLoaderEditor : Editor
 			if (true == myScript.overwriteIndicatorSettings)
 			{
 				myScript.showIndicator = EditorGUILayout.Toggle("	Show Indicator", myScript.showIndicator);
-				if (true == myScript.showIndicator)
+				if (myScript.showIndicator)
 				{
-					myScript.useIndicatorSystemConfig = EditorGUILayout.Toggle("	Use system config", myScript.useIndicatorSystemConfig);
+					myScript.autoLayout = EditorGUILayout.Toggle("    Auto Layout", myScript.autoLayout);
+					if (!myScript.autoLayout)
+					{
+						myScript.showIndicatorAngle = EditorGUILayout.Slider("    Show Indicator Angle", myScript.showIndicatorAngle, 0.0f, 90.0f);
+						myScript.hideIndicatorByRoll = EditorGUILayout.Toggle("    Hide Indicator By Roll", myScript.hideIndicatorByRoll);
+						myScript.basedOnEmitter = EditorGUILayout.Toggle("    Based On Emitter", myScript.basedOnEmitter);
+						EditorGUILayout.Space();
+
+						EditorGUILayout.LabelField("  Line customization");
+						myScript.lineLength = EditorGUILayout.Slider("    Line Length", myScript.lineLength, 0.01f, 0.1f);
+						myScript.lineStartWidth = EditorGUILayout.Slider("    Line Start Width", myScript.lineStartWidth, 0.0001f, 0.1f);
+						myScript.lineEndWidth = EditorGUILayout.Slider("    Line End Width", myScript.lineEndWidth, 0.0001f, 0.1f);
+						myScript.lineColor = EditorGUILayout.ColorField("    Line Color", myScript.lineColor);
+						EditorGUILayout.Space();
+
+						EditorGUILayout.LabelField("  Text customization");
+						myScript.textCharacterSize = EditorGUILayout.Slider("    Text Character Size", myScript.textCharacterSize, 0.01f, 0.2f);
+						myScript.zhCharactarSize = EditorGUILayout.Slider("    Zh Charactar Size", myScript.zhCharactarSize, 0.01f, 0.2f);
+						myScript.textFontSize = EditorGUILayout.IntSlider("    Text Font Size", myScript.textFontSize, 50, 200);
+						myScript.textColor = EditorGUILayout.ColorField("    Text Color", myScript.textColor);
+						EditorGUILayout.Space();
+					}
+					else
+					{
+						myScript.showIndicatorAngle = EditorGUILayout.Slider("    Show Indicator Angle", myScript.showIndicatorAngle, 0.0f, 90.0f);
+						myScript.hideIndicatorByRoll = EditorGUILayout.Toggle("    Hide Indicator By Roll", myScript.hideIndicatorByRoll);
+						myScript.basedOnEmitter = EditorGUILayout.Toggle("    Based On Emitter", myScript.basedOnEmitter);
+						myScript._displayPlane = (DisplayPlane)EditorGUILayout.EnumPopup("    Display Plane", myScript._displayPlane);
+						EditorGUILayout.Space();
+
+						EditorGUILayout.LabelField("  Line customization");
+						myScript.lineStartWidth = EditorGUILayout.Slider("    Line Start Width", myScript.lineStartWidth, 0.0001f, 0.1f);
+						myScript.lineEndWidth = EditorGUILayout.Slider("    Line End Width", myScript.lineEndWidth, 0.0001f, 0.1f);
+						myScript.lineColor = EditorGUILayout.ColorField("    Line Color", myScript.lineColor);
+						EditorGUILayout.Space();
+
+						EditorGUILayout.LabelField("  Text customization");
+						myScript.textCharacterSize = EditorGUILayout.Slider("    Text Character Size", myScript.textCharacterSize, 0.01f, 0.2f);
+						myScript.zhCharactarSize = EditorGUILayout.Slider("    Zh Charactar Size", myScript.zhCharactarSize, 0.01f, 0.2f);
+						myScript.textFontSize = EditorGUILayout.IntSlider("    Text Font Size", myScript.textFontSize, 50, 200);
+						myScript.textColor = EditorGUILayout.ColorField("    Text Color", myScript.textColor);
+						EditorGUILayout.Space();
+					}
+
+					myScript.useIndicatorSystemConfig = EditorGUILayout.Toggle("  Use system config", myScript.useIndicatorSystemConfig);
 					if (false == myScript.useIndicatorSystemConfig)
 					{
-						myScript.basedOnEmitter = EditorGUILayout.Toggle("	Indicator based on emitter ", myScript.basedOnEmitter);
-						myScript.hideIndicatorByRoll = EditorGUILayout.Toggle("	Hide Indicator when roll angle > 90 ", myScript.hideIndicatorByRoll);
-						myScript.showIndicatorAngle = EditorGUILayout.FloatField("	Show When Angle > ", myScript.showIndicatorAngle);
-						EditorGUILayout.Space();
-
-						EditorGUILayout.LabelField("	Line customization");
-						myScript.lineLength = EditorGUILayout.FloatField("	  Line Length", myScript.lineLength);
-						myScript.lineStartWidth = EditorGUILayout.FloatField("	  Line Start Width", myScript.lineStartWidth);
-						myScript.lineEndWidth = EditorGUILayout.FloatField("	  Line End Width", myScript.lineEndWidth);
-						myScript.lineColor = EditorGUILayout.ColorField("	  Line Color", myScript.lineColor);
-						EditorGUILayout.Space();
-
-						EditorGUILayout.LabelField("	Text customization");
-						myScript.textCharacterSize = EditorGUILayout.FloatField("	  Text Character Size", myScript.textCharacterSize);
-						myScript.zhCharactarSize = EditorGUILayout.FloatField("	  Chinese Character Size", myScript.zhCharactarSize);
-						myScript.textFontSize = EditorGUILayout.IntField("	  Text Font Size", myScript.textFontSize);
-						myScript.textColor = EditorGUILayout.ColorField("	  Text Color", myScript.textColor);
-						EditorGUILayout.Space();
-
-						EditorGUILayout.LabelField("	Key indication");
-						var list = myScript.buttonIndicationList;
-
-						int newCount = Mathf.Max(0, EditorGUILayout.IntField("	  Button indicator size", list.Count));
-
-						while (newCount < list.Count)
-							list.RemoveAt(list.Count - 1);
-						while (newCount > list.Count)
-							list.Add(new ButtonIndication());
-
-						for (int i = 0; i < list.Count; i++)
+						if (!myScript.autoLayout)
 						{
-							EditorGUILayout.LabelField("	  Button indication " + i);
-							myScript.buttonIndicationList[i].keyType = (ButtonIndication.KeyIndicator)EditorGUILayout.EnumPopup("		Key Type", myScript.buttonIndicationList[i].keyType);
-							myScript.buttonIndicationList[i].alignment = (ButtonIndication.Alignment)EditorGUILayout.EnumPopup("		Alignment", myScript.buttonIndicationList[i].alignment);
-							myScript.buttonIndicationList[i].indicationOffset = EditorGUILayout.Vector3Field("		Indication offset", myScript.buttonIndicationList[i].indicationOffset);
-							myScript.buttonIndicationList[i].useMultiLanguage = EditorGUILayout.Toggle("		Use multi-language", myScript.buttonIndicationList[i].useMultiLanguage);
-							if (myScript.buttonIndicationList[i].useMultiLanguage)
-								myScript.buttonIndicationList[i].indicationText = EditorGUILayout.TextField("		Indication key", myScript.buttonIndicationList[i].indicationText);
-							else
-								myScript.buttonIndicationList[i].indicationText = EditorGUILayout.TextField("		Indication text", myScript.buttonIndicationList[i].indicationText);
-							myScript.buttonIndicationList[i].followButtonRotation = EditorGUILayout.Toggle("		Follow button rotation", myScript.buttonIndicationList[i].followButtonRotation);
-							EditorGUILayout.Space();
+							EditorGUILayout.LabelField("  Indications");
+							_buttonList = EditorGUILayout.Foldout(_buttonList, "    Button Indication List");
+							if (_buttonList)
+							{
+								var list = myScript.buttonIndicationList;
+
+								int newCount = Mathf.Max(0, EditorGUILayout.IntField("      Size", list.Count));
+
+								while (newCount < list.Count)
+									list.RemoveAt(list.Count - 1);
+								while (newCount > list.Count)
+									list.Add(new ButtonIndication());
+
+								for (int i = 0; i < list.Count; i++)
+								{
+									_element = EditorGUILayout.Foldout(_element, "      Element " + i);
+									if (_element)
+									{
+										myScript.buttonIndicationList[i].keyType = (ButtonIndication.KeyIndicator)EditorGUILayout.EnumPopup("  Key Type", myScript.buttonIndicationList[i].keyType);
+										myScript.buttonIndicationList[i].alignment = (ButtonIndication.Alignment)EditorGUILayout.EnumPopup("  Alignment", myScript.buttonIndicationList[i].alignment);
+										myScript.buttonIndicationList[i].indicationOffset = EditorGUILayout.Vector3Field("  Indication offset", myScript.buttonIndicationList[i].indicationOffset);
+										myScript.buttonIndicationList[i].useMultiLanguage = EditorGUILayout.Toggle("  Use multi-language", myScript.buttonIndicationList[i].useMultiLanguage);
+										myScript.buttonIndicationList[i].indicationText = EditorGUILayout.TextField("  Indication text", myScript.buttonIndicationList[i].indicationText);
+										myScript.buttonIndicationList[i].followButtonRotation = EditorGUILayout.Toggle("  Follow button rotation", myScript.buttonIndicationList[i].followButtonRotation);
+										EditorGUILayout.Space();
+									}
+								}
+							}
+						}
+
+						else
+						{
+							EditorGUILayout.LabelField("  Indications");
+							_buttonList = EditorGUILayout.Foldout(_buttonList, "    Button Indication List");
+							if (_buttonList)
+							{
+								var list = myScript.autoButtonIndicationList;
+
+								int newCount = Mathf.Max(0, EditorGUILayout.IntField("      Size", list.Count));
+
+								while (newCount < list.Count)
+									list.RemoveAt(list.Count - 1);
+								while (newCount > list.Count)
+									list.Add(new AutoButtonIndication());
+
+								for (int i = 0; i < list.Count; i++)
+								{
+									_element = EditorGUILayout.Foldout(_element, "      Element " + i);
+									if (_element)
+									{
+										myScript.autoButtonIndicationList[i].keyType = (AutoButtonIndication.KeyIndicator)EditorGUILayout.EnumPopup("        Key Type", myScript.autoButtonIndicationList[i].keyType);
+										myScript.autoButtonIndicationList[i].alignment = (AutoButtonIndication.Alignment)EditorGUILayout.EnumPopup("        Alignment", myScript.autoButtonIndicationList[i].alignment);
+										myScript.autoButtonIndicationList[i].distanceBetweenButtonAndText = EditorGUILayout.Slider("        Distance Between Button And Text", myScript.autoButtonIndicationList[i].distanceBetweenButtonAndText, 0.0f, 0.1f);
+										myScript.autoButtonIndicationList[i].distanceBetweenButtonAndLine = EditorGUILayout.Slider("        Distance Between Button And Line", myScript.autoButtonIndicationList[i].distanceBetweenButtonAndLine, 0.0f, 0.1f);
+										myScript.autoButtonIndicationList[i].lineLengthAdjustment = EditorGUILayout.Slider("        Line Length Adjustment", myScript.autoButtonIndicationList[i].lineLengthAdjustment, -0.1f, 0.1f);
+										myScript.autoButtonIndicationList[i].useMultiLanguage = EditorGUILayout.Toggle("        Use multi-language", myScript.autoButtonIndicationList[i].useMultiLanguage);
+										myScript.autoButtonIndicationList[i].indicationText = EditorGUILayout.TextField("        Indication text", myScript.autoButtonIndicationList[i].indicationText);
+										EditorGUILayout.Space();
+									}
+								}
+							}
 						}
 					}
 				}
@@ -312,11 +455,11 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 	[Header("Indication feature")]
 	public bool overwriteIndicatorSettings = true;
 	public bool showIndicator = false;
+	public bool autoLayout = true;
+	[Range(0.0f, 90.0f)]
+	public float showIndicatorAngle = 30.0f;
 	public bool hideIndicatorByRoll = true;
 	public bool basedOnEmitter = true;
-
-	[Range(0, 90.0f)]
-	public float showIndicatorAngle = 30.0f;
 
 	[Header("Line customization")]
 	[Range(0.01f, 0.1f)]
@@ -339,6 +482,12 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 	[Header("Indications")]
 	public bool useIndicatorSystemConfig = true;
 	public List<ButtonIndication> buttonIndicationList = new List<ButtonIndication>();
+
+	//For AutoLayout
+	[HideInInspector]
+	public DisplayPlane _displayPlane = DisplayPlane.Button_Auto;
+	[HideInInspector]
+	public List<AutoButtonIndication> autoButtonIndicationList = new List<AutoButtonIndication>();
 
 	[Header("AdaptiveLoading")]
 	public bool adaptiveLoading = true;  // flag to describe if enable adaptive controller loading feature
@@ -407,6 +556,9 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 #endif
 	private bool forceCheckRenderModelName = false;
 	private bool lastFrameConnection = false;
+
+	// workaround for CAR model
+	public bool loadfromAsset = true;
 
 	private void checkAndCreateCIM()
 	{
@@ -608,57 +760,60 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 
 		if (adaptiveLoading)
 		{
-			if (Interop.WVR_GetWaveRuntimeVersion() >= 2)
-			{
-				PrintInfoLog("Start adaptive loading");
-				// 1. check if there are assets in private folder
-				string renderModelUnzipFolder = Interop.WVR_DeployRenderModelAssets(deviceIndex, renderModelName);
+			if (!loadfromAsset || !renderModelName.StartsWith("WVR_CR_")) {
+				if (Interop.WVR_GetWaveRuntimeVersion() >= 2)
+				{
+					PrintInfoLog("Start adaptive loading");
+					// 1. check if there are assets in private folder
+					string renderModelUnzipFolder = Interop.WVR_DeployRenderModelAssets(deviceIndex, renderModelName);
 
-				// load model from runtime
-				if (renderModelUnzipFolder != "") {
-					// try emitter folder
-					string modelPath = renderModelUnzipFolder + "Model";
-					found = loadMeshAndImageByDevice(modelPath);
-
-					if (found)
+					// load model from runtime
+					if (renderModelUnzipFolder != "")
 					{
-						PrintInfoLog("Model FBX is found!");
-					}
+						// try emitter folder
+						string modelPath = renderModelUnzipFolder + "Model";
+						found = loadMeshAndImageByDevice(modelPath);
 
-					if (!found)
-					{
-						string UnityVersion = Application.unityVersion;
-						PrintInfoLog("Application built by Unity version : " + UnityVersion);
-						renderModelNamePath = renderModelUnzipFolder + "Unity";
-
-						int assetVersion = checkAssetBundlesVersion(UnityVersion);
-
-						if (assetVersion == 1)
+						if (found)
 						{
-							renderModelNamePath += "/5.6";
-						}
-						else if (assetVersion == 2)
-						{
-							renderModelNamePath += "/2017.3";
+							PrintInfoLog("Model FBX is found!");
 						}
 
-						// try root path
-						found = tryLoadModelFromRuntime(renderModelNamePath, controllerFileName);
-
-						// try to load generic from runtime
 						if (!found)
 						{
-							PrintInfoLog("Try to load generic controller model from runtime");
-							string tmpGeneric = genericControllerFileName;
-							if (WhichHand == ControllerHand.Dominant)
+							string UnityVersion = Application.unityVersion;
+							PrintInfoLog("Application built by Unity version : " + UnityVersion);
+							renderModelNamePath = renderModelUnzipFolder + "Unity";
+
+							int assetVersion = checkAssetBundlesVersion(UnityVersion);
+
+							if (assetVersion == 1)
 							{
-								tmpGeneric += "MC_R";
+								renderModelNamePath += "/5.6";
 							}
-							else
+							else if (assetVersion == 2)
 							{
-								tmpGeneric += "MC_L";
+								renderModelNamePath += "/2017.3";
 							}
-							found = tryLoadModelFromRuntime(renderModelNamePath, tmpGeneric);
+
+							// try root path
+							found = tryLoadModelFromRuntime(renderModelNamePath, controllerFileName);
+
+							// try to load generic from runtime
+							if (!found)
+							{
+								PrintInfoLog("Try to load generic controller model from runtime");
+								string tmpGeneric = genericControllerFileName;
+								if (WhichHand == ControllerHand.Dominant)
+								{
+									tmpGeneric += "MC_R";
+								}
+								else
+								{
+									tmpGeneric += "MC_L";
+								}
+								found = tryLoadModelFromRuntime(renderModelNamePath, tmpGeneric);
+							}
 						}
 					}
 				}
@@ -1502,62 +1657,100 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 		if (found)
 		{
 			PrintInfoLog("WaveVR_ControllerLoader forced update WaveVR_ShowIndicator parameter!");
-			si.showIndicator = this.showIndicator;
 
 			if (showIndicator != true)
 			{
 				PrintInfoLog("WaveVR_ControllerLoader forced don't show WaveVR_ShowIndicator!");
 				return;
 			}
-			si.showIndicator = this.showIndicator;
+			si.showIndicator = showIndicator;
+			si.autoLayout = autoLayout;
 			si.showIndicatorAngle = showIndicatorAngle;
 			si.hideIndicatorByRoll = hideIndicatorByRoll;
 			si.basedOnEmitter = basedOnEmitter;
-			si.lineColor = lineColor;
-			si.lineEndWidth = lineEndWidth;
-			si.lineStartWidth = lineStartWidth;
 			si.lineLength = lineLength;
+			si.lineStartWidth = lineStartWidth;
+			si.lineEndWidth = lineEndWidth;
+			si.lineColor = lineColor;
 			si.textCharacterSize = textCharacterSize;
 			si.zhCharactarSize = zhCharactarSize;
-			si.textColor = textColor;
 			si.textFontSize = textFontSize;
+			si.textColor = textColor;
 
 			si.buttonIndicationList.Clear();
-			if (useIndicatorSystemConfig)
+			if (!autoLayout)
 			{
-				PrintInfoLog("WaveVR_ControllerLoader uses system default button indication!");
-				addbuttonIndicationList();
-			}
-			else
-			{
-				PrintInfoLog("WaveVR_ControllerLoader uses customized button indication!");
-				if (buttonIndicationList.Count == 0)
+				if (useIndicatorSystemConfig)
 				{
-					PrintInfoLog("WaveVR_ControllerLoader doesn't have button indication!");
-					return;
+					PrintInfoLog("WaveVR_ControllerLoader uses system default button indication!");
+					addButtonIndicationList();
 				}
+				else
+				{
+					PrintInfoLog("WaveVR_ControllerLoader uses customized button indication!");
+					if (buttonIndicationList.Count == 0)
+					{
+						PrintInfoLog("WaveVR_ControllerLoader doesn't have button indication!");
+						return;
+					}
+				}
+
+				foreach (ButtonIndication bi in buttonIndicationList)
+				{
+					PrintInfoLog("keyType: " + bi.keyType);
+					PrintInfoLog("alignment: " + bi.alignment);
+					PrintInfoLog("indicationOffset: " + bi.indicationOffset);
+					PrintInfoLog("useMultiLanguage: " + bi.useMultiLanguage);
+					PrintInfoLog("indicationText: " + bi.indicationText);
+					PrintInfoLog("followButtonRotation: " + bi.followButtonRotation);
+
+					si.buttonIndicationList.Add(bi);
+				}
+
+				si.createIndicator();
 			}
 
-			foreach (ButtonIndication bi in buttonIndicationList)
+			si._displayPlane = _displayPlane;
+			si.autoButtonIndicationList.Clear();
+			if (autoLayout)
 			{
-				PrintInfoLog("use multilanguage: " + bi.useMultiLanguage);
-				PrintInfoLog("indication: " + bi.indicationText);
-				PrintInfoLog("alignment: " + bi.alignment);
-				PrintInfoLog("offset: " + bi.indicationOffset);
-				PrintInfoLog("keyType: " + bi.keyType);
-				PrintInfoLog("followRotation: " + bi.followButtonRotation);
+				if (useIndicatorSystemConfig)
+				{
+					PrintInfoLog("WaveVR_ControllerLoader uses system default button indication!");
+					addAutoButtonIndicationList();
+				}
+				else
+				{
+					PrintInfoLog("WaveVR_ControllerLoader uses customized button indication!");
+					if (autoButtonIndicationList.Count == 0)
+					{
+						PrintInfoLog("WaveVR_ControllerLoader doesn't have button indication!");
+						return;
+					}
+				}
 
-				si.buttonIndicationList.Add(bi);
+				foreach (AutoButtonIndication bi in autoButtonIndicationList)
+				{
+					PrintInfoLog("keyType: " + bi.keyType);
+					PrintInfoLog("alignment: " + bi.alignment);
+					PrintInfoLog("distanceBetweenButtonAndText: " + bi.distanceBetweenButtonAndText);
+					PrintInfoLog("distanceBetweenButtonAndLine: " + bi.distanceBetweenButtonAndLine);
+					PrintInfoLog("lineLengthAdjustment: " + bi.lineLengthAdjustment);
+					PrintInfoLog("useMultiLanguage: " + bi.useMultiLanguage);
+					PrintInfoLog("indicationText: " + bi.indicationText);		
+
+					si.autoButtonIndicationList.Add(bi);
+				}
+
 			}
 
-			si.createIndicator();
 		} else
 		{
 			PrintInfoLog("Controller model doesn't support button indication feature!");
 		}
 	}
 
-	private void addbuttonIndicationList()
+	private void addButtonIndicationList()
 	{
 		buttonIndicationList.Clear();
 
@@ -1611,6 +1804,16 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 
 		buttonIndicationList.Add(dt);
 
+		ButtonIndication bumper = new ButtonIndication();
+		bumper.keyType = ButtonIndication.KeyIndicator.Bumper;
+		bumper.alignment = ButtonIndication.Alignment.RIGHT;
+		bumper.indicationOffset = new Vector3(0f, 0f, 0f);
+		bumper.useMultiLanguage = true;
+		bumper.indicationText = "system";
+		bumper.followButtonRotation = true;
+
+		buttonIndicationList.Add(bumper);
+
 		ButtonIndication touchpad = new ButtonIndication();
 		touchpad.keyType = ButtonIndication.KeyIndicator.TouchPad;
 		touchpad.alignment = ButtonIndication.Alignment.LEFT;
@@ -1630,5 +1833,182 @@ public class WaveVR_ControllerLoader : MonoBehaviour {
 		vol.followButtonRotation = true;
 
 		buttonIndicationList.Add(vol);
+
+		ButtonIndication buttonA = new ButtonIndication();
+		buttonA.keyType = ButtonIndication.KeyIndicator.ButtonA;
+		buttonA.alignment = ButtonIndication.Alignment.LEFT;
+		buttonA.indicationOffset = new Vector3(0f, 0f, 0f);
+		buttonA.useMultiLanguage = true;
+		buttonA.indicationText = "system";
+		buttonA.followButtonRotation = true;
+
+		buttonIndicationList.Add(buttonA);
+
+		ButtonIndication buttonB = new ButtonIndication();
+		buttonB.keyType = ButtonIndication.KeyIndicator.ButtonB;
+		buttonB.alignment = ButtonIndication.Alignment.LEFT;
+		buttonB.indicationOffset = new Vector3(0f, 0f, 0f);
+		buttonB.useMultiLanguage = true;
+		buttonB.indicationText = "system";
+		buttonB.followButtonRotation = true;
+
+		buttonIndicationList.Add(buttonB);
+
+		ButtonIndication buttonX = new ButtonIndication();
+		buttonX.keyType = ButtonIndication.KeyIndicator.ButtonX;
+		buttonX.alignment = ButtonIndication.Alignment.RIGHT;
+		buttonX.indicationOffset = new Vector3(0f, 0f, 0f);
+		buttonX.useMultiLanguage = true;
+		buttonX.indicationText = "system";
+		buttonX.followButtonRotation = true;
+
+		buttonIndicationList.Add(buttonX);
+
+		ButtonIndication buttonY = new ButtonIndication();
+		buttonY.keyType = ButtonIndication.KeyIndicator.ButtonY;
+		buttonY.alignment = ButtonIndication.Alignment.RIGHT;
+		buttonY.indicationOffset = new Vector3(0f, 0f, 0f);
+		buttonY.useMultiLanguage = true;
+		buttonY.indicationText = "system";
+		buttonY.followButtonRotation = true;
+
+		buttonIndicationList.Add(buttonY);
+	}
+
+	private void addAutoButtonIndicationList()
+	{
+		autoButtonIndicationList.Clear();
+
+		AutoButtonIndication home = new AutoButtonIndication();
+		home.keyType = AutoButtonIndication.KeyIndicator.Home;
+		home.alignment = AutoButtonIndication.Alignment.Balance;
+		home.distanceBetweenButtonAndText = 0.035f;
+		home.distanceBetweenButtonAndLine = 0.0f;
+		home.lineLengthAdjustment = 0.0f;
+		home.useMultiLanguage = true;
+		home.indicationText = "system";
+
+		autoButtonIndicationList.Add(home);
+
+		AutoButtonIndication app = new AutoButtonIndication();
+		app.keyType = AutoButtonIndication.KeyIndicator.App;
+		app.alignment = AutoButtonIndication.Alignment.Balance;
+		app.distanceBetweenButtonAndText = 0.035f;
+		app.distanceBetweenButtonAndLine = 0.0f;
+		app.lineLengthAdjustment = 0.0f;
+		app.useMultiLanguage = true;
+		app.indicationText = "system";
+
+		autoButtonIndicationList.Add(app);
+
+		AutoButtonIndication grip = new AutoButtonIndication();
+		grip.keyType = AutoButtonIndication.KeyIndicator.Grip;
+		grip.alignment = AutoButtonIndication.Alignment.Balance;
+		grip.distanceBetweenButtonAndText = 0.035f;
+		grip.distanceBetweenButtonAndLine = 0.0f;
+		grip.lineLengthAdjustment = 0.0f;
+		grip.useMultiLanguage = true;
+		grip.indicationText = "system";
+
+		autoButtonIndicationList.Add(grip);
+
+		AutoButtonIndication trigger = new AutoButtonIndication();
+		trigger.keyType = AutoButtonIndication.KeyIndicator.Trigger;
+		trigger.alignment = AutoButtonIndication.Alignment.Balance;
+		trigger.distanceBetweenButtonAndText = 0.035f;
+		trigger.distanceBetweenButtonAndLine = 0.0f;
+		trigger.lineLengthAdjustment = 0.0f;
+		trigger.useMultiLanguage = true;
+		trigger.indicationText = "system";
+
+		autoButtonIndicationList.Add(trigger);
+
+		AutoButtonIndication dt = new AutoButtonIndication();
+		dt.keyType = AutoButtonIndication.KeyIndicator.DigitalTrigger;
+		dt.alignment = AutoButtonIndication.Alignment.Balance;
+		dt.distanceBetweenButtonAndText = 0.035f;
+		dt.distanceBetweenButtonAndLine = 0.0f;
+		dt.lineLengthAdjustment = 0.0f;
+		dt.useMultiLanguage = true;
+		dt.indicationText = "system";
+
+		autoButtonIndicationList.Add(dt);
+
+		AutoButtonIndication bumper = new AutoButtonIndication();
+		bumper.keyType = AutoButtonIndication.KeyIndicator.Bumper;
+		bumper.alignment = AutoButtonIndication.Alignment.Balance;
+		bumper.distanceBetweenButtonAndText = 0.035f;
+		bumper.distanceBetweenButtonAndLine = 0.0f;
+		bumper.lineLengthAdjustment = 0.0f;
+		bumper.useMultiLanguage = true;
+		bumper.indicationText = "system";
+
+		autoButtonIndicationList.Add(bumper);
+
+		AutoButtonIndication touchpad = new AutoButtonIndication();
+		touchpad.keyType = AutoButtonIndication.KeyIndicator.TouchPad;
+		touchpad.alignment = AutoButtonIndication.Alignment.Balance;
+		touchpad.distanceBetweenButtonAndText = 0.035f;
+		touchpad.distanceBetweenButtonAndLine = 0.0f;
+		touchpad.lineLengthAdjustment = 0.0f;
+		touchpad.useMultiLanguage = true;
+		touchpad.indicationText = "system";
+
+		autoButtonIndicationList.Add(touchpad);
+
+		AutoButtonIndication vol = new AutoButtonIndication();
+		vol.keyType = AutoButtonIndication.KeyIndicator.Volume;
+		vol.alignment = AutoButtonIndication.Alignment.Balance;
+		vol.distanceBetweenButtonAndText = 0.035f;
+		vol.distanceBetweenButtonAndLine = 0.0f;
+		vol.lineLengthAdjustment = 0.0f;
+		vol.useMultiLanguage = true;
+		vol.indicationText = "system";
+
+		autoButtonIndicationList.Add(vol);
+
+		AutoButtonIndication buttonA = new AutoButtonIndication();
+		buttonA.keyType = AutoButtonIndication.KeyIndicator.ButtonA;
+		buttonA.alignment = AutoButtonIndication.Alignment.Balance;
+		buttonA.distanceBetweenButtonAndText = 0.035f;
+		buttonA.distanceBetweenButtonAndLine = 0.0f;
+		buttonA.lineLengthAdjustment = 0.0f;
+		buttonA.useMultiLanguage = true;
+		buttonA.indicationText = "system";
+
+		autoButtonIndicationList.Add(buttonA);
+
+		AutoButtonIndication buttonB = new AutoButtonIndication();
+		buttonB.keyType = AutoButtonIndication.KeyIndicator.ButtonB;
+		buttonB.alignment = AutoButtonIndication.Alignment.Balance;
+		buttonB.distanceBetweenButtonAndText = 0.035f;
+		buttonB.distanceBetweenButtonAndLine = 0.0f;
+		buttonB.lineLengthAdjustment = 0.0f;
+		buttonB.useMultiLanguage = true;
+		buttonB.indicationText = "system";
+
+		autoButtonIndicationList.Add(buttonB);
+
+		AutoButtonIndication buttonX = new AutoButtonIndication();
+		buttonX.keyType = AutoButtonIndication.KeyIndicator.ButtonX;
+		buttonX.alignment = AutoButtonIndication.Alignment.Balance;
+		buttonX.distanceBetweenButtonAndText = 0.035f;
+		buttonX.distanceBetweenButtonAndLine = 0.0f;
+		buttonX.lineLengthAdjustment = 0.0f;
+		buttonX.useMultiLanguage = true;
+		buttonX.indicationText = "system";
+
+		autoButtonIndicationList.Add(buttonX);
+
+		AutoButtonIndication buttonY = new AutoButtonIndication();
+		buttonY.keyType = AutoButtonIndication.KeyIndicator.ButtonY;
+		buttonY.alignment = AutoButtonIndication.Alignment.Balance;
+		buttonY.distanceBetweenButtonAndText = 0.035f;
+		buttonY.distanceBetweenButtonAndLine = 0.0f;
+		buttonY.lineLengthAdjustment = 0.0f;
+		buttonY.useMultiLanguage = true;
+		buttonY.indicationText = "system";
+
+		autoButtonIndicationList.Add(buttonY);
 	}
 }

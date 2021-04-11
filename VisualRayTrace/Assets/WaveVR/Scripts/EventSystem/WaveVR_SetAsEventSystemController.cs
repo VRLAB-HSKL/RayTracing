@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using wvr;
 
+[DisallowMultipleComponent]
 public class WaveVR_SetAsEventSystemController : MonoBehaviour
 {
 	private bool added = false;

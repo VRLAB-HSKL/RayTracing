@@ -1,4 +1,13 @@
-﻿using System.Collections;
+// "WaveVR SDK 
+// © 2017 HTC Corporation. All Rights Reserved.
+//
+// Unless otherwise required by copyright law and practice,
+// upon the execution of HTC SDK license agreement,
+// HTC grants you access to and use of the WaveVR SDK(s).
+// You shall fully comply with all of HTC’s SDK license agreement terms and
+// conditions signed by you and all SDK and API requirements,
+// specifications, and documentation provided by HTC to You."
+
 using System.Collections.Generic;
 using UnityEngine;
 using WVR_Log;
@@ -23,7 +32,7 @@ public class WaveVR_GesturePointerProvider {
 		}
 	}
 	private List<GesturePointer> gesturePointers = new List<GesturePointer>();
-	private WaveVR_GestureManager.EGestureHand[] gestureHandList = new WaveVR_GestureManager.EGestureHand[] {
+	public static readonly WaveVR_GestureManager.EGestureHand[] GestureHandList = new WaveVR_GestureManager.EGestureHand[] {
 		WaveVR_GestureManager.EGestureHand.RIGHT,
 		WaveVR_GestureManager.EGestureHand.LEFT
 	};
@@ -39,25 +48,20 @@ public class WaveVR_GesturePointerProvider {
 	}
 
 	private WaveVR_GesturePointerProvider(){
-		for (int i = 0; i < gestureHandList.Length; i++)
-			gesturePointers.Add (new GesturePointer (gestureHandList [i], null));
+		for (int i = 0; i < GestureHandList.Length; i++)
+			gesturePointers.Add (new GesturePointer (GestureHandList [i], null));
 	}
 
 	public void SetGesturePointer(WaveVR_GestureManager.EGestureHand hand, GameObject pointer)
 	{
 		DEBUG ("SetGesturePointer() " + hand + ", pointer: " + (pointer != null ? pointer.name : "null"));
 
-		for (int i = 0; i < gestureHandList.Length; i++)
+		for (int i = 0; i < GestureHandList.Length; i++)
 		{
-			if (gestureHandList [i] == hand)
+			if (GestureHandList [i] == hand)
 			{
-				// Deactivate original pointer.
-				if (gesturePointers [i].Pointer != null)
-					gesturePointers [i].Pointer.GetComponent<WaveVR_GesturePointer> ().ShowPointer = false;
-
-				// Activate new pointer.
 				gesturePointers [i].Pointer = pointer;
-				gesturePointers [i].Pointer.GetComponent<WaveVR_GesturePointer> ().ShowPointer = true;
+				break;
 			}
 		}
 	}
@@ -65,19 +69,12 @@ public class WaveVR_GesturePointerProvider {
 	public GameObject GetGesturePointer(WaveVR_GestureManager.EGestureHand hand)
 	{
 		int index = 0;
-		for (int i = 0; i < gestureHandList.Length; i++)
+		for (int i = 0; i < GestureHandList.Length; i++)
 		{
-			if (gestureHandList [i] == hand)
+			if (GestureHandList [i] == hand)
 			{
 				index = i;
-				if (gesturePointers [i].Pointer != null)
-					gesturePointers [i].Pointer.GetComponent<WaveVR_GesturePointer> ().ShowPointer = true;
-			}
-			else
-			{
-				// Deactivate the pointers not needed.
-				if (gesturePointers [i].Pointer != null)
-					gesturePointers [i].Pointer.GetComponent<WaveVR_GesturePointer> ().ShowPointer = false;
+				break;
 			}
 		}
 

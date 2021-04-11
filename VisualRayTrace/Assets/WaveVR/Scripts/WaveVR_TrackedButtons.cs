@@ -38,7 +38,6 @@ public class WaveVR_TrackedButtons : MonoBehaviour
 	public static ulong Input_Mask_Hmd_Enter	= 1UL << (int)WVR_InputId.WVR_InputId_Alias1_Enter;
 	public static ulong Input_Mask_Touchpad	 = 1UL << (int)WVR_InputId.WVR_InputId_Alias1_Touchpad;
 	public static ulong Input_Mask_Trigger	  = 1UL << (int)WVR_InputId.WVR_InputId_Alias1_Trigger;
-	public static ulong Input_Mask_DigitalTrigger	   = 1UL << (int)WVR_InputId.WVR_InputId_Alias1_Digital_Trigger;
 
 	public WaveVR_Controller.EDeviceType device;
 	private bool triggerPressed = false;

@@ -17,6 +17,7 @@ using WVR_Log;
 using System;
 using wvr;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 public class WaveVR_CameraTexture
 {
@@ -26,9 +27,13 @@ public class WaveVR_CameraTexture
 	private bool mStarted = false;
 	private IntPtr nativeTextureId = IntPtr.Zero;
 	private IntPtr mframeBuffer = IntPtr.Zero;
+	private IntPtr threadframeBuffer = IntPtr.Zero;
 	private bool syncPose = false;
 	private WVR_PoseState_t mPoseState;
 	private WVR_PoseOriginModel origin = WVR_PoseOriginModel.WVR_PoseOriginModel_OriginOnGround;
+	private Thread mthread;
+	private bool toThreadStop = false;
+	private bool updateFramebuffer = false;
 
 	public bool isStarted
 	{
@@ -41,9 +46,7 @@ public class WaveVR_CameraTexture
 	public delegate void UpdateCameraCompleted(System.IntPtr nativeTextureId);
 	public static event UpdateCameraCompleted UpdateCameraCompletedDelegate = null;
 
-	[Obsolete("StartCameraCompleted delegate is not used in the future")]
 	public delegate void StartCameraCompleted(bool result);
-	[Obsolete("StartCameraCompletedDelegate is not used in the future")]
 	public static event StartCameraCompleted StartCameraCompletedDelegate = null;
 
 	private static WaveVR_CameraTexture mInstance = null;
@@ -69,23 +72,12 @@ public class WaveVR_CameraTexture
 			return mInstance;
 		}
 	}
-	/*
-	private void OnStartCameraCompleted(params object[] args)
-	{
-		mStarted = (bool)args[0];
-		if (StartCameraCompletedDelegate != null) StartCameraCompletedDelegate(mStarted);
-		if (!mStarted) return ;
-		camerainfo = (WVR_CameraInfo_t)args[1];
-
-		Log.d(LOG_TAG, "OnStartCameraCompleted, result = " + mStarted + " type = " + camerainfo.imgType + " width = " + camerainfo.width + " height = " + camerainfo.height);
-	}
-	*/
 
 	private void OnUpdateCameraCompleted(params object[] args)
 	{
 		//bool texUpdated = (bool)args[0];
 
-		if (UpdateCameraCompletedDelegate != null)  UpdateCameraCompletedDelegate(nativeTextureId);
+		if (UpdateCameraCompletedDelegate != null) UpdateCameraCompletedDelegate(nativeTextureId);
 	}
 
 	public IntPtr getNativeTextureId()
@@ -94,18 +86,25 @@ public class WaveVR_CameraTexture
 		return nativeTextureId;
 	}
 
+	[Obsolete("Please use void startCamera(bool enableSyncPose) instead and listen to StartCameraCompleted delegate to get result")]
 	public bool startCamera()
 	{
-		if (mStarted) return false;
+		return false;
+	}
+
+	public void startCamera(bool enable)
+	{
+		if (mStarted) return ;
+		syncPose = enable;
 		WaveVR_Utils.Event.Listen("DrawCameraCompleted", OnUpdateCameraCompleted);
 
-		mStarted = Interop.WVR_StartCamera(ref camerainfo);
-
-		Log.i(LOG_TAG, "startCamera, result = " + mStarted + " format: " + camerainfo.imgFormat + " size: " + camerainfo.size
-			+ " width: " + camerainfo.width + " height: " + camerainfo.height);
-
-		if (mStarted)
+		if (syncPose)
 		{
+			mPoseState = new WVR_PoseState_t();
+			mStarted = Interop.WVR_StartCamera(ref camerainfo);
+
+			Log.i(LOG_TAG, "startCamera, result = " + mStarted + " format: " + camerainfo.imgFormat + " size: " + camerainfo.size
+			+ " width: " + camerainfo.width + " height: " + camerainfo.height);
 			PrintDebugLog("allocate frame buffer");
 			mframeBuffer = Marshal.AllocHGlobal((int)camerainfo.size);
 
@@ -114,22 +113,82 @@ public class WaveVR_CameraTexture
 			{
 				Marshal.WriteByte(mframeBuffer, i, 0);
 			}
-
-			if (syncPose)
-			{
-				mPoseState = new WVR_PoseState_t();
-			}
+			if (StartCameraCompletedDelegate != null) StartCameraCompletedDelegate(mStarted);
 		}
-		if (StartCameraCompletedDelegate != null) StartCameraCompletedDelegate(mStarted);
-
-		return mStarted;
+		else
+		{
+			mthread = new Thread(() => CameraThread());
+			if (mthread.IsBackground == false)
+				mthread.IsBackground = true;
+			toThreadStop = false;
+			mthread.Start();
+		}
 	}
 
-	public void enableSyncPose(bool enable)
+	void CameraThread()
 	{
-		Log.i(LOG_TAG, "enableSyncPose: " + enable);
+		mStarted = Interop.WVR_StartCamera(ref camerainfo);
 
-		syncPose = enable;
+		Log.i(LOG_TAG, "startCamera, result = " + mStarted + " format: " + camerainfo.imgFormat + " size: " + camerainfo.size
+		+ " width: " + camerainfo.width + " height: " + camerainfo.height);
+
+		if (StartCameraCompletedDelegate != null) StartCameraCompletedDelegate(mStarted);
+		if (!mStarted)
+		{
+			Log.i(LOG_TAG, "Camera start failed, camera thread stop.");
+			return;
+		}
+
+		//Keep call WVR_GetFrameBufferWithPoseState
+		Log.i(LOG_TAG, "Start CameraThread, Camera is Started? " + mStarted.ToString() + "CameraThread.ThreadState=" + mthread.ThreadState + "CameraThread.IsBackground=" + mthread.IsBackground);
+		PrintDebugLog("allocate frame buffer");
+
+		threadframeBuffer = Marshal.AllocHGlobal((int)camerainfo.size);
+
+		//zero out buffer
+		for (int i = 0; i < camerainfo.size; i++)
+		{
+			Marshal.WriteByte(threadframeBuffer, i, 0);
+		}
+		updateFramebuffer = false;
+		int counter = 0;
+		while (!toThreadStop)
+		{
+			if (threadframeBuffer != IntPtr.Zero)
+			{
+				updateFramebuffer = Interop.WVR_GetCameraFrameBuffer(threadframeBuffer, camerainfo.size);
+
+				if (!updateFramebuffer)
+				{
+					counter++;
+					if (counter > 100)
+					{
+						Log.i(LOG_TAG, "get framebuffer failed, break while ");
+						break;
+					}
+					Log.i(LOG_TAG, "counter : " + counter);
+				}
+				else counter = 0;
+			}
+			else
+			{
+				Log.i(LOG_TAG, "threadframeBuffer = null, break while ");
+				break;
+			} 
+		}
+		WaveVR_Utils.Event.Remove("DrawCameraCompleted", OnUpdateCameraCompleted);
+		updateFramebuffer = false;
+
+		if (threadframeBuffer != IntPtr.Zero)
+		{
+			Marshal.FreeHGlobal(threadframeBuffer);
+			threadframeBuffer = IntPtr.Zero;
+		}
+
+		Interop.WVR_StopCamera();
+		mStarted = false;
+
+		Log.i(LOG_TAG, "End of CameraThread");
 	}
 
 	[Obsolete("Please use getImageType instead")]
@@ -198,34 +257,45 @@ public class WaveVR_CameraTexture
 	public IntPtr getNativeFrameBuffer()
 	{
 		if (!mStarted) return IntPtr.Zero;
-		return mframeBuffer;
+		if (syncPose) return mframeBuffer;
+		else return threadframeBuffer;
 	}
 
 	public void stopCamera()
 	{
-		if (!mStarted) return ;
-		WaveVR_Utils.Event.Remove("DrawCameraCompleted", OnUpdateCameraCompleted);
+		if (!mStarted) return;
 
 		if (syncPose)
 		{
+			WaveVR_Utils.Event.Remove("DrawCameraCompleted", OnUpdateCameraCompleted);
 			Log.i(LOG_TAG, "Reset WaveVR_Render submit pose");
 			WaveVR_Render.ResetPoseUsedOnSubmit();
+			Interop.WVR_StopCamera();
+			if (mframeBuffer != IntPtr.Zero)
+			{
+				Marshal.FreeHGlobal(mframeBuffer);
+				mframeBuffer = IntPtr.Zero;
+			}
+			mStarted = false;
+		}
+		else
+		{
+			if (mthread != null && mthread.IsAlive)
+			{
+				toThreadStop = true;
+				Log.i(LOG_TAG, "to thread stop");
+			}
 		}
 
-		Interop.WVR_StopCamera();
-		if (mframeBuffer != IntPtr.Zero)
-		{
-			Marshal.FreeHGlobal(mframeBuffer);
-			mframeBuffer = IntPtr.Zero;
-		}
 		Log.i(LOG_TAG, "Release native texture resources");
 		WaveVR_Utils.SendRenderEvent(WaveVR_Utils.RENDEREVENTID_ReleaseTexture);
-		mStarted = false;
 	}
 
-	public WVR_PoseState_t getFramePose()
+	public bool getFramePose(ref WVR_PoseState_t pose)
 	{
-		return mPoseState;
+		if (!syncPose) return false;
+		pose = mPoseState;
+		return true;
 	}
 
 	public void updateTexture(IntPtr textureId)
@@ -236,27 +306,42 @@ public class WaveVR_CameraTexture
 			return;
 		}
 
-		PrintDebugLog("updateTexture start");
+		//PrintDebugLog("updateTexture start, syncPose = " + syncPose.ToString() + " updateFramebuffer = " + updateFramebuffer.ToString());
 
 		nativeTextureId = textureId;
 		if (WaveVR_Render.Instance != null)
 			origin = WaveVR_Render.Instance.origin;
 
-		if (mframeBuffer != IntPtr.Zero)
+		if (syncPose)
 		{
-			uint predictInMs = 0;
-			PrintDebugLog("updateTexture frameBuffer and PoseState, predict time:" + predictInMs);
-
-			Interop.WVR_GetFrameBufferWithPoseState(mframeBuffer, camerainfo.size, origin, predictInMs, ref mPoseState);
-
-			if (syncPose)
+			if (mframeBuffer != IntPtr.Zero)
 			{
+				uint predictInMs = 0;
+				PrintDebugLog("updateTexture frameBuffer and PoseState, predict time:" + predictInMs);
+
+				Interop.WVR_GetFrameBufferWithPoseState(mframeBuffer, camerainfo.size, origin, predictInMs, ref mPoseState);
+
 				PrintDebugLog("Sync camera frame buffer with poseState, timeStamp: " + mPoseState.PoseTimestamp_ns);
 				WaveVR_Render.SetPoseUsedOnSubmit(mPoseState);
-			}
 
-			PrintDebugLog("send event to draw OpenGL");
-			WaveVR_Utils.SendRenderEvent(WaveVR_Utils.RENDEREVENTID_DrawTextureWithBuffer);
+				PrintDebugLog("send event to draw OpenGL");
+				WaveVR_Utils.SendRenderEvent(WaveVR_Utils.RENDEREVENTID_DrawTextureWithBuffer);
+			}
+		}
+		else
+		{
+			if (updateFramebuffer && (threadframeBuffer != IntPtr.Zero))
+			{
+				PrintDebugLog("updateFramebuffer camera frame buffer");
+				nativeTextureId = textureId;
+				PrintDebugLog("send event to draw OpenGL");
+				WaveVR_Utils.SendRenderEvent(WaveVR_Utils.RENDEREVENTID_DrawTextureWithBuffer);
+				updateFramebuffer = false;
+			} else
+			{
+				// thread frame buffer is not updated and native texture is not updated, send complete delegate back
+				if (UpdateCameraCompletedDelegate != null) UpdateCameraCompletedDelegate(nativeTextureId);
+			}
 		}
 	}
 }

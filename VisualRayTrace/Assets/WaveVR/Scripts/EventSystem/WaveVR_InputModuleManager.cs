@@ -78,6 +78,7 @@ public enum WaveVR_EInputModule {
 	Gaze
 }
 
+[DisallowMultipleComponent]
 public class WaveVR_InputModuleManager : MonoBehaviour
 {
 	private const string LOG_TAG = "WaveVR_InputModuleManager";

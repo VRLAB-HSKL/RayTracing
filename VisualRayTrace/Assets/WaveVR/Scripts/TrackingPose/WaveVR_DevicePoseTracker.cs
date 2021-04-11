@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -48,6 +48,7 @@ public class WaveVR_DevicePoseTrackerEditor : Editor
 }
 #endif
 
+[DisallowMultipleComponent]
 public sealed class WaveVR_DevicePoseTracker : MonoBehaviour
 {
 	private static string LOG_TAG = "WaveVR_DevicePoseTracker";

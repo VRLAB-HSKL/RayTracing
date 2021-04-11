@@ -1,4 +1,4 @@
-﻿// "WaveVR SDK 
+// "WaveVR SDK 
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -11,6 +11,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+[DisallowMultipleComponent]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class Beam: MonoBehaviour
 {

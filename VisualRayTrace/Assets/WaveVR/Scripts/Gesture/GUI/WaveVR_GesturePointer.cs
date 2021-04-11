@@ -1,4 +1,4 @@
-// "WaveVR SDK 
+// "WaveVR SDK
 // © 2017 HTC Corporation. All Rights Reserved.
 //
 // Unless otherwise required by copyright law and practice,
@@ -8,333 +8,359 @@
 // conditions signed by you and all SDK and API requirements,
 // specifications, and documentation provided by HTC to You."
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System;
 using WVR_Log;
 
+/// <summary>
+/// Draws a pointer of controller to indicate to which object is pointed.
+/// </summary>
+[DisallowMultipleComponent]
 [RequireComponent(typeof(MeshRenderer), typeof(MeshFilter))]
-public class WaveVR_GesturePointer : MonoBehaviour {
+public class WaveVR_GesturePointer : MonoBehaviour
+{
 	private const string LOG_TAG = "WaveVR_GesturePointer";
 	private void DEBUG(string msg)
 	{
 		if (Log.EnableDebugLog)
-			Log.d (LOG_TAG, msg, true);
+			Log.d(LOG_TAG, this.PointerType + ", " + msg, true);
+	}
+	private void INFO(string msg)
+	{
+		Log.i(LOG_TAG, this.PointerType + ", " + msg, true);
 	}
 
-	enum DrawMode
-	{
-		FORWARD = 0,
-		UPWARD = 1
-	};
-
-	[Tooltip("Right hand or left hand pointer.")]
-	public WaveVR_GestureManager.EGestureHand Hand = WaveVR_GestureManager.EGestureHand.RIGHT;
-
-	/// Define where the pointer is drawed.
-	/// Forward: Drawed forward the mounted object.
-	/// Upward: Drawed upward the mounted object.
-	private DrawMode drawMode = DrawMode.UPWARD;
-
-	// ----------- Width of ring -----------
-	private const float DEF_RING_WIDTH = 0.005f;
-	private const float MIN_RING_WIDTH = 0.001f;
-	[Tooltip("Set the width of the pointer's ring.")]
-	public float PointerRingWidth = DEF_RING_WIDTH;
-
-	// ----------- Radius of inner circle -----------
-	private const float DEF_INNER_CIRCLE_RADIUS = 0.005f;
-	private const float MIN_INNER_CIRCLE_RADIUS = 0.001f;
-	[Tooltip("Set the radius of the pointer's inner circle.")]
-	public float PointerCircleRadius = DEF_INNER_CIRCLE_RADIUS;
-
-	/// The offset from the pointer to the pointer-mounted object.
-	private Vector3 pointerOffset = Vector3.zero;
-	/// The offset from the pointer to the pointer-mounted object in every frame.
-	private Vector3 pointerFrameOffset = Vector3.zero;
-	/// The pointer world position.
-	private Vector3 pointerWorldPosition = Vector3.zero;
-
-	// ----------- Z distance of ring -----------
-	private const float DEF_POINTER_DISTANCE = 1;
-	private const float MIN_POINTER_DISTANCE = 0.1f;
-	[Tooltip("Set the z-coordinate of the pointer.")]
-	public float PointerDistance = DEF_POINTER_DISTANCE;
-	private float pointerDistance = DEF_POINTER_DISTANCE;
-
-	// ----------- Color of ring -----------
-	/// Color of ring background.
-	[Tooltip("Set the ring background color.")]
-	public Color PointerColor = Color.white;
-	/// Color of ring foreground
-	[Tooltip("Set the ring foreground progess color.")]
-	public Color ProgressColor = new Color(0, 245, 255);
-
-	// ----------- Material and Mesh -----------
-	private Mesh mMesh = null;
-	private const string POINTER_MATERIAL_NAME = "RingUnlitTransparentMat";
-	[Tooltip("Empty for using the default material or set a customized material.")]
-	public Material PointerMaterial = null;
-	private Material pointerMaterialInstance = null;
-	private MeshRenderer pointerMeshRend = null;
-	private MeshFilter pointerMeshFilter = null;
-	private const int POINTER_MATERIAL_RENDER_QUEUE_MIN = 1000;
-	private const int POINTER_MATERIAL_RENDER_QUEUE_MAX = 5000;
-	/// The material's renderQueue.
-	[Tooltip("Set the Material's renderQueue.")]
-	public int PointerRenderQueue = POINTER_MATERIAL_RENDER_QUEUE_MAX;
-	/// The MeshRenderer's sortingOrder.
-	[Tooltip("Set the MeshRenderer's sortingOrder.")]
-	public int PointerSortingOrder = 32767;
-
-	private bool isHovering = false;
+	#region Exported Variables
+	public WaveVR_GestureManager.EGestureHand PointerType = WaveVR_GestureManager.EGestureHand.RIGHT;
+	public bool ShowPointer = true;
+	public float PointerOuterDiameterMin = 0.01f;
+	private float pointerOuterDiameter = 0;
 
 	[HideInInspector]
-	public bool ShowPointer = true;
+	public bool UseTexture = true;
+	//[Tooltip("Blinking only when not using texture.")]
+	[HideInInspector]
+	public bool Blink = false;
+	[Tooltip("True for using the default texture, false for using the custom texture.")]
+	public bool UseDefaultTexture = true;
+	private const string m_WhitePointer = "Textures/tControllerPointerWhite01";
+	private const string m_BluePointer = "Textures/tControllerPointerBlue01";
+	private Texture2D m_WhitePointerTexture = null, m_BluePointerTexture = null;
+	public Texture2D CustomTexture = null;
 
-	private bool ValidateParameters()
-	{
-		if (pointerMeshRend == null || pointerMeshFilter == null)
-			return false;
+	private const float pointerDistanceMin = 0.1f;      // Min length of Beam
+	[HideInInspector]
+	public const float pointerDistanceMax = 100.0f;     // Max length of Beam + 0.5m
+	public float PointerDistanceInMeters = 50f;         // Current distance of the pointer (in meters)
 
-		if (this.PointerRingWidth < MIN_RING_WIDTH)
-			this.PointerRingWidth = DEF_RING_WIDTH;
+	private Vector3 pointerWorldPosition = Vector3.zero;
 
-		if (this.PointerCircleRadius < MIN_INNER_CIRCLE_RADIUS)
-			this.PointerCircleRadius = DEF_INNER_CIRCLE_RADIUS;
+	/// <summary>
+	/// Material resource of pointer.
+	/// It contains shader **WaveVR/CtrlrPointer** and there are 5 attributes can be changed in runtime:
+	/// <para>
+	/// - _OuterDiameter
+	/// - _DistanceInMeters
+	/// - _MainTex
+	/// - _Color
+	/// - _useTexture
+	///
+	/// If _useTexture is set (default), the texture assign in _MainTex will be used.
+	/// </summary>
+	private const string pointerMaterialResource = "ControllerPointer";
+	private Material pointerMaterial = null;
+	private Material pointerMaterialInstance = null;
 
-		if (this.PointerDistance < MIN_POINTER_DISTANCE)
-			this.PointerDistance = DEF_POINTER_DISTANCE;
+	private Color colorFactor = Color.white;               // The color variable of the pointer
+	[HideInInspector]
+	public Color PointerColor = Color.white;               // #FFFFFFFF
+	[HideInInspector]
+	public Color borderColor = new Color(119, 119, 119, 255);     // #777777FF
+	[HideInInspector]
+	public Color focusColor = new Color(255, 255, 255, 255);       // #FFFFFFFF
+	[HideInInspector]
+	public Color focusBorderColor = new Color(119, 119, 119, 255); // #777777FF
 
-		if (this.PointerRenderQueue < POINTER_MATERIAL_RENDER_QUEUE_MIN ||
-		    this.PointerRenderQueue > POINTER_MATERIAL_RENDER_QUEUE_MAX)
-			this.PointerRenderQueue = POINTER_MATERIAL_RENDER_QUEUE_MAX;
+	private const int PointerRenderQueueMin = 1000;
+	private const int PointerRenderQueueMax = 5000;
+	public int PointerRenderQueue = PointerRenderQueueMax;
+	#endregion
 
-		return true;
-	}
+	private MeshFilter meshFilter = null;
+	private Mesh mesh = null;
+	private Renderer m_Renderer = null;
+
+	/**
+	 * OEM Config
+	 * \"pointer\": {
+	 * \"diameter\": 0.01,
+	 * \"distance\": 1.3,
+	 * \"use_texture\": true,
+	 * \"color\": \"#FFFFFFFF\",
+	 * \"border_color\": \"#777777FF\",
+	 * \"focus_color\": \"#FFFFFFFF\",
+	 * \"focus_border_color\": \"#777777FF\",
+	 * \"texture_name\":  null,
+	 * \"Blink\": false
+	 * },
+	 **/
+
+	private const int reticleSegments = 20;
+	private float pointerGrowthMultiple = 0.03f;                // Angle at which to expand the pointer when intersecting with an object (in degrees).
+	private float colorFlickerTime = 0;                   // The color flicker timestamp
 
 	#region MonoBehaviour overrides
 	private bool mEnabled = false;
-	void OnEnable ()
+	void OnEnable()
 	{
 		if (!mEnabled)
 		{
-			// 1. Texture or Mesh < Material < < MeshFilter < MeshRenderer, we don't use the texture.
-			if (mMesh == null)
-				mMesh = new Mesh ();
-			if (mMesh != null)
-				mMesh.name = gameObject.name + " Mesh " + this.Hand.ToString ();
+			// Load default pointer material resource and create instance.
+			pointerMaterial = Resources.Load(pointerMaterialResource) as Material;
+			if (pointerMaterial != null)
+				pointerMaterialInstance = Instantiate<Material>(pointerMaterial);
+			if (pointerMaterialInstance == null)
+				INFO("OnEnable() Can NOT load default material");
+			else
+				INFO("OnEnable() Controller pointer material: " + pointerMaterialInstance.name);
 
-			// 2. Load the Material RingUnlitTransparentMat.
-			if (PointerMaterial == null)
-				PointerMaterial = Resources.Load (POINTER_MATERIAL_NAME) as Material;
-			if (PointerMaterial != null)
-				pointerMaterialInstance = Instantiate<Material> (PointerMaterial);
+			// Load default pointer texture resource.
+			// If developer does not specify custom texture, default texture will be used.
+			m_WhitePointerTexture = (Texture2D)Resources.Load(m_WhitePointer);
+			if (m_WhitePointerTexture == null)
+				Log.e(LOG_TAG, "OnEnable() Can NOT load the white pointer texture", true);
+			m_BluePointerTexture = (Texture2D)Resources.Load(m_BluePointer);
+			if (m_BluePointerTexture == null)
+				Log.e(LOG_TAG, "OnEnable() Can NOT load the blue pointer texture", true);
 
-			// 3. Get the MeshFilter.
-			pointerMeshFilter = GetComponent<MeshFilter> ();
+			// Get MeshFilter instance.
+			meshFilter = GetComponent<MeshFilter>();
 
-			// 4. Get the MeshRenderer.
-			pointerMeshRend = GetComponent<MeshRenderer> ();
+			// Get Quad mesh as default pointer mesh.
+			// If developer does not use texture, pointer mesh will be created in CreatePointerMesh()
+			GameObject prim_go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+			mesh = Instantiate(prim_go.GetComponent<MeshFilter>().sharedMesh);
+			mesh.name = "CtrlQuadPointer";
+			prim_go.SetActive(false);
+			Destroy(prim_go);
 
-			// 5. Create the pointer.
-			SetPointerActive (this.ShowPointer);
-
-			// 6. Store this pointer to the provider.
-			WaveVR_GesturePointerProvider.Instance.SetGesturePointer(this.Hand, gameObject);
-
+			InitializePointer();
+			WaveVR_GesturePointerProvider.Instance.SetGesturePointer(this.PointerType, gameObject);
 			mEnabled = true;
-			DEBUG ("OnEnable()");
 		}
 	}
 
 	void OnDisable()
 	{
-		if (mEnabled)
-		{
-			Mesh mesh = pointerMeshFilter.mesh;
-			mesh.Clear ();
-			PointerMaterial = null;
-			Destroy (pointerMaterialInstance);
-
-			mEnabled = false;
-			DEBUG ("OnDisable()");
-		}
+		INFO("OnDisable()");
+		pointerInitialized = false;
+		mEnabled = false;
 	}
 
-	void Update ()
+	/// <summary>
+	/// The attributes
+	/// <para>
+	/// - _Color
+	/// - _OuterDiameter
+	/// - _DistanceInMeters
+	/// can be updated directly by changing
+	/// - colorFactor
+	/// - pointerOuterDiameter
+	/// - PointerDistanceInMeters
+	/// But if developer need to update texture in runtime, developer should
+	/// 1.set ShowPointer to false to hide pointer first.
+	/// 2.assign CustomTexture
+	/// 3.set UseSystemConfig to false
+	/// 4.set UseDefaultTexture to false
+	/// 5.set ShowPointer to true to generate new pointer.
+	/// </summary>
+	void Update()
 	{
-		if (!ValidateParameters ())
-			return;
+		ActivatePointer(this.ShowPointer);
 
-		if (pointerMeshRend.enabled != this.ShowPointer)
-			SetPointerActive (this.ShowPointer);
+		// Pointer distance.
+		this.PointerDistanceInMeters = Mathf.Clamp(this.PointerDistanceInMeters, pointerDistanceMin, pointerDistanceMax);
+		pointerWorldPosition = transform.position + transform.forward.normalized * this.PointerDistanceInMeters;
 
-		// Do nothing if pointer disabled.
-		if (!pointerMeshRend.enabled)
-			return;
-
-		if (drawMode == DrawMode.UPWARD)
-			pointerDistance = pointerFrameOffset.y;
-		if (drawMode == DrawMode.FORWARD)
-			pointerDistance = pointerFrameOffset.z;
-
-		pointerFrameOffset = pointerOffset;
-		if (pointerFrameOffset == Vector3.zero)
-			pointerDistance = this.PointerDistance;
-		pointerDistance = pointerDistance < MIN_POINTER_DISTANCE ? this.PointerDistance : pointerDistance;
-
-		if (drawMode == DrawMode.FORWARD)
-			pointerFrameOffset.z = pointerDistance;
-		if (drawMode == DrawMode.UPWARD)
-			pointerFrameOffset.y = pointerDistance;
-
-		float calcRingWidth = this.PointerRingWidth * (1 + ((pointerDistance / DEF_POINTER_DISTANCE) * 0.1f));
-		float calcInnerCircleRadius = this.PointerCircleRadius * (1 + ((pointerDistance / DEF_POINTER_DISTANCE) * 0.1f));
-
-		if (pointerOffset != Vector3.zero)
-			pointerWorldPosition = transform.position + pointerFrameOffset;
-		else
+		if (this.Blink == true)
 		{
-			if (drawMode == DrawMode.FORWARD)
-				pointerWorldPosition = transform.position + transform.forward.normalized * pointerDistance;
-			if (drawMode == DrawMode.UPWARD)
-				pointerWorldPosition = transform.position + transform.up.normalized * pointerDistance;
+			if (Time.unscaledTime - colorFlickerTime >= 0.5f)
+			{
+				colorFlickerTime = Time.unscaledTime;
+				colorFactor = (colorFactor != Color.white) ? colorFactor = Color.white : colorFactor = Color.black;
+				DEBUG("Color: " + colorFactor.ToString());
+			}
 		}
 
-		DrawRingRoll(calcRingWidth + calcInnerCircleRadius, calcInnerCircleRadius, pointerFrameOffset, isHovering);
+		UpdatePointerDiameter();
+		if (pointerMaterialInstance != null)
+		{
+			pointerMaterialInstance.renderQueue = this.PointerRenderQueue;
+			pointerMaterialInstance.SetColor("_Color", colorFactor);
+			pointerMaterialInstance.SetFloat("_useTexture", this.UseTexture ? 1.0f : 0.0f);
+			pointerMaterialInstance.SetFloat("_OuterDiameter", pointerOuterDiameter);
+			pointerMaterialInstance.SetFloat("_DistanceInMeters", this.PointerDistanceInMeters);
+		}
+		else
+		{
+			if (Log.gpl.Print)
+				DEBUG("Update() Pointer material is null!!");
+		}
+
+		if (Log.gpl.Print)
+		{
+			DEBUG("Update() " + gameObject.name
+				+ " is " + (this.ShowPointer ? "shown" : "hidden")
+				+ ", pointer color: " + colorFactor
+				+ ", use texture: " + this.UseTexture
+				+ ", pointer outer diameter: " + pointerOuterDiameter
+				+ ", pointer distance: " + this.PointerDistanceInMeters
+				+ ", render queue: " + this.PointerRenderQueue);
+		}
 	}
 	#endregion
 
-	private void SetPointerActive(bool active)
+	#region Pointer Activate
+	private void CreatePointerMesh()
 	{
-		pointerMeshRend.enabled = active;
-		if (pointerMeshRend.enabled)
+		int vertexCount = (reticleSegments + 1) * 2;
+		Vector3[] vertices = new Vector3[vertexCount];
+		for (int vi = 0, si = 0; si <= reticleSegments; si++)
 		{
-			pointerMeshRend.enabled = true;
-			pointerMeshRend.sortingOrder = this.PointerSortingOrder;
-			if (pointerMaterialInstance != null)
-			{
-				pointerMeshRend.material = pointerMaterialInstance;
-				pointerMeshRend.material.renderQueue = PointerRenderQueue;
-			}
-			// The MeshFilter's mesh is updated in DrawRingRoll(), not here.
+			float angle = (float)si / (float)reticleSegments * Mathf.PI * 2.0f;
+			float x = Mathf.Sin(angle);
+			float y = Mathf.Cos(angle);
+			vertices[vi++] = new Vector3(x, y, 0.0f);
+			vertices[vi++] = new Vector3(x, y, 1.0f);
 		}
+
+		int indicesCount = (reticleSegments + 1) * 6;
+		int[] indices = new int[indicesCount];
+		int vert = 0;
+		for (int ti = 0, si = 0; si < reticleSegments; si++)
+		{
+			indices[ti++] = vert + 1;
+			indices[ti++] = vert;
+			indices[ti++] = vert + 2;
+			indices[ti++] = vert + 1;
+			indices[ti++] = vert + 2;
+			indices[ti++] = vert + 3;
+
+			vert += 2;
+		}
+
+		DEBUG("CreatePointerMesh() Create Mesh and add MeshFilter component.");
+
+		mesh = new Mesh();
+		mesh.vertices = vertices;
+		mesh.triangles = indices;
+		mesh.name = "WaveVR_Mesh_Q";
+		mesh.RecalculateBounds();
 	}
 
-	private const int VERTEX_COUNT = 400;		// 100 percents * 2 + 2, ex: 80% ring -> 80 * 2 + 2
-	private Vector3[] ringVert = new Vector3[VERTEX_COUNT];
-	private Color[] ringColor = new Color[VERTEX_COUNT];
-	private const int TRIANGLE_COUNT = 100 * 6;	// 100 percents * 6, ex: 80% ring -> 80 * 6
-	private int[] ringTriangle = new int[TRIANGLE_COUNT];
-	private Vector2[] ringUv = new Vector2[VERTEX_COUNT];
-
-	private const float percentAngle = 3.6f;	// 100% = 100 * 3.6f = 360 degrees.
-
-	private int frameCount = 0, frameInterval = 20;
-	private int beginVertex = 0, endVertex = 20;
-	private void DrawRingRoll(float radius, float innerRadius, Vector3 offset, bool active)
+	private bool pointerInitialized = false;                     // true: the mesh of reticle is created, false: the mesh of reticle is not ready
+	private void InitializePointer()
 	{
-		frameCount++;
-		frameCount %= frameInterval;
-		if (frameCount == 0)
+		if (pointerInitialized)
 		{
-			beginVertex = endVertex;
-			endVertex += 20;
-		}
-		if (endVertex > VERTEX_COUNT / 2)
-		{
-			beginVertex = 0;
-			endVertex = 20;
+			INFO("InitializePointer() Pointer is already initialized.");
+			return;
 		}
 
-		// vertices and colors
-		float start_angle = 90;				// Start angle of drawing ring.
-		for (int i = 0; i < VERTEX_COUNT; i += 2)
+		if (this.UseTexture == false)
 		{
-			float radian_cur = start_angle * Mathf.Deg2Rad;
-			float cosA = Mathf.Cos (radian_cur);
-			float sinA = Mathf.Sin (radian_cur);
+			colorFlickerTime = Time.unscaledTime;
+			CreatePointerMesh();
+			DEBUG("InitializePointer() Create a mesh. ( WaveVR_Mesh_Q mesh )");
+		}
+		else
+		{
+			DEBUG("InitializePointer() Use default mesh. ( CtrlQuadPointer mesh )");
+		}
 
-			if (drawMode == DrawMode.FORWARD)
+		meshFilter.mesh = mesh;
+
+		if (pointerMaterialInstance != null)
+		{
+			if (this.UseDefaultTexture || (null == this.CustomTexture))
 			{
-				ringVert [i].x = offset.x + radius * cosA;
-				ringVert [i].y = offset.y + radius * sinA;
-				ringVert [i].z = offset.z;
+				DEBUG("InitializePointer() Use default texture.");
+				pointerMaterialInstance.mainTexture = m_WhitePointerTexture;
+				pointerMaterialInstance.SetTexture("_MainTex", m_WhitePointerTexture);
 			}
-
-			if (drawMode == DrawMode.UPWARD)
+			else
 			{
-				ringVert [i].x = offset.x + radius * cosA;
-				ringVert [i].y = offset.y;
-				ringVert [i].z = offset.z + radius * sinA;
+				DEBUG("InitializePointer() Use custom texture.");
+				pointerMaterialInstance.mainTexture = this.CustomTexture;
+				pointerMaterialInstance.SetTexture("_MainTex", this.CustomTexture);
 			}
-
-			ringColor [i] = (active && (i > beginVertex && i < endVertex)) ? this.ProgressColor : this.PointerColor;
-
-			if (drawMode == DrawMode.FORWARD)
-			{
-				ringVert [i + 1].x = offset.x + innerRadius * cosA;
-				ringVert [i + 1].y = offset.y + innerRadius * sinA;
-				ringVert [i + 1].z = offset.z;
-			}
-
-			if (drawMode == DrawMode.UPWARD)
-			{
-				ringVert [i + 1].x = offset.x + innerRadius * cosA;
-				ringVert [i + 1].y = offset.y;
-				ringVert [i + 1].z = offset.z + innerRadius * sinA;
-			}
-
-			ringColor [i + 1] = (active && (i > beginVertex && i < endVertex)) ? this.ProgressColor : this.PointerColor;
-
-			start_angle -= percentAngle;
 		}
-
-		// triangles
-		for (int i = 0, vi = 0; i < TRIANGLE_COUNT; i += 6,vi += 2)
+		else
 		{
-			ringTriangle [i] = vi;
-			ringTriangle [i + 1] = vi + 3;
-			ringTriangle [i + 2] = vi + 1;
-
-			ringTriangle [i + 3] = vi + 2;
-			ringTriangle [i + 4] = vi + 3;
-			ringTriangle [i + 5] = vi;
+			Log.e(LOG_TAG, "InitializePointer() Pointer material is null!!", true);
 		}
 
-		// uv
-		for (int i = 0; i < VERTEX_COUNT; i++)
-		{
-			ringUv [i].x = ringVert [i].x / radius / 2 + 0.5f;
-			ringUv [i].y = ringVert [i].z / radius / 2 + 0.5f;
-		}
+		m_Renderer = GetComponent<Renderer>();
+		m_Renderer.material = pointerMaterialInstance;
+		m_Renderer.sortingOrder = 32767;
 
-		mMesh.Clear ();
-
-		mMesh.vertices = ringVert;
-		mMesh.colors = ringColor;
-		mMesh.triangles = ringTriangle;
-		mMesh.uv = ringUv;
-		pointerMeshFilter.mesh = mMesh;
+		pointerInitialized = true;
 	}
 
-	#region Export Functions
+	private void ActivatePointer(bool show)
+	{
+		if (!pointerInitialized)
+			InitializePointer();
+
+		if (m_Renderer.enabled != show)
+		{
+			m_Renderer.enabled = show;
+			DEBUG("ActivatePointer() " + m_Renderer.enabled);
+		}
+	}
+	#endregion
+
+	#region Pointer Data
 	public Vector3 GetPointerPosition()
 	{
 		return pointerWorldPosition;
 	}
 
-	public void OnHover(bool hovering, Vector3 intersecPosition)
+	public void OnPointerEnter(GameObject target, Vector3 intersectionPosition, bool isInteractive)
 	{
-		pointerOffset = intersecPosition;
-		OnHover (hovering);
+		this.ShowPointer = true;
+		if (isInteractive)
+			SetPointerTarget(intersectionPosition, isInteractive);
 	}
 
-	public void OnHover(bool hovering)
+	public void OnPointerExit(GameObject target)
 	{
-		isHovering = hovering;
+		this.ShowPointer = false;
+		//DEBUG("OnPointerExit() " + (target != null ? target.name : "null"));
+	}
+
+	public void SetEffectivePointer(bool effective)
+	{
+		if (!effective)
+		{
+			pointerMaterialInstance.mainTexture = m_WhitePointerTexture;
+			pointerMaterialInstance.SetTexture("_MainTex", m_WhitePointerTexture);
+		}
+		else
+		{
+			pointerMaterialInstance.mainTexture = m_BluePointerTexture;
+			pointerMaterialInstance.SetTexture("_MainTex", m_BluePointerTexture);
+		}
+	}
+
+	private void SetPointerTarget(Vector3 target, bool interactive)
+	{
+		Vector3 targetLocalPosition = transform.InverseTransformPoint(target);
+		this.PointerDistanceInMeters = Mathf.Clamp(targetLocalPosition.z, pointerDistanceMin, pointerDistanceMax);
+	}
+
+	private void UpdatePointerDiameter()
+	{
+		pointerOuterDiameter = PointerOuterDiameterMin + ((this.PointerDistanceInMeters - 1) * pointerGrowthMultiple);
 	}
 	#endregion
 }

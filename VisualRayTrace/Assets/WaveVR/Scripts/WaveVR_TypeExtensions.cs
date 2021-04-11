@@ -55,7 +55,7 @@ namespace wvr.TypeExtensions
 				case WVR_InputId.WVR_InputId_Alias1_DPad_Down: return "DPad_Down";
 				case WVR_InputId.WVR_InputId_Alias1_Volume_Up: return "Volume_Up";
 				case WVR_InputId.WVR_InputId_Alias1_Volume_Down: return "Volume_Down";
-				case WVR_InputId.WVR_InputId_Alias1_Digital_Trigger: return "Digital_Trigger";
+				case WVR_InputId.WVR_InputId_Alias1_Bumper: return "Bumper";
 				case WVR_InputId.WVR_InputId_Alias1_Back: return "Back";
 				case WVR_InputId.WVR_InputId_Alias1_Enter: return "Enter";
 				case WVR_InputId.WVR_InputId_Alias1_Touchpad: return "Touchpad";
