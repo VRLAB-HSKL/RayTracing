@@ -327,7 +327,7 @@ namespace HTC.UnityPlugin.VRModuleManagement
                 new WVR_InputAttribute_t() { id = WVR_InputId.WVR_InputId_Alias1_Touchpad, axis_type = WVR_AnalogType.WVR_AnalogType_2D, capability = analogCapability },
                 new WVR_InputAttribute_t() { id = WVR_InputId.WVR_InputId_Alias1_Thumbstick, axis_type = WVR_AnalogType.WVR_AnalogType_2D, capability = analogCapability },
 
-                new WVR_InputAttribute_t() { id = WVR_InputId.WVR_InputId_Alias1_Digital_Trigger, axis_type = WVR_AnalogType.WVR_AnalogType_1D, capability = analogCapability },
+                //new WVR_InputAttribute_t() { id = WVR_InputId.WVR_InputId_Alias1_Digital_Trigger, axis_type = WVR_AnalogType.WVR_AnalogType_1D, capability = analogCapability },
                 new WVR_InputAttribute_t() { id = WVR_InputId.WVR_InputId_Alias1_Trigger, axis_type = WVR_AnalogType.WVR_AnalogType_1D, capability = analogCapability },
             };
 
@@ -422,7 +422,7 @@ namespace HTC.UnityPlugin.VRModuleManagement
         private void UpdateDeviceInput(uint deviceIndex, WaveVR_Controller.Device deviceInput)
         {
 #if VIU_WAVEVR_2_1_0_OR_NEWER
-            const WVR_InputId digitalTrggerBumpID = WVR_InputId.WVR_InputId_Alias1_Digital_Trigger;
+            const WVR_InputId digitalTrggerBumpID = WVR_InputId.WVR_InputId_Alias1_Bumper; //WVR_InputId_Alias1_Digital_Trigger;
 #else
             const WVR_InputId digitalTrggerBumpID = WVR_InputId.WVR_InputId_Alias1_Bumper;
 #endif

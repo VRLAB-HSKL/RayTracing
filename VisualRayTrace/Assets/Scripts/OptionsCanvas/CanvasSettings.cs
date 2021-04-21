@@ -209,10 +209,10 @@ public class CanvasSettings : MonoBehaviour
         SetMainState(new MaterialMenuState(canvas.gameObject, name));
     }
 
-    public void SwitchSamplersSubMenuState()
+    public void SwitchSamplersSubMenuState(int index)
     {
         //Debug.Log("ValueChanged: " + SamplerDropdown.value);
-        int index = SamplerDropdown.value;
+        //int index = SamplerDropdown.value;
 
         switch(index)
         {

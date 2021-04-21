@@ -185,3 +185,13 @@
 2021-02-04 16:07:39,834 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
 2021-02-04 16:07:39,898 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm,memfile:02041cf1-a9c6-439f-b76e-fdd4f7d8f12d,port:8492
 2021-02-04 16:28:30,294 [3] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
+2021-04-21 22:57:24,071 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-04-21 22:57:24,485 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1024,height:768,url:http://campusboard.hs-kl.de,memfile:d0f04f4c-974a-4072-8d77-d09ab58f3f8a,port:8886
+2021-04-21 22:57:36,915 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-04-21 22:57:36,985 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1280,height:720,url:http://test.webrtc.org,memfile:MainSharedMem,port:8885
+2021-04-21 22:57:37,286 [1] ERROR SharedPluginServer.Program [(null)] - CefRuntime return 0
+2021-04-21 22:57:39,726 [1] INFO  SharedPluginServer.Program [(null)] - ===============START================
+2021-04-21 22:57:39,784 [1] INFO  SharedPluginServer.Program [(null)] - Starting plugin, settings:width:1280,height:720,url:http://test.webrtc.org,memfile:MainSharedMem,port:8885
+2021-04-21 22:57:39,843 [1] ERROR SharedPluginServer.Program [(null)] - CefRuntime return 0
+2021-04-21 22:57:40,182 [1] INFO  SharedPluginServer.App [(null)] - Exiting by timer,timeout:10000
+2021-04-21 22:57:40,210 [1] INFO  SharedPluginServer.App [(null)] - ==============SHUTTING DOWN==========
