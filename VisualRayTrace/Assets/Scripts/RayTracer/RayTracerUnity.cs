@@ -24,6 +24,13 @@ using UnityEngine;
 /// </summary>
 public class RayTracerUnity : MonoBehaviour
 {
+
+    private HandRole ToggleRTHandRole = HandRole.RightHand;
+    private ControllerButton ToggleRTButton = ControllerButton.CapSenseGrip;
+
+    private ControllerButton ToggleControllerRayButton = ControllerButton.Bumper;
+
+
     #region Variables
 
     #region RayTracer
@@ -305,7 +312,7 @@ public class RayTracerUnity : MonoBehaviour
     void Update()
     {
         // Check for user input
-        if (ViveInput.GetPressDown(HandRole.RightHand, ControllerButton.Menu)) // && !isRaytracing)
+        if (ViveInput.GetPressDown(ToggleRTHandRole, ToggleRTButton)) // && !isRaytracing)
         {
             // If the raytracer is inactive initialize texture
             if (!isRaytracing && CurrentPixel[0] == 0 && CurrentPixel[1] == 0)
@@ -316,6 +323,9 @@ public class RayTracerUnity : MonoBehaviour
             // Toggle raytracing activity
             isRaytracing = !isRaytracing;
         }
+
+        
+
 
         // If raytracer is raytracing, i.e. has texure coordinates left, move to next iteration
         if (isRaytracing)

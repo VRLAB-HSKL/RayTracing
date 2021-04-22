@@ -2159,7 +2159,7 @@ RectTransform:
   - {fileID: 432126667}
   - {fileID: 1532874608}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -3434,103 +3434,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 212128926}
   m_CullTransparentMesh: 0
---- !u!1001 &214228300
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1000010987666016, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_Name
-      value: InworldBrowser
-      objectReference: {fileID: 0}
-    - target: {fileID: 1000010987666016, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1000012388221712, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_RootOrder
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.6459375
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.14999999
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.29250005
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -3.08
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.22
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 12.41
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0.00000014901161
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0.00000014901161
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 270
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 270
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000010952822568, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 89.99999
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013142423658, guid: 39bf41b66f565fa48b3db156956ceac1,
-        type: 3}
-      propertyPath: InitialURL
-      value: https://github.com/VRLAB-HSKL/RayTracing/blob/develop/VisualRayTrace/Assets/Resources/Samplers/HTML/RandomSampler.htm
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013142423658, guid: 39bf41b66f565fa48b3db156956ceac1,
-        type: 3}
-      propertyPath: MainCamera
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013142423658, guid: 39bf41b66f565fa48b3db156956ceac1,
-        type: 3}
-      propertyPath: EnableWebRTC
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013142423658, guid: 39bf41b66f565fa48b3db156956ceac1,
-        type: 3}
-      propertyPath: KeepUIVisible
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 39bf41b66f565fa48b3db156956ceac1, type: 3}
 --- !u!1 &218475988
 GameObject:
   m_ObjectHideFlags: 0
@@ -5568,6 +5471,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cb3370c18187bb444b240cfb08dcc02f, type: 3}
+--- !u!4 &302013132 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 404836, guid: cb3370c18187bb444b240cfb08dcc02f,
+    type: 3}
+  m_PrefabInstance: {fileID: 302013131}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &306856433
 GameObject:
   m_ObjectHideFlags: 0
@@ -6713,7 +6622,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &379869945
 GameObject:
@@ -7853,7 +7762,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &432126667
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11007,7 +10916,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &673672681
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11569,7 +11478,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!64 &714358010
 MeshCollider:
@@ -11658,10 +11567,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f753025abc16bb45bbc83939f863bfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  pivot: {fileID: 0}
+  target: {fileID: 1109622755}
+  pivot: {fileID: 302013132}
   fadeDuration: 0.3
-  m_reticleMaterial: {fileID: 0}
+  m_reticleMaterial: {fileID: 2100000, guid: 2ac8e8ac3e1a8fb45834a8fcc3168ca4, type: 2}
   teleportButton: 1
 --- !u!1 &717860771
 GameObject:
@@ -28383,7 +28292,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -37455,24 +37364,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a09a92a8b67d7db478e44160fa5f5d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Width: 1024
-  Height: 768
-  MemoryFile: MainSharedMem
-  RandomMemoryFile: 1
-  Port: 8885
-  RandomPort: 1
-  InitialURL: http://campusboard.hs-kl.de
-  EnableWebRTC: 0
-  JSInitializationCode: 
-  mainUIPanel: {fileID: 0}
-  KeepUIVisible: 0
-  MainCamera: {fileID: 0}
-  DialogCanvas: {fileID: 1723813272}
-  DialogText: {fileID: 0}
-  OkButton: {fileID: 0}
-  YesButton: {fileID: 0}
-  NoButton: {fileID: 0}
-  DialogPrompt: {fileID: 0}
 --- !u!1 &1724934333
 GameObject:
   m_ObjectHideFlags: 0
