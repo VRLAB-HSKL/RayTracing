@@ -1,0 +1,3 @@
+Ein Random Sampler generiert zufällige x und y Koordinaten.
+
+Betrachtet man die Koordinaten anhand der x- bzw. y-Achse direkt, so erkennt man, das dieses Verfahren zu Lücken bzw. Klumpen von Punkten führen kann.

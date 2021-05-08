@@ -8,4 +8,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/VisualRayTrace.unity
     guid: 2409eb93bb597f046996386f9b5cfa1a
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 749d6d4e21c59f548b21ddd7c998210b,
+      type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 9d61aca1225ae9347994296600cd671c,
+      type: 2}

@@ -19,9 +19,9 @@ public class UpdateSphereMaterial : MonoBehaviour
         // ToDo: Set new color on collision
         newColor = Random.ColorHSV();
 
-        if (Input.GetKeyUp("t"))
-        {
-            gameObject.GetComponent<Renderer>().material.color = newColor;
-        }        
+        //if (Input.GetKeyUp("t"))
+        //{
+        //    gameObject.GetComponent<Renderer>().material.color = newColor;
+        //}        
     }
 }
