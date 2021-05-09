@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR;
 
 
 /// <summary>
@@ -304,14 +305,31 @@ public class RayTracerUnity : MonoBehaviour
                               RayTraceUtility.GlobalWorld.BackgroundColor);
 
         RayTraceUtility.Raycast_Distance = RayTrace_Range;
+
+        leftHandDevices = new List<InputDevice>();
+        rightHandDevices = new List<InputDevice>();
+
+        //InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Left, leftHandDevices);
+        //InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Right, rightHandDevices);
+        var devicesList = new List<InputDevice>();
+        InputDevices.GetDevices(devicesList);
+
+        Debug.Log("Listing connected devices...");
+        foreach (var dev in devicesList)
+        {
+            Debug.Log("Name: " + dev.name + ", Role: " + dev.role.ToString());
+        }
     }
+
+    List<InputDevice> leftHandDevices;
+    List<InputDevice> rightHandDevices;
 
     /// <summary>
     /// Update function called once per frame
     /// </summary>
     void Update()
     {
-        // Check for user input
+        // Check for user input      
         if (ViveInput.GetPressDown(ToggleRTHandRole, ToggleRTButton)) // && !isRaytracing)
         {
             // If the raytracer is inactive initialize texture

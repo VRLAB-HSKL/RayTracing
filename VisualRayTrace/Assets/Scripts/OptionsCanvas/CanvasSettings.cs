@@ -325,4 +325,15 @@ public class CanvasSettings : MonoBehaviour
     }
 
     #endregion Material Values
+
+
+    public void ExitApplication()
+    {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit ();
+#endif
+        
+    }
 }
