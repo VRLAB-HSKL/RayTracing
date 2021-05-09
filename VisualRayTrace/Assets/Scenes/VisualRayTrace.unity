@@ -27207,7 +27207,7 @@ MonoBehaviour:
   m_System: {fileID: 1257348546}
   m_MoveSpeed: 10
   m_EnableStrafe: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_GravityApplicationMode: 0
   m_ForwardSource: {fileID: 0}
   m_LeftHandMoveAction:
