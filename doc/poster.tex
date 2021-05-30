@@ -47,6 +47,9 @@
 
 \usepackage{multicol}
 
+\usepackage{caption}
+\usepackage{subcaption}
+
 \newcommand{\imagePath}{./figures}
 
 \graphicspath{{figures/}} % Location of the graphics files
@@ -155,16 +158,30 @@
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.49\linewidth]{duringProcess}
-        \includegraphics[width=0.49\linewidth]{duringProcessEyeView}
+        
+        \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{duringProcess}
+        \end{subfigure}%
+        \hfill%
+        \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{duringProcessEyeView}
+        \end{subfigure}
        \end{figure}
        
-     %\vspace{5px}
+     \vspace{1px}
+	%\hfill
 	
 	\begin{figure}
-		\centering
-        \includegraphics[width=0.49\linewidth]{vorgang}
-        \includegraphics[height=17.35cm]{duringProcessHitObjects}            	   
+	%\centering
+        
+        \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{duringProcessHitObjects}
+        \end{subfigure}%
+        \hfill%
+        \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{vorgang}            	   
+    	\end{subfigure}
+    
     \end{figure}
 
 %\begin{itemize}
@@ -196,7 +213,7 @@
     %\vspace{140px}
     \begin{figure}
     	\center
-        \includegraphics[width=0.98\textwidth]{sphereCreating}
+        \includegraphics[height=16.5cm]{sphereCreating}
         %\hspace*{0.25cm}
         %\includegraphics[width=0.45\textwidth]{vorgang}
         %\caption{Visualisierung eines Raytracing-Vorgangs \cite{Suffern}}
@@ -225,21 +242,21 @@
 
 
 
-\begin{column}{.03\textwidth}\end{column} % Empty spacer column
+\begin{column}{.025\textwidth}\end{column} % Empty spacer column
 
 \begin{column}{.465\textwidth}
 
 \begin{block}{Einstellungen}
    \begin{figure}
        %\includegraphics[width=0.95\linewidth]{dxrWorkspace} %\textwidth]{dxrWorkspace}
-   	  \includegraphics[width=1\textwidth]{settings}
+   	  \includegraphics[height=16.5cm]{settings}
    	  %\hspace*{0.25cm}
        %\includegraphics[width=0.49\textwidth]{settingsMaterials}%\hspace*{0.25cm}
        %\includegraphics[height=13.5cm]{hmd}
    	  %\includegraphics[height=13.5cm]{CAVE_Crayoland}
    \end{figure}
    
-   \vspace{10px}
+  % \vspace{10px}
    
    
    
