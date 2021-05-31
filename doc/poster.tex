@@ -29,7 +29,7 @@
 
 \usepackage{wrapfig}
 
-\usepackage[orientation=portrait, size=a0, scale=1.4]{beamerposter}
+\usepackage[orientation=portrait, size=a0, scale=1.2]{beamerposter}
 
 \usetheme{I6pd2} % Use the I6pd2 theme supplied with this template
 
@@ -49,6 +49,10 @@
 
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage[misc]{ifsym}
+\usepackage[export]{adjustbox}
+\usepackage{fontawesome}
 
 \newcommand{\imagePath}{./figures}
 
@@ -65,12 +69,14 @@
 
 \author{Benedict S\"arota}
 
+
+
 \institute{Fachbereich Informatik und Mikrosystemtechnik}
 %----------------------------------------------------------------------------------------
 
 \begin{document}
 
-\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
+\addtobeamertemplate{block end}{}{\vspace*{1ex}} % White space under blocks
 
 \begin{frame}[t] % The whole poster is enclosed in one beamer frame
 
@@ -86,7 +92,7 @@
     \begin{figure}
     	\center
         %\includegraphics[width=0.47\linewidth]{whitted01}\hspace*{0.25cm}
-        \includegraphics[width=0.875\linewidth]{whitted02}
+        \includegraphics[width=0.775\linewidth]{whitted02}
         %\caption{Visualisierung eines Raytracing-Vorgangs \cite{Suffern}}
     \end{figure}
     
@@ -206,7 +212,7 @@
 
 \begin{column}{.025\textwidth}\end{column} % Empty spacer column
 
-\begin{column}{.465\textwidth} % The first column
+\begin{column}{.4675\textwidth} % The first column
 
 
 \begin{block}{Materialien}
@@ -242,7 +248,7 @@
 
 
 
-\begin{column}{.025\textwidth}\end{column} % Empty spacer column
+\begin{column}{.02\textwidth}\end{column} % Empty spacer column
 
 \begin{column}{.465\textwidth}
 
@@ -286,19 +292,56 @@
 
 
 
+
+
 %----------------------------------------------------------------------------------------
 
+%\hrule
 
 
 
 
+
+\begin{columns}
+
+\begin{column}{0.02\textwidth}\end{column} % Empty spacer column
+
+\begin{column}{0.15\textwidth}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=1.5, left]{qrCode}
+\end{figure}
+\end{column}
+
+\begin{column}{0.01\textwidth}\end{column} % Empty spacer column
+
+\begin{column}{0.325\textwidth}
+\begin{itemize}
+\item[] \textbf{\large Virtual Science Laboratories}
+\item[] \faGlobe\ \href{https://webhome.hs-kl.de/~brill/}{https://webhome.hs-kl.de/~brill/} 
+\item[] \Letter\ \href{benedict.saerota@hs-kl.de}{benedict.saerota@hs-kl.de}
+\item[] \Letter\ \href{manfred.brill@hs-kl.de}{manfred.brill@hs-kl.de}
+\item[]
+\item[] \includegraphics[scale=0.475]{icon/githubIcon} \href{https://github.com/VRLAB-HSKL/RayTracing}{http://github.com/VRLAB-HSKL/RayTracing}
+
+\end{itemize}
+\end{column}
+
+%\begin{column}{0.025\textwidth}\end{column} % Empty spacer column
+
+\begin{column}{0.465\textwidth}
 \nocite{*}
-
 \begin{block}{Literatur}
-  \bibliographystyle{geralpha}
-  \nocite{pries:19}
-  \bibliography{sample}
+ \bibliographystyle{geralpha}
+ \nocite{pries:19}
+ \bibliography{bib/sample}
 \end{block}
+\end{column}
+
+\begin{column}{0.025\textwidth}\end{column} % Empty spacer column
+
+
+\end{columns}
 
 \end{frame} % End of the enclosing frame
 
