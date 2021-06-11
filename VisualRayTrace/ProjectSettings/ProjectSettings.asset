@@ -438,9 +438,9 @@ PlayerSettings:
   - m_BuildTarget: Android
     m_Enabled: 0
     m_Devices: []
-  openGLRequireES31: 0
-  openGLRequireES31AEP: 0
-  openGLRequireES32: 0
+  openGLRequireES31: 1
+  openGLRequireES31AEP: 1
+  openGLRequireES32: 1
   m_TemplateCustomTags: {}
   mobileMTRendering:
     Android: 1
