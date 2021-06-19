@@ -18,3 +18,4 @@ MonoBehaviour:
   - VirtualRealitySupportedwithOculus
   - VirtualRealitySupportedwithOpenVR
   - VirtualRealitySupportedwithWindowsXR
+  - GPUSkinning

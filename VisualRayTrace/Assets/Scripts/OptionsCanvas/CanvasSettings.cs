@@ -45,7 +45,7 @@ public class CanvasSettings : MonoBehaviour
     /// <summary>
     /// Distance between view origin and canvas position
     /// </summary>
-    private float zAxisOffset = 3f;
+    //private float zAxisOffset = 3f;
 
     private AbstractState _currentMainState;
 
