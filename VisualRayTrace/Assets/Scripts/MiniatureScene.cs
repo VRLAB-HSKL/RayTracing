@@ -19,13 +19,14 @@ public class MiniatureScene : MonoBehaviour
     [Range(0.01f, 1f)]
     public float TableScale = 0.25f;
 
-    public Vector3 CustomOffset = Vector3.zero;
+    public Vector3 CustomTableOffset = Vector3.zero;
     
 
     [Header("Hand Preview")]
     [Range(0.01f, 1f)]
     public float HandScale = 0.025f;
-    
+
+    public Vector3 CustomHandOffset = Vector3.zero;
 
     [Header("Scene Transition")]
     public string TargetSceneName = "MiniWorld";
@@ -60,7 +61,7 @@ public class MiniatureScene : MonoBehaviour
         // ToDo: Generalize this for other kinds of rendering components
         MeshRenderer tableRenderer = PreviewTable.GetComponent<MeshRenderer>();
         newPos.y += (tableRenderer.bounds.size.y * 0.5f) + 0.01f;
-        newPos += CustomOffset;
+        newPos += CustomTableOffset;
         PreviewRoot.transform.position = newPos;
 
         // Scale preview
@@ -119,6 +120,7 @@ public class MiniatureScene : MonoBehaviour
         Vector3 vrOrgPos = GameObject.Find("VR_Origin").transform.position;
         Vector3 offset = pose1.pos;
         offset.y += 0.05f;
+        offset += CustomHandOffset;
         PreviewRoot.transform.position = vrOrgPos + offset;
         
         // Apply controller rotation to scene preview
@@ -167,19 +169,40 @@ public class MiniatureScene : MonoBehaviour
             if (obj != null)
                 Destroy(telePort);
 
+
+
+
             // Freeze rigidbody to prevent rolling of preview spheres
-            if(obj.TryGetComponent<Rigidbody>(out Rigidbody bod))
+            var rigidBodies = obj.GetComponentsInChildren<Rigidbody>();
+            //for(int r = 0; r < rigidBodies.Length; r++)
+            //{
+                
+            //}
+
+            foreach(var rb in rigidBodies)
             {
-                //Destroy(bod);
-                bod.constraints = RigidbodyConstraints.FreezeAll;
-                bod.velocity = Vector3.zero;
+                Destroy(rb);
             }
 
+
+            //if(obj.TryGetComponent<Rigidbody>(out Rigidbody bod))
+            //{
+            //    //Destroy(bod);
+            //    bod.constraints = RigidbodyConstraints.FreezeAll;
+            //    bod.velocity = Vector3.zero;
+            //}
+
             // Remove button collision script
-            if(obj.TryGetComponent<ControlRTButtonHitCollision>(out ControlRTButtonHitCollision ct))
+            var customScrips = obj.GetComponentsInChildren<ControlRTButtonHitCollision>();
+            foreach(var cst in customScrips)
             {
-                Destroy(ct);
+                Destroy(cst);
             }
+            
+            //if(obj.TryGetComponent<ControlRTButtonHitCollision>(out ControlRTButtonHitCollision ct))
+            //{
+            //    Destroy(ct);
+            //}
 
             //Rigidbody rigB = obj.AddComponent<Rigidbody>();
             //rigB.constraints = RigidbodyConstraints.FreezeAll;            
@@ -228,14 +251,14 @@ public class MiniatureScene : MonoBehaviour
     private IEnumerator AsyncTravelToMiniWorld()
     {
         Scene currentScene = SceneManager.GetActiveScene();
-        AsyncOperation newSceneLoaded = SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+        AsyncOperation newSceneLoaded = SceneManager.LoadSceneAsync(TargetSceneName, LoadSceneMode.Additive);
 
         while (!newSceneLoaded.isDone)
         {
             yield return null;
         }
 
-        Scene newScene = SceneManager.GetSceneByBuildIndex(1);
+        Scene newScene = SceneManager.GetSceneByName(TargetSceneName);
         SceneManager.MoveGameObjectToScene(SourceObjectRoot, newScene);
 
         AsyncOperation unloaded = SceneManager.UnloadSceneAsync(currentScene);

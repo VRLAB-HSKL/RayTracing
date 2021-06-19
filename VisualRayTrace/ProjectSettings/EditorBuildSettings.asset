@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/VisualRayTrace.unity
     guid: 2409eb93bb597f046996386f9b5cfa1a
+  - enabled: 1
+    path: Assets/Scenes/MiniWorld.unity
+    guid: 1881cdda796edbc44b0da1fa91d7b667
   m_configObjects:
     com.htc.upm.wave.xrsdk.xrsettings: {fileID: 11400000, guid: fbbde5cb48bf68d4b9bd9919f97116ff,
       type: 2}
