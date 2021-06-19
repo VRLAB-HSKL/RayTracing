@@ -28,7 +28,7 @@ public class RayTracerUnity : MonoBehaviour
     private HandRole ToggleRTHandRole = HandRole.RightHand;
     private ControllerButton ToggleRTButton = ControllerButton.CapSenseGrip;
 
-    private ControllerButton ToggleControllerRayButton = ControllerButton.Bumper;
+    //private ControllerButton ToggleControllerRayButton = ControllerButton.Bumper;
 
 
     #region Variables

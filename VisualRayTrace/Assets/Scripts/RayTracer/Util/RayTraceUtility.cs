@@ -109,7 +109,7 @@ public static class RayTraceUtility
     /// <summary>
     /// Static metal fuzz factor
     /// </summary>
-    private static float metalFuzz = 0.3f;
+    //private static float metalFuzz = 0.3f;
 
 
     /// <summary>

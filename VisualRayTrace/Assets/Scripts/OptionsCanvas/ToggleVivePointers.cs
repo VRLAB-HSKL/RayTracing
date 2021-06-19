@@ -15,7 +15,7 @@ public class ToggleVivePointers : MonoBehaviour
     GameObject vivePointers;
 
     ControllerButton ToggleButton = ControllerButton.Menu;
-    float elapsedTime = 0f;
+    //float elapsedTime = 0f;
 
     void Start()
     {
