@@ -1,5 +1,5 @@
 # gitignore for Unity projects
-# Keine ignores fÃ¼r VR-Assets wie Steam
+# Keine ignores für VR-Assets wie Steam
 
 # Vi and VIM Backup Files
 *~
@@ -102,3 +102,51 @@ ExportedObj/
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+
+# gitignores für latex
+
+# directories for pdf-files
+**/[Ff]ertig/
+**/[Aa]rchiv*/
+**/*.pdf
+**/*.synctex
+**/*.synctex(busy)
+
+# winedt project files
+**/*.bak
+**/*.prj
+
+**//installs/
+**/*.aux
+**/*.glo
+**/*.idx
+**/*.log
+**/*.toc
+**/*.ist
+**/*.acn
+**/*.acr
+**/*.alg
+**/*.bbl
+**/*.blg
+**/*.dvi
+**/*.glg
+**/*.gls
+**/*.ilg
+**/*.ind
+**/*.lof
+**/*.lot
+**/*.maf
+**/*.mtc
+**/*.mtc1
+**/*.out
+**/*.nav
+**/*.smn
+**/*.snm
+**/*.out
+**/*.ps
+**/*.synctex
+**/*.synctex.gz
+**/*.vrb
+
+# vi backups
+**/*~
