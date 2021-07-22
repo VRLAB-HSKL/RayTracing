@@ -25,17 +25,12 @@
 %----------------------------------------------------------------------------------------
 \documentclass[final,hyperref={pdfpagelabels=false}]{beamer}
 
-\usepackage{todo}
-
 \usepackage{wrapfig}
-
 \usepackage[orientation=portrait, size=a0, scale=1.2]{beamerposter}
-
-\usetheme{I6pd2} % Use the I6pd2 theme supplied with this template
+\usetheme{I6pd2} % sty-file, verändert mit HS Logo und Box für Titel
 
 \usepackage[german]{babel}
 %\usepackage[english]{babel} % English language/hyphenation
-
 \usepackage{amsmath,amsthm,amssymb,latexsym}
 
 %\usepackage{times}\usefonttheme{professionalfonts}  % Uncomment to use Times as the main font
@@ -44,9 +39,7 @@
 \boldmath % Use bold for everything within the math environment
 
 \usepackage{booktabs} % Top and bottom rules for tables
-
 \usepackage{multicol}
-
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{hyperref}
@@ -54,15 +47,13 @@
 \usepackage[export]{adjustbox}
 \usepackage{fontawesome}
 
-\newcommand{\imagePath}{./figures}
-
 \graphicspath{{figures/}} % Location of the graphics files
 
 \usecaptiontemplate{\small\structure{\insertcaptionname~\insertcaptionnumber: }\insertcaption}
  % A fix for figure numbering
 
 %----------------------------------------------------------------------------------------
-%   TITLE SECTION
+%  Titel
 \title{\huge Visual$\:$Raytrace: An Immersive Learning Application}
 \author{Manfred Brill, Benedict S\"arota}
 \institute{Department of Computer Science and Microsystems Technology\\University of Applied Sciences Kaiserslautern}
@@ -74,10 +65,12 @@
 
 \begin{frame}[t] % The whole poster is enclosed in one beamer frame
 
+\vspace*{0.75cm}
+
 \begin{columns}[t] % Spalten für den ersten Teil
 \begin{column}{.025\textwidth}\end{column} % Empty spacer column
 
-\begin{column}{.465\textwidth} % Das erste mit einem Rraytracer gerenderte Bild
+\begin{column}{.465\textwidth} % Das erste mit einem Raytracer gerenderte Bild
 \begin{block}{Whitted Raytracing}
     \begin{figure}
     	\centering
@@ -115,7 +108,7 @@
 \begin{column}{0.465\textwidth} % Text zu immersive learning
 \begin{block}{Immersive Learning}
     \vspace{2.2cm}
-    
+
    \begin{itemize}
    \item Raytracing is one of the major topics in computer graphics classes.
    \item Students have to implement their own version of a working raytracer.
@@ -124,7 +117,7 @@
    \item Key for the successful implementation of a raytracer by the students: develop a high spatial imagination.
    \item The immersive learning application \textbf{Visual Raytrace} supports the transfer from 3D space
    to a programming language and deepens the understanding of the basic concepts of a raytracer.
-       
+
        \vspace{1.55cm}$\:$
    \end{itemize}
 
@@ -152,32 +145,29 @@
         \includegraphics[width=0.95\linewidth]{settings}
     \end{figure}
 \end{block}
-
 \end{column}
-
-
 \begin{column}{.025\textwidth}\end{column} % Empty spacer column
-\end{columns} 
+\end{columns}
 
-\vspace*{2.0cm}
+\vspace*{1.25cm}
 
-% QR-Code, Literaturverzeichnis
+% QR-Code, Literaturverzeichnis 
 \begin{columns}[t]
 
-%\begin{column}{0.02\textwidth}\end{column} % Empty spacer column
 \vspace*{0.2cm}
 
 \begin{column}{0.15\textwidth}
 
-
-
 \begin{figure}[h]
+
+\vspace*{1.0cm}
+
 \centering
 \includegraphics[scale=1.25]{qrCode}
 \end{figure}
 \end{column}
 
-%\begin{column}{0.025\textwidth}\end{column} % Empty spacer column
+\begin{column}{0.025\textwidth}\end{column} % Empty spacer column
 
 \begin{column}{0.3\textwidth}
 \vspace*{3.0cm}
@@ -185,7 +175,7 @@
 \item[] \Letter\ \href{benedict.saerota@hs-kl.de}{benedict.saerota@hs-kl.de}
 \item[] \Letter\ \href{manfred.brill@hs-kl.de}{manfred.brill@hs-kl.de}
 \item[]
-\item[] \includegraphics[scale=0.45]{icon/githubIcon} \href{https://github.com/VRLAB-HSKL/RayTracing}{http://github.com/VRLAB-HSKL/RayTracing}
+\item[] \includegraphics[scale=0.75]{icon/githubIcon} \href{https://github.com/VRLAB-HSKL/RayTracing}{http://github.com/VRLAB-HSKL/RayTracing}
 \end{itemize}
 \end{column}
 
