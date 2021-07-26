@@ -52,8 +52,8 @@ In figure \ref{intro:whitted} we find one of the famous pictures rendered by Whi
         \caption{\label{intro:whitted} Image rendered by Turner Whitted \cite{checkerSpheres}}
     \end{center}
 \end{figure}
-Usually students in a computer graphics class implement their version of such a renderer,
-after getting the theory in the class.
+Students in a computer graphics class usually implement their version of such a renderer
+after being taught the theory in the class.
 To achieve this they need to understand the basic concepts of computer graphics like coordinate systems,
 cameras, reflection models or texture mapping. To implement a raytracer or another 3D application the students have to
 develop strong visual thinking. Virtual reality applications provide joy of use and support the transfer
@@ -85,13 +85,13 @@ At the end the computed image can be saved for further investigation.
 \end{figure}
 The raytracing scene can either be defined in VR or can be read from a scene description file.
 Figure \ref{vray:materials} shows the interface for the interactive scene definition.
-New objects can be picked, one of the reflection models can be assigned and then the object
-is positioned in the raytracing scene.
+New objects can be picked, one of the reflection models can be assigned and the object
+is then positioned in the raytracing scene.
 The options for the raytracer can also be changed in the immersive environment.
 %
 \section{Future Work}
 We plan to implement a change of scenes so the users can dive into the raytracing scene
-and inspect the rendered scene or details of the rendering process..
+and inspect the rendered scene or details of the rendering process.
 We are working on builds for Google Cardboard, Oculus Android,
 OpenXR and WebXR to support as many platforms as possible.
 
@@ -102,10 +102,9 @@ The results of this evaluation will help us to improve the usability and joy of 
 We plan to use the immersive learning application in the next computer graphics class in our department
 in summer 2022. The VR application will open up new ways of teaching \cite{ganovelli_08, vitsas_20}.
 To support this we will transfer the C\# code for the raytracer to its own repository, so the raytracing code
-can be used stand-alone in the class.
+can also be used stand-alone in the class.
 
 %set appropriate bib style
 \VRARsetbibstyle
 \bibliography{paper}
-
 \end{document}
