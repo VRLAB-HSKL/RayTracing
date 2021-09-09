@@ -8,7 +8,7 @@ Raytracing ist eine populäre Einstiegsapplikation in Vorlesungen der Computergr
 
 Um diesen Prozess der Wissensübermittlung zu unterstützen und u.U. sogar ein weiteres Verständnis über die reine Mathematik hinaus zu erreichen wurde die VR Applikation "VisualRaytrace" konzeptioniert. Mithilfe der Unity Engine und dem Plugin "Vive Input Utility" wurde ein Prototyp implementiert. In diesem Prototyp wurde eine 3D Szene geschaffen, in der ein Raytracing Prozess beobachtet und kontrolliert werden kann.
 
-
+![Screenshot](https://seafile.rlp.net/f/4a1b21c989674d1090c5/?dl=1)
 
 
 
