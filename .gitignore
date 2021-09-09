@@ -10,18 +10,18 @@ VisualRayTrace/**/Library/*
 VisualRayTrace/**/obj/*
 VisualRayTrace/**/ProjectSettings/*
 VisualRayTrace/**/Logs/*
-VisualRayTrace/**/Plugins/*
 
 # Assets wie MiddleVR, Steam, VRTK oder GitHub
-# Aktuell gehen wir davon aus, dass wir dies rekonstruieren k�nnen.
+# Aktuell gehen wir davon aus, dass wir dies rekonstruieren können.
 # Wenn wir diese Verzeichnisse jedes mal in Git schreiben wird das repo
 # redundante Informationen enthalten, was vermieden werden soll.
-VisualRayTrace/**/Assets/MiddleVR/**/*
-VisualRayTrace/**/Assets/GoogleVR/**/*
-VisualRayTrace/**/Assets/WaveVR/**/*
+VisualRayTrace/**/Assets/MiddleVR/*
+VisualRayTrace/**/Assets/SteamVR/*
+VisualRayTrace/**/Assets/GoogleVR/*
 VisualRayTrace/**/Assets/SteamVR_Input/**/*
-VisualRayTrace/**/Assets/HTC.UnityPlugin/**/*
-VisualRayTrace/**/Assets/HTC.UnityPlugin/ViveInputUtility/**/*
+VisualRayTrace/**/Assets/HTC.UnityPlugin/*
+VisualRayTrace/**/Assets/HTC.UnityPlugin.meta
+VisualRayTrace/**/Assets/HTC.UnityPlugin/ViveInputUtility/*
 # MBU package ignorieren
 VisualRayTrace/**/Assets/MBU/**/*
 VisualRayTrace/**/Assets/MBU/
@@ -35,7 +35,9 @@ VisualRayTrace/**/Assets/MiddleVR.meta
 VisualRayTrace/**/Assets/GoogleVR.meta
 VisualRayTrace/**/Assets/SteamVR.meta
 VisualRayTrace/**/Assets/HTC.UnityPlugin.meta
-VisualRayTrace/**/Assets/WaveVR.meta
+# Wave3D für Focus Plus ignorieren
+VisualRayTrace/**/Assets/WaveVR/**/*
+
 # Prerequisites
 *.d
 
