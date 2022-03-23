@@ -1,0 +1,6 @@
+# ignore for latex
+**/*.prj
+**/*.prj.*
+
+**/*.snm
+**/*.pdf
