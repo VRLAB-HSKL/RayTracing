@@ -1,38 +1,39 @@
 ﻿using HTC.UnityPlugin.ColliderEvent;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ControlRTButtonHitCollision : MonoBehaviour, IColliderEventHoverEnterHandler
+namespace Collision
 {
-    public GameObject RayTracer;
-
-    private RayTracerUnity _rt;
-
-    public enum RTOperation { Stop, Pause, Play }
-
-    public RTOperation Operation;
-
-    public void Start()
+    public class ControlRTButtonHitCollision : MonoBehaviour, IColliderEventHoverEnterHandler
     {
-        _rt = RayTracer.GetComponent<RayTracerUnity>();
-    }
+        public GameObject RayTracer;
 
-    public void OnColliderEventHoverEnter(ColliderHoverEventData eventData)
-    {
-switch(Operation)
+        private RayTracerUnity _rt;
+
+        public enum RTOperation { Stop, Pause, Play }
+
+        public RTOperation Operation;
+
+        public void Start()
         {
-            case RTOperation.Play:
-                _rt.SetIsRaytracing(true);
-                break;
+            _rt = RayTracer.GetComponent<RayTracerUnity>();
+        }
 
-            case RTOperation.Pause:
-                _rt.SetIsRaytracing(false);
-                break;
+        public void OnColliderEventHoverEnter(ColliderHoverEventData eventData)
+        {
+            switch(Operation)
+            {
+                case RTOperation.Play:
+                    _rt.SetIsRaytracing(true);
+                    break;
 
-            case RTOperation.Stop:
-                _rt.StopRaytracer();
-                break;            
+                case RTOperation.Pause:
+                    _rt.SetIsRaytracing(false);
+                    break;
+
+                case RTOperation.Stop:
+                    _rt.ResetRaytracer();//StopRaytracer();
+                    break;            
+            }
         }
     }
 }

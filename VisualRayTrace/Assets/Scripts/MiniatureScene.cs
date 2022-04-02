@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using HTC.UnityPlugin.Vive;
 using System;
+using Collision;
 
 public class MiniatureScene : MonoBehaviour
 {

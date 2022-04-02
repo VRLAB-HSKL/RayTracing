@@ -12,15 +12,15 @@ using UnityEngine;
 /// A lot of the functionality of the C++ implementation in the course is handled by Unity itself (camera position, casting of rays, etc.)
 /// so the unity engine is used to replace these functionalities. The actual raytracing and color calculation
 /// of pixels on the viewport was implemented as necessary to reproduce the image output of the course. Additional
-/// functionality (second screens, textures, gameobjects) have been added.
+/// functionality (second screens, textures, gameo bjects) have been added.
 /// 
 /// version 2:
 /// The software component was stripped of its ray tracing functionality and now uses an external architecture
 /// based on the book "Ray Tracing from the Ground Up" by Kevin Suffern. Using this new paradigm allows for
-/// the ray tracing functionality to be mangaged / expanded upon in a much simpler way, without having to refactor
+/// the ray tracing functionality to be managed / expanded upon in a much simpler way, without having to refactor
 /// this static script.
 /// 
-/// This script should be attached to the gameobject the rays shall originate from. 
+/// This script should be attached to the game object the rays shall originate from. 
 /// </summary>
 public class RayTracerUnity : MonoBehaviour
 {
@@ -39,7 +39,7 @@ public class RayTracerUnity : MonoBehaviour
     /// Boolean signaling if raytracer is currently actively calculation. 
     /// Since this raytracer is either raytracing or lying dormant, a simple boolean is enough (no FSM).
     /// </summary>
-    private bool isRaytracing = false;
+    private bool isRaytracing;
 
     /// <summary>
     /// Returns true if object is currently ray tracing
@@ -327,7 +327,7 @@ public class RayTracerUnity : MonoBehaviour
         
 
 
-        // If raytracer is raytracing, i.e. has texure coordinates left, move to next iteration
+        // If raytracer is raytracing, i.e. has texture coordinates left, move to next iteration
         if (isRaytracing)
         {
             for (int i = 0; i < 1; ++i)
@@ -388,13 +388,10 @@ public class RayTracerUnity : MonoBehaviour
 
         foreach (var obj in secondScreens)
         {
-            MeshRenderer rnd = obj.GetComponent<MeshRenderer>();
+            var rnd = obj.GetComponent<MeshRenderer>();
             rnd.material.mainTexture = _textureInfo.StreamTexture2D;
         }
     }
-
-
-
 
     /// <summary>
     /// Increment texture coordinate for next raytracing iteration.
@@ -405,11 +402,8 @@ public class RayTracerUnity : MonoBehaviour
     {
         // On last pixel, reset coordinates and set raytracer to inactive
 
-        //Debug.Log("CurrPixelGreater[" + _startPointSettings.GreaterCordIdx + "] = " + CurrentPixel[_startPointSettings.GreaterCordIdx]);
-        //Debug.Log("XResetValue = " + _startPointSettings.ResetXValue);
-        //Debug.Log("YResetValue = " + _startPointSettings.ResetYValue);
-
-        if (CurrentPixel[_startPointSettings.GreaterCordIdx] == (_startPointSettings.GreaterCordIdx == 0 ? _startPointSettings.ResetXValue : _startPointSettings.ResetYValue))
+        if (CurrentPixel[_startPointSettings.GreaterCordIdx] == (_startPointSettings.GreaterCordIdx == 0 ? 
+                _startPointSettings.ResetXValue : _startPointSettings.ResetYValue))
         {
             CurrentPixel[_startPointSettings.GreaterCordIdx] = _startPointSettings.InitXValue;
             CurrentPixel[_startPointSettings.LesserCordIdx] = _startPointSettings.InitYValue;
@@ -455,6 +449,7 @@ public class RayTracerUnity : MonoBehaviour
     /// </summary>
     public void ResetRaytracer()
     {
+        StopAllCoroutines();
         isRaytracing = false;
         CurrentPixel = new int[2] { 0, 0 };
         InitTexture();
@@ -468,7 +463,9 @@ public class RayTracerUnity : MonoBehaviour
         // Set active rendering texture
         RenderTexture.active = _textureInfo.Texture;
 
-        _textureInfo.StreamTexture2D.ReadPixels(new Rect(0, 0, _textureInfo.TextureDimension, _textureInfo.TextureDimension), 0, 0);
+        _textureInfo.StreamTexture2D.ReadPixels(
+            new Rect(0, 0, _textureInfo.TextureDimension, _textureInfo.TextureDimension),
+            0, 0);
 
         // Update colors array in texture by setting all pixel colors at once (faster than single SetPixel() call)
         // If this is too slow, consider using GetRawTextureData() instead

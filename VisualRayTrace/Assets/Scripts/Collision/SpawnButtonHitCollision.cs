@@ -1,55 +1,57 @@
 ﻿using HTC.UnityPlugin.ColliderEvent;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Script that creates a new prefab instance when an object collision occurs
-/// </summary>
-public class SpawnButtonHitCollision : MonoBehaviour, IColliderEventHoverEnterHandler
-{ 
+namespace Collision
+{
     /// <summary>
-    /// Prefab to be instantiated
+    /// Script that creates a new prefab instance when an object collision occurs
     /// </summary>
-    public GameObject preFab;
+    public class SpawnButtonHitCollision : MonoBehaviour, IColliderEventHoverEnterHandler
+    { 
+        /// <summary>
+        /// Prefab to be instantiated
+        /// </summary>
+        public GameObject preFab;
 
-    /// <summary>
-    /// Spawn point of prefab instances
-    /// </summary>
-    private Transform SphereSpawn;    
+        /// <summary>
+        /// Spawn point of prefab instances
+        /// </summary>
+        private Transform SphereSpawn;    
 
-    /// <summary>
-    /// Tag string to locate spawn point in scene
-    /// </summary>
-    private readonly string SpawnTag = "SphereSpawn";
+        /// <summary>
+        /// Tag string to locate spawn point in scene
+        /// </summary>
+        private readonly string SpawnTag = "SphereSpawn";
 
-    private float[] arr = new float[3] { -0.125f, 0.0f, 0.125f };
+        private float[] arr = new float[3] { -0.125f, 0.0f, 0.125f };
 
-    void Start()
-    {
-        SphereSpawn = GameObject.FindGameObjectWithTag(SpawnTag).transform;
+        void Start()
+        {
+            SphereSpawn = GameObject.FindGameObjectWithTag(SpawnTag).transform;
+        }
+
+        void OnCollisionEnter(UnityEngine.Collision colInfo)
+        {        
+            SpawnSphere();        
+        }
+
+
+        public void OnColliderEventHoverEnter(ColliderHoverEventData eventData)
+        {
+            SpawnSphere();
+        }
+
+        private void SpawnSphere()
+        {
+            // Spawn spheres below the game object and add small random offset for 
+            // x and z dimensions to prevent vertical sphere stacking        
+            var position = SphereSpawn.position;
+            var x = position.x + arr[Random.Range(0, arr.Length)];
+            var y = position.y - 1.0f;
+            var z = position.z + arr[Random.Range(0, arr.Length)];
+            Instantiate(preFab, new Vector3(x, y, z), Quaternion.identity);
+        }
+
+
     }
-
-    void OnCollisionEnter(Collision colInfo)
-    {        
-        SpawnSphere();        
-    }
-
-
-    public void OnColliderEventHoverEnter(ColliderHoverEventData eventData)
-    {
-        SpawnSphere();
-    }
-
-    private void SpawnSphere()
-    {
-        // Spawn spheres below the game object and add small random offset for 
-        // x and z dimensions to prevent vertical sphere stacking        
-        float x = SphereSpawn.position.x + arr[Random.Range(0, arr.Length)];
-        float y = SphereSpawn.position.y - 1.0f;
-        float z = SphereSpawn.position.z + arr[Random.Range(0, arr.Length)];
-        Instantiate(preFab, new Vector3(x, y, z), Quaternion.identity);
-    }
-
-
 }

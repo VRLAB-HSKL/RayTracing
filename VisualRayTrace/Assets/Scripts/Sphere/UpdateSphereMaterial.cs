@@ -1,27 +1,34 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class UpdateSphereMaterial : MonoBehaviour
+namespace Sphere
 {
-    private Color newColor;
-    
-    // Start is called before the first frame update
-    void Start()
+    public class UpdateSphereMaterial : MonoBehaviour
     {
-        newColor = new Color(255.0f, 0.0f, 0.0f);
-        
-    }
+        private Color _newColor;
 
-    // Update is called once per frame
-    void Update()
-    {
-        // ToDo: Set new color on collision
-        newColor = Random.ColorHSV();
+        /// <summary>
+        /// Unity Start function
+        /// ====================
+        /// 
+        /// This function is called before the first frame update, after
+        /// <see>
+        ///     <cref>Awake</cref>
+        /// </see>
+        /// </summary>
+        private void Start()
+        {
+            _newColor = Color.red;
+        }
 
-        //if (Input.GetKeyUp("t"))
-        //{
-        //    gameObject.GetComponent<Renderer>().material.color = newColor;
-        //}        
+        /// <summary>
+        /// Unity Update function
+        /// =====================
+        ///
+        /// Core game loop, is called once per frame
+        /// </summary>
+        private void Update()
+        {
+            _newColor = Random.ColorHSV();
+        }
     }
 }
