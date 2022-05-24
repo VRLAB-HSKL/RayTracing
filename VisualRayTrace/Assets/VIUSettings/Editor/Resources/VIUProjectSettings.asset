@@ -19,3 +19,4 @@ MonoBehaviour:
   - VirtualRealitySupportedwithOpenVR
   - VirtualRealitySupportedwithWindowsXR
   - GPUSkinning
+  - ApplyVIUActionSetforSteamVRInput

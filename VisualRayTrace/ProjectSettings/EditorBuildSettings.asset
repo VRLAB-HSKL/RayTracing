@@ -12,6 +12,8 @@ EditorBuildSettings:
     path: Assets/Scenes/MiniWorld.unity
     guid: 1881cdda796edbc44b0da1fa91d7b667
   m_configObjects:
+    Unity.XR.OpenVR.Settings: {fileID: 11400000, guid: 9ddcb33f704ba22429ddb9f622562579,
+      type: 2}
     com.htc.upm.wave.xrsdk.xrsettings: {fileID: 11400000, guid: fbbde5cb48bf68d4b9bd9919f97116ff,
       type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 749d6d4e21c59f548b21ddd7c998210b,
